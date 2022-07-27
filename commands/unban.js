@@ -27,7 +27,7 @@ module.exports = {
    */
   run: async (client, interaction, options) => {
     await interaction.deferReply(); // In case of overload
-    if(!interaction.member.roles.cache.has(r => r.name === "Administration Access")) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to use this command", interaction, client, [true, 10]);
+    if(!interaction.member.roles.cache.find(r => r.name === "Administration Access")) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to use this command", interaction, client, [true, 10]);
     let id = options.getString("user_id");
     if(isNaN(options.getString("user_id"))) {
       id = await fetch(`https://api.roblox.com/users/get-by-username?username=${options.getString("user_id")}`)
