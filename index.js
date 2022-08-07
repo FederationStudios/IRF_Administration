@@ -130,6 +130,24 @@ client.modals = new Collection();
   console.info("[FILE-LOAD] All files loaded successfully");
   toConsole(`[READY] Finished loading commands at <t:${Math.floor(Date.now()/1000)}:T>`, new Error().stack, client);
   ready = true;
+
+  setInterval(async () => {
+    if(!ready) return;
+    const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
+    console.info("Bans being parsed", parseBans);
+    for(const ban of parseBans) {
+      const reason = ban.reason.replace("___irf", "");
+      const discord = await client.guilds.cache.last().members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
+      if(!discord) continue;
+      await client.models.Ban.update({
+        reason: reason.replace(reason.split("Banned by ")[1], discord.toString())
+      }, {
+        where: {
+          banId: ban.banId
+        }
+      });
+    }
+  }, 20000);
 })();
 //#endregion
 
