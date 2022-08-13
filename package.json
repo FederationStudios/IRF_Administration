@@ -15,7 +15,7 @@
     "discord-api-types": "^0.37.1",
     "discord.js": "^14.1.2",
     "mysql2": "^2.3.3",
-    "node-fetch": "^3.0.0",
+    "node-fetch": "^2.6.7",
     "sequelize": "^6.21.3"
   },
   "devDependencies": {
