@@ -38,7 +38,7 @@ module.exports = {
     const table = new Table({ head: ["Game ID", "Reason", "Date"], colAligns: ["middle", "middle", "middle"], chars: stripConfig });
     const bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
     for(const ban of bans) {
-      const date = new Date(ban.unixtime);
+      const date = new Date(Math.floor(ban.unixtime*1000));
 
       table.push([ban.gameID, ban.reason, `${date.toLocaleString()} ${date.toString().match(/GMT([+-]\d{2})(\d{2})/)[0]}`]);
     }
