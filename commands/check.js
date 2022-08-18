@@ -1,8 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
-const Table = require("cli-table");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
-const { interactionEmbed, stripConfig } = require("../functions.js");
+const { interactionEmbed } = require("../functions.js");
 
 module.exports = {
   name: "check",
@@ -35,14 +34,27 @@ module.exports = {
       if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${id}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
     }
 
-    const table = new Table({ head: ["Game ID", "Reason", "Date"], colAligns: ["middle", "middle", "middle"], chars: stripConfig });
-    const bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
+    let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
+    const embed = new EmbedBuilder();
     for(const ban of bans) {
-      const date = new Date(Math.floor(ban.unixtime*1000));
-
-      table.push([ban.gameID, ban.reason, `${date.toLocaleString()} ${date.toString().match(/GMT([+-]\d{2})(\d{2})/)[0]}`]);
+      if(bans.indexOf(ban) === 0)
+        embed.addFields([
+          { name: "Game ID", value: String(ban.gameID), inline: true },
+          { name: "Reason", value: ban.reason, inline: true },
+          { name: "Date", value: `<t:${ban.unixtime}>`, inline: true },
+        ]);
+      else
+        embed.addFields([
+          { name: "​", value: String(ban.gameID), inline: true },
+          { name: "​", value: ban.reason, inline: true },
+          { name: "​", value: `<t:${ban.unixtime}>`, inline: true }
+        ]);
     }
-    if(bans.length === 0) table.push(["-", " No bans found for that user!", "-"]);
-    return interaction.editReply({ content: `__**Bans for ${id.Username}**__\n\`\`\`\n${table.toString()}\n\`\`\`` });
+    if(bans.length === 0) embed.addFields([
+      { name: "​", value: "-", inline: true },
+      { name: "​", value: "No bans found!", inline: true },
+      { name: "​", value: "-", inline: true }
+    ]);
+    return interaction.editReply({ content: `__**Bans for ${id.Username}**__`, embeds: [embed] });
   }
 };

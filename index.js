@@ -111,7 +111,7 @@ client.modals = new Collection();
     // Refresh based on environment
     if(process.env.environment === "development") {
       await rest.put(
-        Routes.applicationGuildCommands(config.bot.guildId, config.bot.applicationId),
+        Routes.applicationGuildCommands(config.bot.applicationId, config.bot.guildId),
         { body: slashCommands }
       );
     } else {
@@ -134,7 +134,6 @@ client.modals = new Collection();
   setInterval(async () => {
     if(!ready) return;
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
-    console.info("Bans being parsed", parseBans);
     for(const ban of parseBans) {
       const reason = ban.reason.replace("___irf", "");
       const discord = await client.guilds.cache.last().members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());

@@ -69,7 +69,7 @@ module.exports = {
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
-          unixtime: Date.now()
+          unixtime: Math.floor(Date.now()/1000)
         }, {
           where: {
             userID: id.Id,
@@ -81,7 +81,7 @@ module.exports = {
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
-          unixtime: Date.now()
+          unixtime: Math.floor(Date.now()/1000)
         });
       }
     } catch (e) {

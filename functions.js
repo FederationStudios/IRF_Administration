@@ -190,26 +190,8 @@ module.exports = {
 
   // -- //
 
-  stripConfig: {
-    "top": "",
-    "top-mid": "",
-    "top-left": "",
-    "top-right": "",
-    "bottom": "",
-    "bottom-mid": "",
-    "bottom-left": "",
-    "bottom-right": "",
-    "left": "",
-    "left-mid": "",
-    "mid": "-",
-    "mid-mid": "  ",
-    "right": "",
-    "right-mid": "",
-    "middle": "  "
-  },
-
   ids: [
-    ["Global", 1],
+    ["Global", 0],
     ["Papers, Please!", 583507031],
     ["Sevastopol Military Academy", 603943201],
     ["Prada Offensive", 4683162920],
