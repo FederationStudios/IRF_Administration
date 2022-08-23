@@ -34,6 +34,7 @@ module.exports = {
 
       if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
     }
+    if(!id.Id) throw new Error("User ID passed validation but doesn't exist");
 
     let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
     const embed = new EmbedBuilder();
