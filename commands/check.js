@@ -57,6 +57,7 @@ module.exports = {
       { name: "Reason", value: "No bans found!", inline: true },
       { name: "Date", value: "-", inline: true }
     ]);
-    return interaction.editReply({ content: `__**Bans for ${id.Username}**__`, embeds: [embed] });
+    embed.setTitle(`__**Bans for ${id.Username}**__`);
+    return interaction.editReply({ embeds: [embed] });
   }
 };
