@@ -32,9 +32,9 @@ module.exports = {
       id = await fetch(`https://api.roblox.com/users/${Math.floor(id)}`)
         .then(async r => JSON.parse((await r.text()).trim()));
 
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
+      if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
     }
-    if(!id.Id) throw new Error("User ID passed validation but doesn't exist");
+    if(!id.Id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID provided", interaction, client, [true, 15]);
 
     let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
     const embed = new EmbedBuilder();
@@ -53,9 +53,9 @@ module.exports = {
         ]);
     }
     if(bans.length === 0) embed.addFields([
-      { name: "​", value: "-", inline: true },
-      { name: "​", value: "No bans found!", inline: true },
-      { name: "​", value: "-", inline: true }
+      { name: "Game ID", value: "-", inline: true },
+      { name: "Reason", value: "No bans found!", inline: true },
+      { name: "Date", value: "-", inline: true }
     ]);
     return interaction.editReply({ content: `__**Bans for ${id.Username}**__`, embeds: [embed] });
   }
