@@ -26,12 +26,13 @@ module.exports = {
       id = await fetch(`https://api.roblox.com/users/get-by-username?username=${id}`)
         .then(r => r.json());
       
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${id}\` as a username and found no users with that username`, interaction, client, [true, 15]);
+      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
     } else {
-      id = await fetch(`https://api.roblox.com/users/${id}`)
+      if(id < 0 || id > 100000000 || Math.floor(id) != id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID", interaction, client, [true, 15]);
+      id = await fetch(`https://api.roblox.com/users/${Math.floor(id)}`)
         .then(async r => JSON.parse((await r.text()).trim()));
 
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${id}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
+      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
     }
 
     let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
