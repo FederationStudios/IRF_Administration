@@ -9,6 +9,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("request")
     .setDescription("Requests a division to assist you (Cooldown: 15 minutes)")
+    .setDMPermission(false)
     .addStringOption(option => {
       return option
         .setName("division")
@@ -42,9 +43,9 @@ module.exports = {
     if(rowifi.error) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
-      title: `${interaction.member.nickname} is requesting ${division}`,
+      title: `${rowifi.Username} is requesting ${division}`,
       color: 0xDE2821,
-      description: `${interaction.member.nickname} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${rowifi.roblox}/profile\n\n**React if you are handling this request**`
+      description: `${interaction.member.toString()} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${rowifi.roblox}/profile\n\n**React if you are handling this request**`
     }] })
       .then(m => m.react("✅"));
     

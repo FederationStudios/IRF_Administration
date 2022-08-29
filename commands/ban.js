@@ -9,6 +9,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Bans a user from an IRF game")
+    .setDMPermission(false)
     .addStringOption(option => {
       return option
         .setName("user_id")

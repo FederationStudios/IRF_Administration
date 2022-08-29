@@ -7,7 +7,8 @@ module.exports = {
   name: "check",
   data: new SlashCommandBuilder()
     .setName("check")
-    .setDescription("checks a users ban status")
+    .setDescription("Checks for bans associated with a user")
+    .setDMPermission(false)
     .addStringOption(option => {
       return option
         .setName("user_id")

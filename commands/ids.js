@@ -6,7 +6,8 @@ module.exports = {
   name: "ids",
   data: new SlashCommandBuilder()
     .setName("ids")
-    .setDescription("Returns all IRF Game IDs"),
+    .setDescription("Returns all IRF Game IDs")
+    .setDMPermission(false),
   /**
     * @param {Client} client 
     * @param {CommandInteraction} interaction 
