@@ -136,7 +136,7 @@ client.modals = new Collection();
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
     for(const ban of parseBans) {
       const reason = ban.reason.replace("___irf", "");
-      const discord = await client.guilds.cache.last().members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
+      const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
       if(!discord) continue;
       await client.models.Ban.update({
         reason: reason.replace(reason.split("Banned by ")[1], discord.toString())
