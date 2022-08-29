@@ -185,7 +185,8 @@ module.exports = {
       .then(res => res.json());
     
     const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
-      .then(res => res.json());
+      .then(res => res.text().trim())
+      .then(res => JSON.parse(res));
     if(roblox.errors) return {success: false, error: "Roblox ID does not exist"};
     
     if(!userData.success) return {success: false, error: userData.message};
