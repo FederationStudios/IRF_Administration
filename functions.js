@@ -184,8 +184,12 @@ module.exports = {
     const userData = await fetch(`https://api.rowifi.link/v1/users/${user}`)
       .then(res => res.json());
     
+    const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
+      .then(res => res.json());
+    if(roblox.errors) return {success: false, error: "Roblox ID does not exist"};
+    
     if(!userData.success) return {success: false, error: userData.message};
-    return {success: true, roblox: userData.roblox_id};
+    return {success: true, roblox: userData.roblox_id, username: roblox.Username};
   },
 
   // -- //

@@ -34,7 +34,7 @@ module.exports = {
     * @param {CommandInteractionOptionResolver} options
     */
   run: async (client, interaction, options) => {
-    await interaction.deferReply({ ephemeral: true }); // In case of overload
+    await interaction.deferReply(); // In case of overload
     if(cooldown.has(interaction.user.id)) return interactionEmbed(3, "[ERR-CLD]", `You can request <t:${Math.floor((cooldown.get(interaction.user.id)+900000)/1000)}:R>`, interaction, client, [false, 0]);
     const division = options.getString("division");
     const role = interaction.guild.roles.cache.find(r => r.name === options.getString("division")).toString();
@@ -43,7 +43,7 @@ module.exports = {
     if(rowifi.error) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
-      title: `${rowifi.Username} is requesting ${division}`,
+      title: `${rowifi.username} is requesting ${division}`,
       color: 0xDE2821,
       description: `${interaction.member.toString()} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${rowifi.roblox}/profile\n\n**React if you are handling this request**`
     }] })
