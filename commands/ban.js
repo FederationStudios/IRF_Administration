@@ -129,8 +129,8 @@ module.exports = {
           inline: true
         },
         {
-          name: "Moderator",
-          value: interaction.member.id,
+          name: "Reason",
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
           inline: true
         }
       ],

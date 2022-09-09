@@ -2,7 +2,7 @@
 const { Client, CommandInteraction, CommandInteractionOptionResolver, Embed, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed, toConsole, ids } = require("../functions.js");
-const { config } = require("../config.json");
+const { discord } = require("../config.json");
 
 module.exports = {
   name: "unban",
@@ -69,7 +69,7 @@ module.exports = {
       error = true;
     }
     if(error) return interactionEmbed(3, "[ERR-SQL]", "An error occurred while removing the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
-    await client.channels.cache.get(config.discord.unbanLogs).send({ embeds: [{
+    await client.channels.cache.get(discord.unbanLogs).send({ embeds: [{
       title: `${interaction.member.id} has removed a ban for ${id.Username}`,
       description: `${interaction.member.id} has removed a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
@@ -86,7 +86,7 @@ module.exports = {
         },
         {
           name: "Moderator",
-          value: interaction.member.id,
+          value: interaction.member.toString(),
           inline: true
         }
       ],
