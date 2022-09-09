@@ -20,6 +20,46 @@ module.exports = {
       return option
         .setName("game_id")
         .setDescription("Roblox game ID")
+        .setRequired(true)
+        .addChoices(
+          {
+            name: "Papers, Please!",
+            value: "583507031"
+          },
+          {
+            name: "Sevastopol Military Academy",
+            value: "603943201"
+          },
+          {
+            name: "Prada Offensive",
+            value: "4683162920"
+          },
+          {
+            name: "Triumphal Arch of Moscow",
+            value: "2506054725"
+          },
+          {
+            name: "Moscow Parade Grounds",
+            value: "6887031333"
+          },
+          {
+            name: "Ryazan Airbase",
+            value: "4424975098"
+          },
+          {
+            name: "Tank Training Grounds",
+            value: "2451182763"
+          },
+          {
+            name: "Global",
+            value: "0"
+          }
+        );
+    })
+    .addStringOption(option => {
+      return option
+        .setName("reason")
+        .setDescription("Reason for unban")
         .setRequired(true);
     }),
   /**
@@ -85,14 +125,14 @@ module.exports = {
           inline: true
         },
         {
-          name: "Moderator",
-          value: interaction.member.toString(),
+          name: "Reason",
+          value: `${options.getString("reason")} - Unbanned by ${interaction.member.toString()}`,
           inline: true
         }
       ],
       timestamp: new Date()
     }] });
 
-    return interactionEmbed(1, "", `Removed ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`, interaction, client, [false, 0]);
+    return interactionEmbed(1, "", `Removed ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}\n> Reason: ${options.getString("reason")} - Unbanned by ${interaction.member.toString()}`, interaction, client, [false, 0]);
   }
 };

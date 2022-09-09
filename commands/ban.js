@@ -20,7 +20,41 @@ module.exports = {
       return option
         .setName("game_id")
         .setDescription("Roblox game ID")
-        .setRequired(true);
+        .setRequired(true)
+        .addChoices(
+          {
+            name: "Papers, Please!",
+            value: "583507031"
+          },
+          {
+            name: "Sevastopol Military Academy",
+            value: "603943201"
+          },
+          {
+            name: "Prada Offensive",
+            value: "4683162920"
+          },
+          {
+            name: "Triumphal Arch of Moscow",
+            value: "2506054725"
+          },
+          {
+            name: "Moscow Parade Grounds",
+            value: "6887031333"
+          },
+          {
+            name: "Ryazan Airbase",
+            value: "4424975098"
+          },
+          {
+            name: "Tank Training Grounds",
+            value: "2451182763"
+          },
+          {
+            name: "Global",
+            value: "0"
+          }
+        );
     })
     .addStringOption(option => {
       return option
