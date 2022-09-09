@@ -2,7 +2,7 @@
 const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed, toConsole, ids, getRowifi } = require("../functions.js");
-const { channels } = require("../config.json");
+const { channels, discord } = require("../config.json");
 
 module.exports = {
   name: "ban",
@@ -112,6 +112,30 @@ module.exports = {
         }]
       }] });
     }
+
+    await client.channels.cache.get(discord.banLogs).send({ embeds: [{
+      title: `${interaction.member.id} has added a ban for ${id.Username}`,
+      description: `${interaction.member.id} has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
+      color: 0x00FF00,
+      fields: [
+        {
+          name: "Game",
+          value: ids.filter(pair => pair[1] == options.getString("game_id"))[0][0],
+          inline: true 
+        },
+        {
+          name: "User",
+          value: `${id.Username} (${id.Id})`,
+          inline: true
+        },
+        {
+          name: "Moderator",
+          value: interaction.member.id,
+          inline: true
+        }
+      ],
+      timestamp: new Date()
+    }] });
 
     return interaction.editReply({ content: "Ban added successfully!", embeds: [{
       title: "Ban Details",
