@@ -110,8 +110,8 @@ module.exports = {
     }
     if(error) return interactionEmbed(3, "[ERR-SQL]", "An error occurred while removing the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
     await client.channels.cache.get(discord.unbanLogs).send({ embeds: [{
-      title: `${interaction.member.nickname} has removed a ban for ${id.Username}`,
-      description: `${interaction.member.toString()} has removed a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
+      title: `${interaction.member.nickname ?? interaction.user.username} has removed a ban for ${id.Username}`,
+      description: `**${interaction.user.id}** has removed a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
       fields: [
         {
