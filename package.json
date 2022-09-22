@@ -12,13 +12,13 @@
   "dependencies": {
     "@discordjs/rest": "1.1.0",
     "cli-table": "0.3.11",
-    "discord-api-types": "0.37.8",
+    "discord-api-types": "0.37.10",
     "discord.js": "14.3.0",
     "mysql2": "2.3.3",
     "node-fetch": "^2.6.7",
-    "sequelize": "6.21.5"
+    "sequelize": "6.22.0"
   },
   "devDependencies": {
-    "eslint": "8.23.0"
+    "eslint": "8.23.1"
   }
 }
