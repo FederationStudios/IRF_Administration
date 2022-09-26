@@ -18,7 +18,8 @@ module.exports = {
           { name: "Admissions", value: "Admissions" },
           { name: "Game Administration", value: "Game Administrator" },
           { name: "National Defense", value: "National Defense" },
-          // { name: "Military Police", value: "Military Police" }
+          { name: "Military Police", value: "Military Police" },
+          { name: "State Security (NKVD)", value: "State Security" }
         )
         .setRequired(true);
     })
