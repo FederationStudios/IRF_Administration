@@ -251,7 +251,7 @@ client.on("interactionCreate", async (interaction) => {
     ];
     const value = interaction.options.getString("reason");
     if(!value) return interaction.respond();
-    const matches = commonReasons.filter(r => r.name.toLowerCase().includes(value.toLowerCase()));
+    const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
     return interaction.respond(matches);
   } else {
     interaction.deleteReply();
