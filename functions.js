@@ -181,7 +181,7 @@ module.exports = {
    */
   getRowifi: async (user) => {
     if(!user) return {success: false, error: "No username provided"};
-    const userData = await fetch(`https://api.rowifi.link/v1/users/${user}`)
+    const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { Authorization: config.bot.rowifiApiKey } })
       .then(res => res.json());
     
     const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
