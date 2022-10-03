@@ -1,7 +1,8 @@
 const { Client, Collection, InteractionType, IntentsBitField } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
-const { interactionEmbed, toConsole } = require("./functions.js");
+const { default: fetch } = require("node-fetch");
+const { interactionEmbed, toConsole, ids } = require("./functions.js");
 const config = require("./config.json");
 const fs = require("node:fs");
 const rest = new REST({ version: 9 }).setToken(config.bot.token);
@@ -145,6 +146,33 @@ client.modals = new Collection();
           banId: ban.banId
         }
       });
+      const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
+      if(id.errors) continue; // Doesn't exist
+      client.channels.cache.get(config.discord.banLogs).send({
+        embeds: [{
+          title: `${discord.nickname ?? discord.user.username} has added a ban for ${id.Username}`,
+          description: `**${discord.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
+          color: 0x00FF00,
+          fields: [
+            {
+              name: "Game",
+              value: ids.filter(pair => pair[1] == ban.gameID)[0][0],
+              inline: true 
+            },
+            {
+              name: "User",
+              value: `${id.Username} (${id.Id})`,
+              inline: true
+            },
+            {
+              name: "Reason",
+              value: `${ban.reason} - Banned by ${discord.user.toString()}`,
+              inline: true
+            }
+          ],
+          timestamp: new Date()
+        }]
+      });
     }
   }, 20000);
 })();
@@ -201,6 +229,30 @@ client.on("interactionCreate", async (interaction) => {
           if(m.content === "" && m.embeds.length === 0) interactionEmbed(3, "[ERR-UNK]", "The modal timed out and failed to reply in 10 seconds", interaction, client, [true, 15]);
         });
     }
+  } else if(interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+    const commonReasons = [
+      { name: "TOS - Chat bypass", value: "Roblox TOS - Bypassing chat filter" },
+      { name: "TOS - Clothes bypass", value: "Roblox TOS - Bypassed clothing" },
+      { name: "TOS - Username bypass", value: "Roblox TOS - Bypassed username" },
+      { name: "TOS - Nudity", value: "Roblox TOS - Nudity" },
+      { name: "TOS - Exploit", value: "Roblox TOS - Exploiting" },
+      { name: "TOS - Impersonation", value: "Roblox TOS - Impersonation" },
+      { name: "TOS - Racism", value: "Roblox TOS - Racism" },
+      { name: "TOS - Nazism", value: "Roblox TOS - Nazism" },
+      { name: "TOS - NSFW", value: "Roblox TOS - NSFW content or actions (PDA included)" },
+      { name: "TBan - Evasion", value: "Temp Ban - Evasion of moderation action" },
+      { name: "TBan - Nudity", value: "Temp Ban - Nudity" },
+      { name: "TBan - NSFW", value: "Temp Ban - NSFW content or actions (PDA included)" },
+      { name: "TBan - Spamming", value: "Temp Ban - Spamming" },
+      { name: "TBan - SS Insignia", value: "Temp Ban - SS Insignia" },
+      { name: "TBan - Chat bypass", value: "Temp Ban - Bypassing chat filter" },
+      { name: "Rules - Glitching", value: "Game Rule - Glitching" },
+      { name: "Rules - RK", value: "Game Rule - Mass random killing (RK)" }
+    ];
+    const value = interaction.options.getString("reason");
+    if(!value) return interaction.respond();
+    const matches = commonReasons.filter(r => r.name.toLowerCase().includes(value.toLowerCase()));
+    return interaction.respond(matches);
   } else {
     interaction.deleteReply();
   }

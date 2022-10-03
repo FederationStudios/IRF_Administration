@@ -59,7 +59,8 @@ module.exports = {
     .addStringOption(option => {
       return option
         .setName("reason")
-        .setDescription("Reason for unbanning the user")
+        .setDescription("Reason for banning the user")
+        .setAutocomplete(true)
         .setRequired(true);
     }),
   /**
