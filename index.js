@@ -246,11 +246,12 @@ client.on("interactionCreate", async (interaction) => {
       { name: "TBan - Spamming", value: "Temp Ban - Spamming" },
       { name: "TBan - SS Insignia", value: "Temp Ban - SS Insignia" },
       { name: "TBan - Chat bypass", value: "Temp Ban - Bypassing chat filter" },
-      { name: "Rules - Glitching", value: "Game Rule - Glitching" },
-      { name: "Rules - RK", value: "Game Rule - Mass random killing (RK)" }
+      { name: "Rules - Glitching", value: "Game Rules - Glitching" },
+      { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
+      { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
     ];
     const value = interaction.options.getString("reason");
-    if(!value) return interaction.respond();
+    if(!value) return; // No matches, timeout request
     const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
     return interaction.respond(matches);
   } else {
