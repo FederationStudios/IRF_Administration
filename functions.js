@@ -177,14 +177,18 @@ module.exports = {
   /**
    * @async
    * @param {number} user Discord user ID
+   * @param {Client} client Discord client
    * @returns {{success: boolean, error: string}|{success: undefined, roblox: number, username: string}}
    */
-  getRowifi: async (user) => {
+  getRowifi: async (user, client) => {
     if(!user) return {success: false, error: "No username provided"};
     const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` } })
       .then(res => {
-        if(!res.ok) return {success: false};
-        return res.json();
+        if(!res.ok) {
+          this.toConsole(`Rowifi API returned ${res.status} ${res.statusText}`, new Error().stack, client);
+          return {success: false};
+        } else
+          return res.json();
       });
     if(userData.success !== undefined) return {success: false, error: "Rowifi failed to return any data! (If you are signed in with Rowifi, report this to a developer)"};
 

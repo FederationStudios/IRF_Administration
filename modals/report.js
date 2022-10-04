@@ -12,7 +12,7 @@ module.exports = {
     */
   run: async (client, interaction, fields) => {
     // Filing
-    const rowifi = await getRowifi(interaction.user.id);
+    const rowifi = await getRowifi(interaction.user.id, client);
     const embed = new Embed({
       title: "MP Report",
       color: 0x400080,
