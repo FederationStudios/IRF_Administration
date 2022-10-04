@@ -43,7 +43,7 @@ module.exports = {
     const role = interaction.guild.roles.cache.find(r => r.name === options.getString("division")).toString();
     const reason = options.getString("reason");
     const rowifi = await getRowifi(interaction.user.id);
-    if(rowifi.error) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
+    if(rowifi.success !== undefined) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
       title: `${rowifi.username} is requesting ${division}`,

@@ -177,25 +177,22 @@ module.exports = {
   /**
    * @async
    * @param {number} user Discord user ID
-   * @returns {{success: boolean, error: string}|{success: boolean, roblox: number}}
+   * @returns {{success: boolean, error: string}|{success: undefined, roblox: number, username: string}}
    */
   getRowifi: async (user) => {
     if(!user) return {success: false, error: "No username provided"};
     const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` } })
       .then(res => {
-        if(!res.ok) return {success: "invalid", error: "Invalid request"};
-        return res;
-      })
-      .then(r => r.json());
-    if(userData.success === "invalid") return {success: false, error: "Invalid request (Report this to a developer)"};
-    if(!userData.success) return {success: false, error: userData.message};
-    
+        if(!res.ok) return {success: false};
+        return res.json();
+      });
+    if(userData.success !== undefined) return {success: false, error: "Rowifi failed to return any data! (If you are signed in with Rowifi, report this to a developer)"};
+
     const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
       .then(res => res.text())
       .then(res => JSON.parse(res.trim()));
     if(roblox.errors) return {success: false, error: "Roblox ID does not exist"};
-    
-    if(!userData.success) return {success: false, error: userData.message};
+
     return {success: true, roblox: userData.roblox_id, username: roblox.Username};
   },
 

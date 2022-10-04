@@ -142,7 +142,7 @@ client.modals = new Collection();
       const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
       if(!discord) continue;
       const rowifi = await getRowifi(discord.id);
-      if(!rowifi.success) continue; // Something went wrong
+      if(rowifi.success !== undefined) continue; // User doesn't exist in Discord
       await client.models.Ban.update({
         reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox})`
       }, {
@@ -233,6 +233,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   } else if(interaction.type === InteractionType.ApplicationCommandAutocomplete) {
     const value = interaction.options.getString("reason");
+    if(!value) return;
     if(interaction.commandName === "ban") {
       const commonReasons = [
         // ROBLOX TOS //
@@ -257,8 +258,8 @@ client.on("interactionCreate", async (interaction) => {
         { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
         { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
       ];
-      if(!value) return; // No matches, timeout request
       const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
+      if(matches.length === 0) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       return interaction.respond(matches);
     } else if(interaction.commandName === "request") {
       const reasons = [
@@ -278,8 +279,8 @@ client.on("interactionCreate", async (interaction) => {
         // BACKUP //
         { name: "General backup", value: "Control has been lost, general backup is needed" },
       ];
-      if(!value) return; // No matches, timeout request
       const matches = reasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
+      if(matches.length === 0) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       return interaction.respond(matches);
     } else {
       return;
