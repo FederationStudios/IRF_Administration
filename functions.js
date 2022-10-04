@@ -185,7 +185,7 @@ module.exports = {
     const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` } })
       .then(res => {
         if(!res.ok) {
-          this.toConsole(`Rowifi API returned ${res.status} ${res.statusText}`, new Error().stack, client);
+          module.exports.toConsole(`Rowifi API returned ${res.status} ${res.statusText}`, new Error().stack, client);
           return {success: false};
         } else
           return res.json();
