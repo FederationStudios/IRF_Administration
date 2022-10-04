@@ -142,7 +142,7 @@ client.modals = new Collection();
       const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
       if(!discord) continue;
       const rowifi = await getRowifi(discord.id, client);
-      if(rowifi.success !== undefined) continue; // User doesn't exist in Discord
+      if(!rowifi.success) continue; // User doesn't exist in Discord
       await client.models.Ban.update({
         reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox})`
       }, {

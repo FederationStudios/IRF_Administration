@@ -29,7 +29,7 @@ module.exports = {
         },
         {
           name: "RoWifi Link",
-          value: rowifi.success !== undefined ? `\`❌\` No, ${rowifi.error}` : `\`✅\` Yes, ${rowifi.roblox}`,
+          value: !rowifi.success ? `\`❌\` No, ${rowifi.error}` : `\`✅\` Yes, ${rowifi.roblox}`,
           inline: false
         },
         {

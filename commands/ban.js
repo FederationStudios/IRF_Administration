@@ -98,7 +98,7 @@ module.exports = {
       await require("node:util").promisify(setTimeout)(5000); // Show warning
     }
     const rowifi = await getRowifi(interaction.user.id, client);
-    if(rowifi.success !== undefined) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
+    if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
 
     let error = false;
     try {
@@ -129,7 +129,7 @@ module.exports = {
     if(error) return interactionEmbed(3, "[SQL-ERR]", "An error occurred while adding the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
 
     // NSC Auditing
-    if((await getRowifi(id.Id, client)).success !== undefined) {
+    if(!(await getRowifi(id.Id, client)).success) {
       client.channels.cache.get(channels.nsc_report).send({ content: "A ban for a user not verified with RoWifi has been added!", embeds: [{
         title: "Ban Details",
         color: 0xDE2821,
