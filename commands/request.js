@@ -27,6 +27,7 @@ module.exports = {
       return option
         .setName("reason")
         .setDescription("Reason for request")
+        .setAutocomplete(true)
         .setRequired(true);
     }),
   /**

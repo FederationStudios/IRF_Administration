@@ -97,6 +97,8 @@ module.exports = {
       interactionEmbed(2, "", `A ban already exists for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}. This will overwrite the ban!\n(Adding ban in 5 seconds)`, interaction, client, [false, 0]);
       await require("node:util").promisify(setTimeout)(5000); // Show warning
     }
+    const rowifi = await getRowifi(interaction.user.id);
+    if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error, interaction, client, [true, 10]);
 
     let error = false;
     try {
@@ -104,7 +106,7 @@ module.exports = {
         await client.models.Ban.update({
           userID: id.Id,
           gameID: options.getString("game_id"),
-          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
+          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           unixtime: Math.floor(Date.now()/1000)
         }, {
           where: {
@@ -116,7 +118,7 @@ module.exports = {
         await client.models.Ban.create({
           userID: id.Id,
           gameID: options.getString("game_id"),
-          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
+          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           unixtime: Math.floor(Date.now()/1000)
         });
       }
@@ -165,7 +167,7 @@ module.exports = {
         },
         {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           inline: true
         }
       ],
@@ -186,7 +188,7 @@ module.exports = {
           inline: true,
         }, {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()}`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           inline: false
         }
       ]

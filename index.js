@@ -2,7 +2,7 @@ const { Client, Collection, InteractionType, IntentsBitField } = require("discor
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 const { default: fetch } = require("node-fetch");
-const { interactionEmbed, toConsole, ids } = require("./functions.js");
+const { interactionEmbed, toConsole, getRowifi, ids } = require("./functions.js");
 const config = require("./config.json");
 const fs = require("node:fs");
 const rest = new REST({ version: 9 }).setToken(config.bot.token);
@@ -136,21 +136,23 @@ client.modals = new Collection();
     if(!ready) return;
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
     for(const ban of parseBans) {
+      const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
+      if(id.errors) continue; // Doesn't exist for some reason
       const reason = ban.reason.replace("___irf", "");
       const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
       if(!discord) continue;
+      const rowifi = await getRowifi(discord.id);
+      if(!rowifi.success) continue; // Something went wrong
       await client.models.Ban.update({
-        reason: reason.replace(reason.split("Banned by ")[1], discord.toString())
+        reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox})`
       }, {
         where: {
           banId: ban.banId
         }
       });
-      const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
-      if(id.errors) continue; // Doesn't exist
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
-          title: `${discord.nickname ?? discord.user.username} has added a ban for ${id.Username}`,
+          title: `${discord.nickname ?? discord.user.username} has added a ban for ${id.Username} (In Game)`,
           description: `**${discord.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
           color: 0x00FF00,
           fields: [
@@ -166,11 +168,11 @@ client.modals = new Collection();
             },
             {
               name: "Reason",
-              value: `${ban.reason} - Banned by ${discord.user.toString()}`,
+              value: `${ban.reason} - Banned by ${discord.user.toString()} (${rowifi.roblox})`,
               inline: true
             }
           ],
-          timestamp: new Date()
+          timestamp: ban.createdAt
         }]
       });
     }
@@ -230,30 +232,58 @@ client.on("interactionCreate", async (interaction) => {
         });
     }
   } else if(interaction.type === InteractionType.ApplicationCommandAutocomplete) {
-    const commonReasons = [
-      { name: "TOS - Chat bypass", value: "Roblox TOS - Bypassing chat filter" },
-      { name: "TOS - Clothes bypass", value: "Roblox TOS - Bypassed clothing" },
-      { name: "TOS - Username bypass", value: "Roblox TOS - Bypassed username" },
-      { name: "TOS - Nudity", value: "Roblox TOS - Nudity" },
-      { name: "TOS - Exploit", value: "Roblox TOS - Exploiting" },
-      { name: "TOS - Impersonation", value: "Roblox TOS - Impersonation" },
-      { name: "TOS - Racism", value: "Roblox TOS - Racism" },
-      { name: "TOS - Nazism", value: "Roblox TOS - Nazism" },
-      { name: "TOS - NSFW", value: "Roblox TOS - NSFW content or actions (PDA included)" },
-      { name: "TBan - Evasion", value: "Temp Ban - Evasion of moderation action" },
-      { name: "TBan - Nudity", value: "Temp Ban - Nudity" },
-      { name: "TBan - NSFW", value: "Temp Ban - NSFW content or actions (PDA included)" },
-      { name: "TBan - Spamming", value: "Temp Ban - Spamming" },
-      { name: "TBan - SS Insignia", value: "Temp Ban - SS Insignia" },
-      { name: "TBan - Chat bypass", value: "Temp Ban - Bypassing chat filter" },
-      { name: "Rules - Glitching", value: "Game Rules - Glitching" },
-      { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
-      { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
-    ];
     const value = interaction.options.getString("reason");
-    if(!value) return; // No matches, timeout request
-    const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
-    return interaction.respond(matches);
+    if(interaction.commandName === "ban") {
+      const commonReasons = [
+        // ROBLOX TOS //
+        { name: "TOS - Chat bypass", value: "Roblox TOS - Bypassing chat filter" },
+        { name: "TOS - Clothes bypass", value: "Roblox TOS - Bypassed clothing" },
+        { name: "TOS - Username bypass", value: "Roblox TOS - Bypassed username" },
+        { name: "TOS - Nudity", value: "Roblox TOS - Nudity" },
+        { name: "TOS - Exploit", value: "Roblox TOS - Exploiting" },
+        { name: "TOS - Impersonation", value: "Roblox TOS - Impersonation" },
+        { name: "TOS - Racism", value: "Roblox TOS - Racism" },
+        { name: "TOS - Nazism", value: "Roblox TOS - Nazism" },
+        { name: "TOS - NSFW", value: "Roblox TOS - NSFW content or actions (PDA included)" },
+        // TBAN //
+        { name: "TBan - Evasion", value: "Temp Ban - Evasion of moderation action" },
+        { name: "TBan - Nudity", value: "Temp Ban - Nudity" },
+        { name: "TBan - NSFW", value: "Temp Ban - NSFW content or actions (PDA included)" },
+        { name: "TBan - Spamming", value: "Temp Ban - Spamming" },
+        { name: "TBan - SS Insignia", value: "Temp Ban - SS Insignia" },
+        { name: "TBan - Chat bypass", value: "Temp Ban - Bypassing chat filter" },
+        // GAME RULES //
+        { name: "Rules - Glitching", value: "Game Rules - Glitching" },
+        { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
+        { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
+      ];
+      if(!value) return; // No matches, timeout request
+      const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
+      return interaction.respond(matches);
+    } else if(interaction.commandName === "request") {
+      const reasons = [
+        // GAME RULES //
+        { name: "Random killing", value: "User is mass random killing" },
+        { name: "Gamepass Admissions abuse", value: "Admissions is abusing their powers (Gamepass)" },
+        // RAIDS //
+        { name: "Immigrant Raid", value: "Immigrant(s) are raiding against Military personnel" },
+        { name: "Small Raid (1-7 raiders)", value: "There is chaos at the border and we are struggling to maintain control (1-7 raiders)" },
+        { name: "Big Raid (8+ raiders)", value: "There is chaos at the border and we are struggling to maintain control (8+ raiders)" },
+        { name: "Exploiter", value: "A user is exploiting" },
+        // AUTHORITY //
+        { name: "Higher authority needed (Kick)", value: "Need someone to kick a user" },
+        { name: "Higher authority needed (Server Ban)", value: "Need someone to server ban a user" },
+        { name: "Higher authority needed (Temp Ban)", value: "Need someone to temp ban a user" },
+        { name: "Higher authority needed (Perm Ban)", value: "Need someone to perm ban a user" },
+        // BACKUP //
+        { name: "General backup", value: "Control has been lost, general backup is needed" },
+      ];
+      if(!value) return; // No matches, timeout request
+      const matches = reasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
+      return interaction.respond(matches);
+    } else {
+      return;
+    }
   } else {
     interaction.deleteReply();
   }

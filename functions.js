@@ -24,15 +24,15 @@ module.exports = {
    */
   /**
    * @typedef {Object} RobloxGroupGroupData
-   * @prop {string} id
-   * @prop {string} name
-   * @prop {number} memberCount
+   * @prop {string} id Group ID
+   * @prop {string} name Name of the group
+   * @prop {number} memberCount Member count of the group
    */
   /**
    * @typedef {Object} RobloxGroupRoleData
-   * @prop {number} id
-   * @prop {string} name
-   * @prop {string} rank
+   * @prop {number} id Numeric identifier of the role
+   * @prop {string} name Name of the role
+   * @prop {string} rank Rank of the role (0-255)
    */
 
   /**
@@ -181,8 +181,14 @@ module.exports = {
    */
   getRowifi: async (user) => {
     if(!user) return {success: false, error: "No username provided"};
-    const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { Authorization: config.bot.rowifiApiKey } })
-      .then(res => res.json());
+    const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` } })
+      .then(res => {
+        if(!res.ok) return {success: "invalid", error: "Invalid request"};
+        return res;
+      })
+      .then(r => r.json());
+    if(userData.success === "invalid") return {success: false, error: "Invalid request (Report this to a developer)"};
+    if(!userData.success) return {success: false, error: userData.message};
     
     const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
       .then(res => res.text())
