@@ -142,9 +142,8 @@ client.modals = new Collection();
       const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
       if(!discord) continue;
       const rowifi = await getRowifi(discord.id, client);
-      if(!rowifi.success) continue; // User doesn't exist in Discord
       await client.models.Ban.update({
-        reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox})`
+        reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`
       }, {
         where: {
           banId: ban.banId
@@ -168,7 +167,7 @@ client.modals = new Collection();
             },
             {
               name: "Reason",
-              value: `${ban.reason} - Banned by ${discord.user.toString()} (${rowifi.roblox})`,
+              value: `${reason} - Banned by ${discord.user.toString()} (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
               inline: true
             }
           ],
@@ -259,7 +258,8 @@ client.on("interactionCreate", async (interaction) => {
         { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
       ];
       const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
-      if(matches.length === 0) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
+      if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
+      if(value.length > 100) return; // Timeout, too long value
       return interaction.respond(matches);
     } else if(interaction.commandName === "request") {
       const reasons = [
@@ -280,7 +280,8 @@ client.on("interactionCreate", async (interaction) => {
         { name: "General backup", value: "Control has been lost, general backup is needed" },
       ];
       const matches = reasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
-      if(matches.length === 0) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
+      if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
+      if(value.length > 100) return; // Timeout, too long value
       return interaction.respond(matches);
     } else {
       return;
