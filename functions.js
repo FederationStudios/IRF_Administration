@@ -188,7 +188,7 @@ module.exports = {
       else
         return g.members.cache.get(user).roles.cache.some(r => r.name.includes("Commissariat"));
     })) {
-      const roblox = await fetch(`https://api.roblox.com/users/get-by-username?username=TaviShadows${discord.username}`)
+      const roblox = await fetch(`https://api.roblox.com/users/get-by-username?username=${discord.username}`)
         .then(res => res.json());
       module.exports.toConsole(`[ROWIFI] ${discord.tag} (${discord.id}) is a member of the Commissariat and has been bypassed`, new Error().stack, client);
       return {success: true, roblox: roblox.Id, username: roblox.Username}; // Commissariat bypass

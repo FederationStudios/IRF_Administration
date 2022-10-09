@@ -46,16 +46,18 @@ module.exports = {
     const rowifi = await getRowifi(interaction.user.id, client);
     if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
 
-    const presenceCheck = await fetch("https://presence.roblox.com/users", {
+    const presenceCheck = await fetch("https://presence.roblox.com/v1/presence/users", {
       method: "POST",
       body: JSON.stringify({
         userIds: [rowifi.roblox]
-      })
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      }
     })
-      .then(r => r.text())
-      .then(r => JSON.parse(r.trim()))
+      .then(r => r.json())
       .then(r => r.errors || r.userPresences[0]);
-    if(!Array.isArray(presenceCheck) && (presenceCheck.userPresenceType !== 2 || presenceCheck.placeId === null)) return interactionEmbed(3, "[ERR-UPRM]", `${presenceCheck.userPresenceType !== 2 ? "You must be in-game in order to use this command" : "Your profile must be public in order to use this command. Please try again once your profile is public"}`, interaction, client, [false, 0]);
+    if(!Array.isArray(presenceCheck) && (presenceCheck.userPresenceType !== 2 || presenceCheck.placeId === null)) return interactionEmbed(3, "[ERR-UPRM]", `${presenceCheck.userPresenceType !== 2 ? "You must be in-game in order to use this command. Try again later when you're in-game" : "Your profile must be public in order to use this command. Please try again once your profile is public"}`, interaction, client, [false, 0]);
     if(Array.isArray(presenceCheck)) toConsole(`Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(presenceCheck, null, 2)}\n\`\`\``, new Error().stack, client);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
