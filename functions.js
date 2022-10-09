@@ -182,7 +182,12 @@ module.exports = {
    */
   getRowifi: async (user, client) => {
     const discord = await client.users.cache.get(user);
-    if(client.guilds.cache.some(g => g.members.cache.get(user).roles.cache.some(r => r.name.includes("Commissariat")))) {
+    if(client.guilds.cache.some(g => {
+      if(!g.members.cache.has(user))
+        return false;
+      else
+        return g.members.cache.get(user).roles.cache.some(r => r.name.includes("Commissariat"));
+    })) {
       const roblox = await fetch(`https://api.roblox.com/users/get-by-username?username=TaviShadows${discord.username}`)
         .then(res => res.json());
       module.exports.toConsole(`[ROWIFI] ${discord.tag} (${discord.id}) is a member of the Commissariat and has been bypassed`, new Error().stack, client);
