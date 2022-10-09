@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { interactionEmbed, getRowifi } = require("../functions.js");
+const { interactionEmbed, getRowifi, toConsole } = require("../functions.js");
+const { default: fetch } = require("node-fetch");
 const { channels, discord } = require("../config.json");
 const cooldown = new Map();
 
@@ -44,6 +45,18 @@ module.exports = {
     const reason = options.getString("reason");
     const rowifi = await getRowifi(interaction.user.id, client);
     if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", "You must verify with RoWifi before using this command", interaction, client, [true, 15]);
+
+    const presenceCheck = await fetch("https://presence.roblox.com/users", {
+      method: "POST",
+      body: JSON.stringify({
+        userIds: [rowifi.roblox]
+      })
+    })
+      .then(r => r.text())
+      .then(r => JSON.parse(r.trim()))
+      .then(r => r.errors || r.userPresences[0]);
+    if(!Array.isArray(presenceCheck) && (presenceCheck.userPresenceType !== 2 || presenceCheck.placeId === null)) return interactionEmbed(3, "[ERR-UPRM]", `${presenceCheck.userPresenceType !== 2 ? "You must be in-game in order to use this command" : "Your profile must be public in order to use this command. Please try again once your profile is public"}`, interaction, client, [false, 0]);
+    if(Array.isArray(presenceCheck)) toConsole(`Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(presenceCheck, null, 2)}\n\`\`\``, new Error().stack, client);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
       title: `${rowifi.username} is requesting ${division}`,

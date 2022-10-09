@@ -232,7 +232,6 @@ client.on("interactionCreate", async (interaction) => {
     }
   } else if(interaction.type === InteractionType.ApplicationCommandAutocomplete) {
     const value = interaction.options.getString("reason");
-    if(!value) return;
     if(interaction.commandName === "ban") {
       const commonReasons = [
         // ROBLOX TOS //
@@ -257,6 +256,7 @@ client.on("interactionCreate", async (interaction) => {
         { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
         { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
       ];
+      if(!value) return interaction.respond(commonReasons);
       const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
       if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       if(value.length > 100) return; // Timeout, too long value
@@ -279,6 +279,7 @@ client.on("interactionCreate", async (interaction) => {
         // BACKUP //
         { name: "General backup", value: "Control has been lost, general backup is needed" },
       ];
+      if(!value) return interaction.respond(reasons);
       const matches = reasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
       if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       if(value.length > 100) return; // Timeout, too long value
@@ -295,7 +296,7 @@ client.on("messageCreate", async (message) => {
   if(message.guild.id != config.discord.mainServer) return;
   if(message.author.bot) return;
   if(!message.channel.name.includes("reports")) return;
-  if(!/((Mass )?([^\w\d]RK))|(Random kill.*)/i.test(message.content)) return;
+  if(!/(Mass )?(([^\w\d]RK)|Random( )?kill.*)/i.test(message.content)) return;
   await message.react("790001925411700746");
   return message.reply({ content: "<:NoVote:790001925411700746> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, react to this with ❓.*" });
 });
