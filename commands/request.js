@@ -57,7 +57,7 @@ module.exports = {
     })
       .then(r => r.json())
       .then(r => r.errors || r.userPresences[0]);
-    if(!Array.isArray(presenceCheck) && (presenceCheck.userPresenceType !== 2 || presenceCheck.placeId === null)) return interactionEmbed(3, "[ERR-UPRM]", `${presenceCheck.userPresenceType !== 2 ? "You must be in-game in order to use this command. Try again later when you're in-game" : "Your profile must be public in order to use this command. Please try again once your profile is public"}`, interaction, client, [false, 0]);
+    if(!Array.isArray(presenceCheck) && presenceCheck.userPresenceType !== 2) return interactionEmbed(3, "[ERR-UPRM]", "You must be in-game in order to use this command. Try again later when you're in-game", interaction, client, [false, 0]);
     if(Array.isArray(presenceCheck)) toConsole(`Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(presenceCheck, null, 2)}\n\`\`\``, new Error().stack, client);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
