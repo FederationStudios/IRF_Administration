@@ -167,7 +167,7 @@ client.modals = new Collection();
             },
             {
               name: "Reason",
-              value: `${reason} - Banned by ${discord.user.toString()} (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
+              value: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
               inline: true
             }
           ],
