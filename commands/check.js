@@ -38,7 +38,14 @@ module.exports = {
     if(!id.Id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID provided", interaction, client, [true, 15]);
 
     let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
-    const embed = new EmbedBuilder();
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.Id}&size=720x720&format=Png&isCircular=false`)
+      .then(r => r.json())
+      .then(r => r.data[0].imageUrl);
+    const embed = new EmbedBuilder({
+      thumbnail: {
+        url: avatar
+      }
+    });
     for(const ban of bans) {
       if(bans.indexOf(ban) === 0)
         embed.addFields([

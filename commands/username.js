@@ -27,10 +27,16 @@ module.exports = {
     // IDs that don't exist will return an error with spaces, causing normal parses to fail 
 
     if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getInteger("id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.Id}&size=720x720&format=Png&isCircular=false`)
+      .then(r => r.json())
+      .then(r => r.data[0].imageUrl);
     return interaction.editReply({ embeds: [{
       title: `Roblox Username for ${id.Id}`,
       color: 0xDE2821,
-      description: `${id.Username}`
+      description: `${id.Username}`,
+      thumbnail: {
+        url: avatar
+      }
     }] });
   }
 };

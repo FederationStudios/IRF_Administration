@@ -34,10 +34,17 @@ module.exports = {
 
       if(user.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as ID but found no user`, interaction, client, [true, 15]);
     }
+
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${user.Id}&size=720x720&format=Png&isCircular=false`)
+      .then(r => r.json())
+      .then(r => r.data[0].imageUrl);
     await interaction.editReply({ embeds: [{
       title: `${user.Username}'s Profile`,
       color: 0xDE2821,
-      description: `https://roblox.com/users/${user.Id}/profile`
+      description: `https://roblox.com/users/${user.Id}/profile`,
+      image: {
+        url: avatar
+      }
     }] });
   }
 };

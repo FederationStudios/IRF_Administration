@@ -2,7 +2,7 @@
 const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { interactionEmbed, getRowifi, toConsole } = require("../functions.js");
 const { default: fetch } = require("node-fetch");
-const { channels, discord } = require("../config.json");
+const { bot, channels, discord } = require("../config.json");
 const cooldown = new Map();
 
 module.exports = {
@@ -52,12 +52,14 @@ module.exports = {
         userIds: [rowifi.roblox]
       }),
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Cookie": `.ROBLOSECURITY=${bot.validationToken || "abcdef123456"}`
       }
     })
       .then(r => r.json())
       .then(r => r.errors || r.userPresences[0]);
     if(!Array.isArray(presenceCheck) && presenceCheck.userPresenceType !== 2) return interactionEmbed(3, "[ERR-UPRM]", "You must be in-game in order to use this command. Try again later when you're in-game", interaction, client, [false, 0]);
+    if(bot.validationToken && presenceCheck.gameId === null) return interactionEmbed(3, "[ERR-UPRM]", "You must have your profile set to public in order to use this command. Try again later when your profile is public", interaction, client, [false, 0]);
     if(Array.isArray(presenceCheck)) toConsole(`Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(presenceCheck, null, 2)}\n\`\`\``, new Error().stack, client);
 
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
@@ -66,7 +68,7 @@ module.exports = {
       description: `${interaction.member.toString()} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${rowifi.roblox}/profile\n\n**React if you are handling this request**`
     }] })
       .then(m => m.react("✅"));
-    
+
     interaction.editReply({ embeds: [{
       title: "Request Sent",
       color: 0xDE2821,
