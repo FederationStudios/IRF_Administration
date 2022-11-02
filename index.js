@@ -263,8 +263,10 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.respond(matches);
     } else if(interaction.commandName === "request") {
       const reasons = [
-        // GAME RULES //
-        { name: "Random killing", value: "User is mass random killing" },
+        // DIVISIONS //
+        { name: "MoA - No admissions", value: "There is no Admissions in the server" },
+        { name: "MP - Military Law", value: "User is violating Military Law" },
+        { name: "GA - Random killing", value: "User is mass random killing" },
         { name: "Gamepass Admissions abuse", value: "Admissions is abusing their powers (Gamepass)" },
         // RAIDS //
         { name: "Immigrant Raid", value: "Immigrant(s) are raiding against Military personnel" },
@@ -274,8 +276,7 @@ client.on("interactionCreate", async (interaction) => {
         // AUTHORITY //
         { name: "Higher authority needed (Kick)", value: "Need someone to kick a user" },
         { name: "Higher authority needed (Server Ban)", value: "Need someone to server ban a user" },
-        { name: "Higher authority needed (Temp Ban)", value: "Need someone to temp ban a user" },
-        { name: "Higher authority needed (Perm Ban)", value: "Need someone to perm ban a user" },
+        { name: "Higher authority needed (Temp/Perm Ban)", value: "Need someone to temp/perm ban a user" },
         // BACKUP //
         { name: "General backup", value: "Control has been lost, general backup is needed" },
       ];

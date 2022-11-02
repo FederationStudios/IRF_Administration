@@ -60,8 +60,7 @@ module.exports = {
     });
     await client.channels.cache.get(channels.nsc_report).send({ content: `Incoming NSC report from ${interaction.user.tag} (ID: ${interaction.user.id})`, embeds: [embed] }); // NSC
     embed.fields.splice(2, 1); // Remove RoWifi
-    await interaction.user.createDM(true);
-    interaction.user.dmChannel.send({ content: `Here is a copy of a **NSC report** you filed at <t:${Math.floor(Date.now()/1000.0)}:T>`, embeds: [embed] }); // DM copy
+    interaction.user.send({ content: `Here is a copy of a **NSC report** you filed at <t:${Math.floor(Date.now()/1000.0)}:T>`, embeds: [embed] }); // DM copy
     return interaction.followUp({ content: "`✅` Report filed! A copy has been sent to your DMs if I can DM you", embeds: [embed] }); // User's copy
   }
 };
