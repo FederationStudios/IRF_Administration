@@ -151,7 +151,7 @@ module.exports = {
     }
 
     await client.channels.cache.get(discord.banLogs).send({ embeds: [{
-      title: `${interaction.member.nickname ?? interaction.user.username} has added a ban for ${id.Username}`,
+      title: `${interaction.member.nickname ?? interaction.user.username} banned => ${id.Username}`,
       description: `**${interaction.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
       fields: [

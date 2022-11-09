@@ -139,7 +139,43 @@ client.modals = new Collection();
       const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
       if(id.errors) continue; // Doesn't exist for some reason
       const reason = ban.reason.replace("___irf", "");
-      const discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first());
+      let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first()).catch(false);
+      if(reason.includes("FairPlay Anti-Cheat")) { // FairPlay Bypass
+        await client.models.Ban.update({
+          reason: reason.replace(reason.split("Banned by ")[1], "FairPlay Anti-Cheat") + " (0)"
+        }, {
+          where: {
+            banId: ban.banId
+          }
+        });
+
+        client.channels.cache.get(config.discord.banLogs).send({
+          embeds: [{
+            title: `FairPlay Anticheat banned => ${id.Username} (In Game)`,
+            description: `**FairPlay Anticheat** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
+            color: 0x00FF00,
+            fields: [
+              {
+                name: "Game",
+                value: ids.filter(pair => pair[1] == ban.gameID)[0][0],
+                inline: true 
+              },
+              {
+                name: "User",
+                value: `${id.Username} (${id.Id})`,
+                inline: true
+              },
+              {
+                name: "Reason",
+                value: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
+                inline: true
+              }
+            ],
+            timestamp: ban.createdAt
+          }]
+        });
+        continue;
+      }
       if(!discord) continue;
       const rowifi = await getRowifi(discord.id, client);
       await client.models.Ban.update({
@@ -151,7 +187,7 @@ client.modals = new Collection();
       });
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
-          title: `${discord.nickname ?? discord.user.username} has added a ban for ${id.Username} (In Game)`,
+          title: `${discord.nickname ?? discord.user.username} banned => ${id.Username} (In Game)`,
           description: `**${discord.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
           color: 0x00FF00,
           fields: [

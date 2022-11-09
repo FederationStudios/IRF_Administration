@@ -65,7 +65,7 @@ module.exports = {
     ]})
       .then(false)
       .catch(true); // Supress errors
-    if(check) return console.error("[ERR] toConsole called but message failed to send");
+    if(check) return console.error(`[ERR] At ${new Date()}, toConsole called but message failed to send`);
 
     return null;
   },
