@@ -267,8 +267,9 @@ client.on("interactionCreate", async (interaction) => {
         });
     }
   } else if(interaction.type === InteractionType.ApplicationCommandAutocomplete) {
-    const value = interaction.options.getString("reason");
-    if(interaction.commandName === "ban") {
+    switch(interaction.commandName) {
+    case "ban": {
+      const value = interaction.options.getString("reason");
       const commonReasons = [
         // ROBLOX TOS //
         { name: "TOS - Chat bypass", value: "Roblox TOS - Bypassing chat filter" },
@@ -297,7 +298,9 @@ client.on("interactionCreate", async (interaction) => {
       if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       if(value.length > 100) return; // Timeout, too long value
       return interaction.respond(matches);
-    } else if(interaction.commandName === "request") {
+    }
+    case "request": {
+      const value = interaction.options.getString("reason");
       const reasons = [
         // DIVISIONS //
         { name: "MoA - No admissions", value: "There is no Admissions in the server" },
@@ -321,8 +324,32 @@ client.on("interactionCreate", async (interaction) => {
       if(matches.length === 0 && value.length <= 100) return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + "..." : value, value: value }]);
       if(value.length > 100) return; // Timeout, too long value
       return interaction.respond(matches);
-    } else {
-      return;
+    }
+    case "shutdown": {
+      const value = interaction.options.getString("target");
+      const servers = await fetch("https://localhost/test_servers").then(r => r.json());
+      const matches = [];
+      const idMap = new Map();
+      let matchedGame = 0;
+      for(const [name, id] of ids) {
+        idMap.set(id, name);
+        if(name.toLowerCase().includes(value.toLowerCase())) matchedGame = id;
+      }
+      // Example response
+      // {"success":true,"servers":{"11636920759":[{"ab632069-025b-46a2-8fc0-8e65d6f853b8":[[169443312],"Wed, 28 Dec 2022 12:48:27 GMT"]}]}}
+      for(const game of Object.keys(servers)) {
+        if(matchedGame && game != matchedGame) continue;
+        for(const server of servers[game]) {
+          // eslint-disable-next-line no-unused-vars
+          const [jobId, [players, _]] = Object.entries(server)[game];
+          matches.push({ name: `${jobId} - ${idMap.get(game)} (${players.length})`, value: jobId });
+        }
+      }
+      return interaction.respond(matches);
+    }
+    default: {
+      return interaction.respond([]); // Invalid commandName
+    }
     }
   } else {
     interaction.deleteReply();
@@ -333,7 +360,7 @@ client.on("messageCreate", async (message) => {
   if(message.guild.id != config.discord.mainServer) return;
   if(message.author.bot) return;
   if(!message.channel.name.includes("reports")) return;
-  if(!/(Mass )?(([^\w\d]RK)|Random( )?kill.*)/i.test(message.content)) return;
+  if(!/(?:Mass (?:RK|(?:kill.*)))|(?:([^\w\d]RK)|Random(ly)?(?: )?kill.*)/i.test(message.content)) return;
   await message.react("790001925411700746");
   return message.reply({ content: "<:NoVote:790001925411700746> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, react to this with ❓.*" });
 });

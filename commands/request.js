@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
 const { interactionEmbed, getRowifi, toConsole } = require("../functions.js");
 const { default: fetch } = require("node-fetch");
 const { bot, channels, discord } = require("../config.json");

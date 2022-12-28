@@ -32,7 +32,7 @@ module.exports = {
    * @typedef {Object} RobloxGroupRoleData
    * @prop {number} id Numeric identifier of the role
    * @prop {string} name Name of the role
-   * @prop {string} rank Rank of the role (0-255)
+   * @prop {number} rank Rank of the role (0-255)
    */
 
   /**
@@ -198,7 +198,7 @@ module.exports = {
       .then(res => {
         if(!res.ok) {
           if(res.status !== 404) module.exports.toConsole(`Rowifi API returned ${res.status} ${res.statusText}`, new Error().stack, client);
-          return {success: false};
+          return {success: false, error: "Rowifi API returned an error"};
         } else
           return res.json();
       });
