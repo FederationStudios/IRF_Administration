@@ -335,14 +335,15 @@ client.on("interactionCreate", async (interaction) => {
         idMap.set(id, name);
         if(name.toLowerCase().includes(value.toLowerCase())) matchedGame = id;
       }
-      for(const game of Object.keys(servers)) {
+      for(const game of Object.keys(servers.servers)) {
         if(matchedGame && game != matchedGame) continue;
-        for(const server of servers[game]) {
+        for(const server of servers.servers[game]) {
           // eslint-disable-next-line no-unused-vars
           const [jobId, [players, _]] = Object.entries(server)[game];
           matches.push({ name: `${jobId} - ${idMap.get(game) || "RTT"} (${players.length})`, value: jobId });
         }
       }
+      matches.unshift({ name: "All servers (*)", value: "*" });
       return interaction.respond(matches);
     }
     default: {
