@@ -327,7 +327,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     case "shutdown": {
       const value = interaction.options.getString("target");
-      const servers = await fetch("https://localhost/test_servers").then(r => r.json());
+      const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
       const matches = [];
       const idMap = new Map();
       let matchedGame = 0;
@@ -335,14 +335,12 @@ client.on("interactionCreate", async (interaction) => {
         idMap.set(id, name);
         if(name.toLowerCase().includes(value.toLowerCase())) matchedGame = id;
       }
-      // Example response
-      // {"success":true,"servers":{"11636920759":[{"ab632069-025b-46a2-8fc0-8e65d6f853b8":[[169443312],"Wed, 28 Dec 2022 12:48:27 GMT"]}]}}
       for(const game of Object.keys(servers)) {
         if(matchedGame && game != matchedGame) continue;
         for(const server of servers[game]) {
           // eslint-disable-next-line no-unused-vars
           const [jobId, [players, _]] = Object.entries(server)[game];
-          matches.push({ name: `${jobId} - ${idMap.get(game)} (${players.length})`, value: jobId });
+          matches.push({ name: `${jobId} - ${idMap.get(game) || "RTT"} (${players.length})`, value: jobId });
         }
       }
       return interaction.respond(matches);
