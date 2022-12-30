@@ -337,6 +337,7 @@ client.on("interactionCreate", async (interaction) => {
       }
       for(const game of Object.keys(servers.servers)) {
         if(matchedGame && game != matchedGame) continue;
+        if(servers.servers[game].length === 0 || !servers.servers[game]) continue;
         for(const server of servers.servers[game]) {
           // eslint-disable-next-line no-unused-vars
           const [jobId, [players, _]] = Object.entries(server)[game];
@@ -374,6 +375,7 @@ process.on("uncaughtException", (err, origin) => {
     console.error(err, origin);
     return process.exit(14);
   }
+  console.debug(err, origin);
   // eslint-disable-next-line no-useless-escape
   toConsole(`An [uncaughtException] has occurred.\n\n> ${String(err)}\n> ${String(origin.replaceAll(/:/g, "\:"))}`, new Error().stack, client);
 });
