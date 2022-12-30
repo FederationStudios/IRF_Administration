@@ -50,7 +50,7 @@ module.exports = {
               "Content-Type": "application/json",
               "x-api-key": bot.mainOCtoken
             },
-            body: `{"content": "${JSON.stringify({ type: "shutdown", target, reason }).replace(/"/g, "\"")}"}`,
+            body: `{"message": '{"type": "shutdown", "target": "${target}", "reason": "${reason}"}'}`,
             method: "POST"
           });
           if(!resp.ok) {
@@ -59,7 +59,7 @@ module.exports = {
                 "Content-Type": "application/json",
                 "x-api-key": bot.altOCtoken
               },
-              body: `{"content": "${JSON.stringify({ type: "shutdown", target, reason }).replace(/"/g, "\"")}"}`,
+              body: `{"message": '{"type": "shutdown", "target": "${target}", "reason": "${reason}"}'}`,
               method: "POST"
             });
             if(!att2.ok) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 400)", interaction, client, [true, 10]);
@@ -79,7 +79,7 @@ module.exports = {
             "Content-Type": "application/json",
             "x-api-key": bot.mainOCtoken
           },
-          body: `{"content": "${JSON.stringify({ type: "shutdown", target: "*", reason }).replace(/"/g, "\"")}"}`,
+          body: `{"message": '{"type": "shutdown", "target": "${target}", "reason": "${reason}"}'}`,
           method: "POST"
         });
         if(!resp.ok) {
@@ -88,7 +88,7 @@ module.exports = {
               "Content-Type": "application/json",
               "x-api-key": bot.altOCtoken
             },
-            body: `{"content": "${JSON.stringify({ type: "shutdown", target: "*", reason }).replace(/"/g, "\"")}"}`,
+            body: `{"message": '{"type": "shutdown", "target": "${target}", "reason": "${reason}"}'}`,
             method: "POST"
           });
         }
