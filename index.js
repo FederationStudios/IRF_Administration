@@ -338,7 +338,6 @@ client.on("interactionCreate", async (interaction) => {
       const { name, value} = interaction.options.getFocused(true);
       if(name !== "target") return;
       const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
-      // Example => {success: true, servers: {PlaceId: {JobId1: [[PlayerIds], Date], JobId2: [[PlayerIds], Date]}}
       const matches = [];
       const idMap = new Map();
       let matchedGame = 0;
@@ -347,7 +346,7 @@ client.on("interactionCreate", async (interaction) => {
         if(name.toLowerCase().includes(value.toLowerCase())) matchedGame = id;
       }
       // Push all servers with the game ID in matchedGame to matches
-      for(const [placeId, jobs] of Object.entries(servers)) {
+      for(const [placeId, jobs] of Object.entries(servers.servers)) {
         if(placeId == matchedGame) {
           // eslint-disable-next-line no-unused-vars
           for(const [jobId, [players, date]] of Object.entries(jobs)) {
