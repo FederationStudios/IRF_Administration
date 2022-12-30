@@ -21,7 +21,7 @@ module.exports = {
       return option
         .setName("reason")
         .setDescription("Reason for shutting down")
-        .setAutocomplete(true);
+        .setRequired(true);
     }),
   /**
    * @param {Client} client
@@ -32,8 +32,8 @@ module.exports = {
     const rowifi = await getRowifi(interaction.user.id, client);
     if(rowifi.error) return interactionEmbed(3, "", rowifi.error, interaction, client, [true, 10]);
     const roblox = await getGroup(rowifi.username, 872876);
-    if(roblox.error) return interactionEmbed(3, "", roblox.error, interaction, client, [true, 10]);
-    if(roblox.role.rank < 240) return interactionEmbed(3, "[ERR-UPRM]", "You do not have permission to use this command (Engineer+)", interaction, client, [true, 10]);
+    if(!roblox.success) return interactionEmbed(3, "", roblox.error, interaction, client, [true, 10]);
+    if(roblox.data.role.rank < 240) return interactionEmbed(3, "[ERR-UPRM]", "You do not have permission to use this command (Engineer+)", interaction, client, [true, 10]);
     const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
     if(!servers.success) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 503)", interaction, client, [true, 10]);
     const target = options.getString("target");
@@ -42,7 +42,7 @@ module.exports = {
     let server = false;
     for(const [PlaceId, game] of Object.entries(servers.servers)) {
       if(target === "*") break; // Not handled here, but later on
-      for(const [JobId, Players] of Object.entries(game)) {
+      for(const [JobId, Data] of Object.entries(game)) {
         if(JobId === target) {
           const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${PlaceId}/universe`).then(r => r.json()).then(r => r.universeId);
           const resp = await fetch(`https://apis.roblox.com/messaging-service/v1/universes/${universeId}/topics/remoteAdminCommands`, {
@@ -64,7 +64,7 @@ module.exports = {
             });
             if(!att2.ok) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 400)", interaction, client, [true, 10]);
           }
-          server = {JobId, Players: Players[0]};
+          server = {JobId, Players: Data[0]};
         }
       }
       if(server) break;
@@ -94,6 +94,6 @@ module.exports = {
         }
       }
     }
-    return interactionEmbed(1, "", `Shut down server ${target === "*" ? "*" : server.JobId} with ${server.Players.length}`, interaction, client, [true, 10]);
+    return interactionEmbed(1, "", `Shut down server ${target === "*" ? "{*}" : server.JobId} with ${server.Players.length || "{?}"} players`, interaction, client, [true, 10]);
   }
 };

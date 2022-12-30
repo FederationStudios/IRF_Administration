@@ -148,7 +148,7 @@ client.modals = new Collection();
             banId: ban.banId
           }
         });
-
+        
         client.channels.cache.get(config.discord.banLogs).send({
           embeds: [{
             title: `FairPlay Anticheat banned => ${id.Username} (In Game)`,
@@ -167,7 +167,7 @@ client.modals = new Collection();
               },
               {
                 name: "Reason",
-                value: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
+                value: reason.replace(reason.split("Banned by ")[1], discord.toString() || "Unknown!") + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
                 inline: true
               }
             ],
@@ -176,10 +176,19 @@ client.modals = new Collection();
         });
         continue;
       }
-      if(!discord) continue;
+      if(!discord) { // Hopefully stop spam
+        await client.models.Ban.update({
+          reason: reason.replace(reason.split("Banned by ")[1], "Unknown!") + " (0)"
+        }, {
+          where: {
+            banId: ban.banId
+          }
+        });
+        continue;
+      }
       const rowifi = await getRowifi(discord.id, client);
       await client.models.Ban.update({
-        reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`
+        reason: reason.replace(reason.split("Banned by ")[1], discord.toString() || "Unknown!") + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`
       }, {
         where: {
           banId: ban.banId
@@ -326,25 +335,27 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.respond(matches);
     }
     case "shutdown": {
-      const value = interaction.options.getString("target");
+      const { name, value} = interaction.options.getFocused(true);
+      if(name !== "target") return;
       const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
+      // Example => {success: true, servers: {PlaceId: {JobId1: [[PlayerIds], Date], JobId2: [[PlayerIds], Date]}}
       const matches = [];
       const idMap = new Map();
       let matchedGame = 0;
       for(const [name, id] of ids) {
-        idMap.set(id, name);
+        idMap.set(String(id), name);
         if(name.toLowerCase().includes(value.toLowerCase())) matchedGame = id;
       }
-      for(const game of Object.keys(servers.servers)) {
-        if(matchedGame && game != matchedGame) continue;
-        if(servers.servers[game].length === 0 || !servers.servers[game]) continue;
-        for(const server of servers.servers[game]) {
+      // Push all servers with the game ID in matchedGame to matches
+      for(const [placeId, jobs] of Object.entries(servers)) {
+        if(placeId == matchedGame) {
           // eslint-disable-next-line no-unused-vars
-          const [jobId, [players, _]] = Object.entries(server)[game];
-          matches.push({ name: `${jobId} - ${idMap.get(game) || "RTT"} (${players.length})`, value: jobId });
+          for(const [jobId, [players, date]] of Object.entries(jobs)) {
+            matches.push({ name: `${jobId} - ${idMap.get(placeId) || "RTT"} (${players.length})`, value: jobId });
+          }
         }
       }
-      matches.unshift({ name: "All servers (*)", value: "*" });
+      matches.unshift({ name: "All servers - DANGEROUS (*)", value: "*" });
       return interaction.respond(matches);
     }
     default: {
@@ -375,7 +386,6 @@ process.on("uncaughtException", (err, origin) => {
     console.error(err, origin);
     return process.exit(14);
   }
-  console.debug(err, origin);
   // eslint-disable-next-line no-useless-escape
   toConsole(`An [uncaughtException] has occurred.\n\n> ${String(err)}\n> ${String(origin.replaceAll(/:/g, "\:"))}`, new Error().stack, client);
 });

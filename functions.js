@@ -151,7 +151,7 @@ module.exports = {
    * @async
    * @param {string} username Roblox username
    * @param {number} groupId Group ID to fetch
-   * @returns {{success: boolean, error: string}|RobloxGroupUserData}
+   * @returns {{success: false, error: string}|{success: true, data: RobloxGroupUserData}}
    */
   getGroup: async (username, groupId) => {
     if(!groupId) return {success: false, error: "No group ID provided"};
