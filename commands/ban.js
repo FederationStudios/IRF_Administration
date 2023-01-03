@@ -123,7 +123,8 @@ module.exports = {
         userID: id.Id,
         gameID: options.getString("game_id"),
         reason: options.getString("reason"),
-        proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url
+        proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+        unixtime: Math.floor(Date.now() / 1000),
       }, {
         fields: ["reason", "proof"]
       });

@@ -49,7 +49,7 @@ module.exports = {
     });
     const embeds = [];
     for(const ban of bans) {
-      embed.push(new EmbedBuilder({
+      embeds.push(new EmbedBuilder({
         title: `__**Bans for ${id.Username}**__`,
         thumbnail: {
           url: avatar
