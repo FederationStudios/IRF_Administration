@@ -112,36 +112,21 @@ module.exports = {
       content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
       files: [
         {
-          attachment: evidence.url,
+          attachment: evidence.proxyURL || evidence.url,
           name: evidence.name
         }
       ]
-    }).then(m => {
-      return m.attachments.first().url;
     });
+    let ban, _;
     try {
-      if(bans.length > 0) {
-        await client.models.Ban.update({
-          userID: id.Id,
-          gameID: options.getString("game_id"),
-          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-          proof: evidence,
-          unixtime: Math.floor(Date.now()/1000)
-        }, {
-          where: {
-            userID: id.Id,
-            gameID: options.getString("game_id")
-          }
-        });
-      } else {
-        await client.models.Ban.create({
-          userID: id.Id,
-          gameID: options.getString("game_id"),
-          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-          proof: evidence,
-          unixtime: Math.floor(Date.now()/1000)
-        });
-      }
+      [ban, _] = await client.models.Ban.upsert({
+        userID: id.Id,
+        gameID: options.getString("game_id"),
+        reason: options.getString("reason"),
+        proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url
+      }, {
+        fields: ["reason", "proof"]
+      });
     } catch (e) {
       toConsole(`An error occurred while adding a ban for ${id.Username} (${id.Id})\n> ${String(e)}`, new Error().stack, client);
       error = true;
@@ -153,7 +138,7 @@ module.exports = {
       client.channels.cache.get(channels.nsc_report).send({ content: "A ban for a user not verified with RoWifi has been added!", embeds: [{
         title: "Ban Details",
         color: 0xDE2821,
-        description: `**User:** ${id.Username} (${id.Id})`,
+        description: `**User:** ${id.Username} (${id.Id})\n**Ban ID:** ${ban.banId}`,
         fields: [{
           name: "Moderator",
           value: `${interaction.user.username} (${interaction.user.id})`,
@@ -164,7 +149,7 @@ module.exports = {
           inline: true,
         }, {
           name: "Reason",
-          value: options.getString("reason"),
+          value: options.getString("reason") + `\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
           inline: false
         }]
       }] });
@@ -187,14 +172,14 @@ module.exports = {
         },
         {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
           inline: true
         }
       ],
       timestamp: new Date()
     }] });
 
-    return interaction.editReply({ content: "Ban added successfully!", embeds: [{
+    interaction.editReply({ content: "Ban added successfully!", embeds: [{
       title: "Ban Details",
       color: 0xDE2821,
       fields: [
@@ -208,10 +193,20 @@ module.exports = {
           inline: true,
         }, {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
           inline: false
         }
       ]
     }] });
+    evidence.edit({
+      content: evidence.content + `\n\n**Ban ID:** ${ban.banId}`,
+      attachments: [
+        {
+          attachment: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          name: evidence.attachments.first().name
+        }
+      ]
+    });
+    return _;
   }
 };

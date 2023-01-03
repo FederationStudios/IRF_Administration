@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require("discord.js");
+const { ButtonStyle, ComponentType } = require("discord-api-types/v10");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed } = require("../functions.js");
 
@@ -46,26 +47,71 @@ module.exports = {
         url: avatar
       }
     });
+    const embeds = [];
     for(const ban of bans) {
-      if(bans.indexOf(ban) === 0)
-        embed.addFields([
+      embed.push(new EmbedBuilder({
+        title: `__**Bans for ${id.Username}**__`,
+        thumbnail: {
+          url: avatar
+        },
+        fields: [
           { name: "Game ID", value: String(ban.gameID), inline: true },
-          { name: "Reason", value: ban.reason + "\n\n" + `Proof: ${ban.proof}`, inline: true },
+          { name: "Reason", value: ban.reason, inline: true },
           { name: "Date", value: `<t:${ban.unixtime}>`, inline: true },
-        ]);
-      else
-        embed.addFields([
-          { name: "​", value: String(ban.gameID), inline: true },
-          { name: "​", value: ban.reason + "\n\n" + `Proof: ${ban.proof}`, inline: true },
-          { name: "​", value: `<t:${ban.unixtime}>`, inline: true }
-        ]);
+        ],
+        image: {
+          url: ban.proof
+        },
+        footer: {
+          text: `Ban ${bans.indexOf(ban) + 1} of ${bans.length}`
+        },
+        timestamp: new Date()
+      }));
     }
-    if(bans.length === 0) embed.addFields([
-      { name: "Game ID", value: "-", inline: true },
-      { name: "Reason", value: "No bans found!", inline: true },
-      { name: "Date", value: "-", inline: true }
-    ]);
-    embed.setTitle(`__**Bans for ${id.Username}**__`);
+    if(bans.length === 0) embeds.push(new EmbedBuilder({
+      title: `__**Bans for ${id.Username}**__`,
+      thumbnail: {
+        url: avatar
+      },
+      fields: [
+        { name: "Game ID", value: "-", inline: true },
+        { name: "Reason", value: "No bans found!", inline: true },
+        { name: "Date", value: "-", inline: true }
+      ],
+      footer: {
+        text: "Ban 0 of 0"
+      },
+      timestamp: new Date()
+    }));
+
+    let page = 0;
+    const paginationRow = new ActionRowBuilder().setComponents(
+      new ButtonBuilder({ customId: "previous", label: "◀️", style: ButtonStyle.Primary }),
+      new ButtonBuilder({ customId: "cancel", label: "🟥", style: ButtonStyle.Danger }),
+      new ButtonBuilder({ customId: "next", label: "▶️", style: ButtonStyle.Primary }),
+    );
+    interaction.editReply({ embeds: [embeds[page]], components: [paginationRow] });
+    const filter = (i) => i.user.id === interaction.user.id; 
+    const coll = await interaction.fetchReply()
+      .then(r => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }));
+
+    coll.on("collect", (i) => {
+      if(i.customId === "next") {
+        page = page + 1;
+        if(page > embeds.length - 1) page = 0;
+        i.update({ embeds: [embeds[page]], components: [paginationRow] });
+      } else if(i.customId === "previous") {
+        page = page - 1;
+        if(page < 0) page = embeds.length - 1;
+        i.update({ embeds: [embeds[page]], components: [paginationRow] });
+      } else {
+        coll.stop();
+      }
+    });
+
+    coll.once("end", () => {
+      interaction.deleteReply();
+    });
     return interaction.editReply({ embeds: [embed] });
   }
 };
