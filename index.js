@@ -13,6 +13,7 @@ let ready = false;
 //#region Setup
 // Database
 const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config.mysql.password, {
+  host: config.mysql.host,
   dialect: "mysql",
   logging: process.env.environment === "development" ? console.log : false,
 });
@@ -54,7 +55,7 @@ if(!fs.existsSync("./models")) {
 
 // Discord bot
 const client = new Client({
-  intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMembers, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent]
+  intents: [IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent]
 });
 const slashCommands = [];
 client.sequelize = sequelize;
@@ -247,7 +248,7 @@ client.on("interactionCreate", async (interaction) => {
     if(command) {
       const ack = command.run(client, interaction, interaction.options)
         .catch((e) => {
-          interaction.editReply("Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)");
+          interaction.editReply({ content: "Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)", embeds: [] });
           return toConsole(e.stack, new Error().stack, client);
         });
       
@@ -264,7 +265,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
       const ack = modal.run(client, interaction, interaction.fields)
         .catch((e) => {
-          interaction.editReply("Something went wrong while executing the modal. Please report this to <@409740404636909578> (Tavi#0001)");
+          interaction.editReply({ content: "Something went wrong while executing the modal. Please report this to <@409740404636909578> (Tavi#0001)", embeds: [] });
           return toConsole(e.stack, new Error().stack, client);
         });
 
@@ -391,7 +392,7 @@ process.on("unhandledRejection", async (promise) => {
     console.error(promise);
     return process.exit(15);
   }
-  const suppressChannel = await client.channels.fetch(process.env.SUPRESS).catch(() => { return undefined; });
+  const suppressChannel = await client.channels.fetch(config.discord.suppressChannel).catch(() => { return undefined; });
   if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${promise}`);
   if(String(promise).includes("Interaction has already been acknowledged.") || String(promise).includes("Unknown interaction") || String(promise).includes("Unknown Message") || String(promise).includes("Cannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${promise}`);
   // eslint-disable-next-line no-useless-escape

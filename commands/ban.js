@@ -66,8 +66,8 @@ module.exports = {
     .addAttachmentOption(option => {
       return option
         .setName("evidence")
-        .setDescription("Evidence of the user's ban")
-        .setRequired(true);
+        .setDescription("Evidence of the user's ban (Add when possible, please!)")
+        .setRequired(false);
     }),
   /**
    * @param {Client} client 
@@ -107,32 +107,62 @@ module.exports = {
     if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
 
     let error = false;
-    let evidence = options.getAttachment("evidence");
+    let evidence = options.getAttachment("evidence") || { proxyURL: "https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png", contentType: "image/png" };
     evidence = await client.channels.cache.get(channels.image_host).send({
       content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
       files: [
         {
           attachment: evidence.proxyURL || evidence.url,
-          name: evidence.name
+          name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.contentType.split("/")[1]}`
         }
       ]
     });
-    let ban, _;
+    let ban;
     try {
-      [ban, _] = await client.models.Ban.upsert({
-        userID: id.Id,
-        gameID: options.getString("game_id"),
-        reason: options.getString("reason"),
-        proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
-        unixtime: Math.floor(Date.now() / 1000),
-      }, {
-        fields: ["reason", "proof"]
-      });
+      if(bans.length > 0) {
+        ban = await client.models.Ban.update({
+          userID: id.Id,
+          gameID: options.getString("game_id"),
+          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          unixtime: Math.floor(Date.now()/1000)
+        }, {
+          where: {
+            userID: id.Id,
+            gameID: options.getString("game_id")
+          }
+        });
+      } else {
+        ban = await client.models.Ban.create({
+          userID: id.Id,
+          gameID: options.getString("game_id"),
+          reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          unixtime: Math.floor(Date.now()/1000)
+        });
+      }
     } catch (e) {
       toConsole(`An error occurred while adding a ban for ${id.Username} (${id.Id})\n> ${String(e)}`, new Error().stack, client);
       error = true;
     }
     if(error) return interactionEmbed(3, "[SQL-ERR]", "An error occurred while adding the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
+
+    // Update evidence with ban ID
+    evidence = await evidence.edit({
+      content: evidence.content + `\nBan ID: ${ban.banId}`,
+      attachments: [
+        {
+          id: evidence.attachments.first().id, // v10 requirement
+          attachment: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          name: evidence.attachments.first().name
+        }
+      ]
+    }).then(m => {
+      client.models.Ban.update({
+        proof: m.attachments.first().proxyURL || m.attachments.first().url
+      }, { where: { banId: ban.banId }}); // Update after editing
+      return m;
+    });
 
     // NSC Auditing
     if(!(await getRowifi(id.Id, client)).success) {
@@ -179,8 +209,7 @@ module.exports = {
       ],
       timestamp: new Date()
     }] });
-
-    interaction.editReply({ content: "Ban added successfully!", embeds: [{
+    await interaction.editReply({ content: "Ban added successfully!", embeds: [{
       title: "Ban Details",
       color: 0xDE2821,
       fields: [
@@ -199,15 +228,6 @@ module.exports = {
         }
       ]
     }] });
-    evidence.edit({
-      content: evidence.content + `\n\n**Ban ID:** ${ban.banId}`,
-      attachments: [
-        {
-          attachment: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
-          name: evidence.attachments.first().name
-        }
-      ]
-    });
-    return _;
+    return interaction;
   }
 };
