@@ -90,7 +90,8 @@ module.exports = {
       new ButtonBuilder({ customId: "cancel", label: "🟥", style: ButtonStyle.Danger }),
       new ButtonBuilder({ customId: "next", label: "▶️", style: ButtonStyle.Primary }),
     );
-    interaction.editReply({ embeds: [embeds[page]], components: [paginationRow] });
+    interaction.editReply({ embeds: [embeds[page]], components: embeds.length > 1 ? [paginationRow] : [] });
+    if(embeds.length < 2) return 0; // No need to create a collector if there's only one page
     const filter = (i) => i.user.id === interaction.user.id; 
     const coll = await interaction.fetchReply()
       .then(r => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }));
