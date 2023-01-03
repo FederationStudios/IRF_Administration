@@ -50,13 +50,13 @@ module.exports = {
       if(bans.indexOf(ban) === 0)
         embed.addFields([
           { name: "Game ID", value: String(ban.gameID), inline: true },
-          { name: "Reason", value: ban.reason + "\n" + ban.proof, inline: true },
+          { name: "Reason", value: ban.reason + "\n\n" + `Proof: ${ban.proof}`, inline: true },
           { name: "Date", value: `<t:${ban.unixtime}>`, inline: true },
         ]);
       else
         embed.addFields([
           { name: "​", value: String(ban.gameID), inline: true },
-          { name: "​", value: ban.reason + "\n" + ban.proof, inline: true },
+          { name: "​", value: ban.reason + "\n\n" + `Proof: ${ban.proof}`, inline: true },
           { name: "​", value: `<t:${ban.unixtime}>`, inline: true }
         ]);
     }
