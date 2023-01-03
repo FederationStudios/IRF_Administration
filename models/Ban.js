@@ -18,6 +18,10 @@ module.exports.import = (sequelize) => sequelize.define("Ban", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  proof: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
   unixtime: {
     type: DataTypes.BIGINT(12),
     allowNull: false,

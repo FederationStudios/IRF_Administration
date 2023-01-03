@@ -372,7 +372,7 @@ client.on("messageCreate", async (message) => {
   if(!message.channel.name.includes("reports")) return;
   if(!/(?:Mass (?:RK|(?:kill.*)))|(?:([^\w\d]RK)|Random(ly)?(?: )?kill.*)/i.test(message.content)) return;
   await message.react("790001925411700746");
-  return message.reply({ content: "<:NoVote:790001925411700746> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, react to this with ❓.*" });
+  return message.reply({ content: "<:NoVote:790001925411700746> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*" });
 });
 //#endregion
 
@@ -380,13 +380,10 @@ client.login(config.bot.token);
 
 //#region Error handling
 process.on("uncaughtException", (err, origin) => {
-  if(!ready) {
-    console.warn("Exiting due to a [uncaughtException] during start up");
-    console.error(err, origin);
-    return process.exit(14);
-  }
-  // eslint-disable-next-line no-useless-escape
-  toConsole(`An [uncaughtException] has occurred.\n\n> ${String(err)}\n> ${String(origin.replaceAll(/:/g, "\:"))}`, new Error().stack, client);
+  fs.writeSync(
+    process.stderr.fd,
+    `Caught exception: ${err}\n`+`Exception origin: ${origin}`
+  );
 });
 process.on("unhandledRejection", async (promise) => {
   if(!ready) {

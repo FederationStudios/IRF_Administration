@@ -62,6 +62,12 @@ module.exports = {
         .setDescription("Reason for banning the user")
         .setAutocomplete(true)
         .setRequired(true);
+    })
+    .addAttachmentOption(option => {
+      return option
+        .setName("evidence")
+        .setDescription("Evidence of the user's ban")
+        .setRequired(true);
     }),
   /**
    * @param {Client} client 
@@ -101,12 +107,25 @@ module.exports = {
     if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
 
     let error = false;
+    let evidence = options.getAttachment("evidence");
+    evidence = await client.channels.cache.get(channels.image_host).send({
+      content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
+      files: [
+        {
+          attachment: evidence.url,
+          name: evidence.name
+        }
+      ]
+    }).then(m => {
+      return m.attachments.first().url;
+    });
     try {
       if(bans.length > 0) {
         await client.models.Ban.update({
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          proof: evidence,
           unixtime: Math.floor(Date.now()/1000)
         }, {
           where: {
@@ -119,6 +138,7 @@ module.exports = {
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          proof: evidence,
           unixtime: Math.floor(Date.now()/1000)
         });
       }
