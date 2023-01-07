@@ -230,20 +230,14 @@ client.on("ready", async () => {
   console.info("[READY] Client is ready");
   console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
   toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T> and **${ready ? "can" : "cannot"}** receive commands`, new Error().stack, client);
-  // Set the status to new Date();
-  client.guilds.cache.each(g => g.members.fetch());
-  client.user.setActivity(`${client.users.cache.size} users across ${client.guilds.cache.size} servers`, { type: "LISTENING" });
-
-  setInterval(() => {
-    client.guilds.cache.each(g => g.members.fetch());
-    client.user.setActivity(`${client.users.cache.size} users across ${client.guilds.cache.size} servers`, { type: "LISTENING" });
-  }, 60000);
+  client.user.setActivity("users of the IRF", { type: "LISTENING" });
 });
 
 client.on("interactionCreate", async (interaction) => {
   if(!ready) return interactionEmbed(4, "", "The bot is starting up, please wait", interaction, client, [true, 10]);
   
   if(interaction.type === InteractionType.ApplicationCommand) {
+    await interaction.guild.fetch();
     let command = client.commands.get(interaction.commandName);
     if(command) {
       const ack = command.run(client, interaction, interaction.options)
