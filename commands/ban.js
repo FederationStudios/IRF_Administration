@@ -106,6 +106,12 @@ module.exports = {
     const rowifi = await getRowifi(interaction.user.id, client);
     if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
 
+    const toFetch = [channels.image_host, channels.nsc_report, channels.banLogs];
+    const p = [];
+    for(const channel of toFetch) {
+      p.push(client.channels.fetch(channel, { cache: true }));
+    }
+    await Promise.allSettled(p);
     let error = false;
     let evidence = options.getAttachment("evidence") || { proxyURL: "https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png", contentType: "image/png" };
     evidence = await client.channels.cache.get(channels.image_host).send({
@@ -117,10 +123,9 @@ module.exports = {
         }
       ]
     });
-    let ban;
     try {
       if(bans.length > 0) {
-        ban = await client.models.Ban.update({
+        await client.models.Ban.update({
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
@@ -133,7 +138,7 @@ module.exports = {
           }
         });
       } else {
-        ban = await client.models.Ban.create({
+        await client.models.Ban.create({
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
@@ -147,29 +152,12 @@ module.exports = {
     }
     if(error) return interactionEmbed(3, "[SQL-ERR]", "An error occurred while adding the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
 
-    // Update evidence with ban ID
-    evidence = await evidence.edit({
-      content: evidence.content + `\nBan ID: ${ban.banId}`,
-      attachments: [
-        {
-          id: evidence.attachments.first().id, // v10 requirement
-          attachment: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
-          name: evidence.attachments.first().name
-        }
-      ]
-    }).then(m => {
-      client.models.Ban.update({
-        proof: m.attachments.first().proxyURL || m.attachments.first().url
-      }, { where: { banId: ban.banId }}); // Update after editing
-      return m;
-    });
-
     // NSC Auditing
     if(!(await getRowifi(id.Id, client)).success) {
       client.channels.cache.get(channels.nsc_report).send({ content: "A ban for a user not verified with RoWifi has been added!", embeds: [{
         title: "Ban Details",
         color: 0xDE2821,
-        description: `**User:** ${id.Username} (${id.Id})\n**Ban ID:** ${ban.banId}`,
+        description: `**User:** ${id.Username} (${id.Id})`,
         fields: [{
           name: "Moderator",
           value: `${interaction.user.username} (${interaction.user.id})`,

@@ -46,7 +46,7 @@ module.exports = {
    */
   toConsole: async (message, source, client) => {
     if(!message || !source || !client) return console.error(`One or more of the required parameters are missing.\n\n> message: ${message}\n> source: ${source}\n> client: ${client}`);
-    const channel = await client.channels.cache.get(config.discord.devChannel);
+    const channel = await client.channels.cache.get(config.discord.devChannel) || await client.channels.fetch(config.discord.devChannel).catch(() => null);
     if(source.split("\n").length < 2) return console.error("[ERR] toConsole called but Error.stack was not used\n> Source: " + source);
     source = source.split("\n")[1].trim().substring(3).split("/").pop().replace(")", "");
     if(!channel) return console.warn("[WARN] toConsole called but bot cannot find config.discord.devChannel\n", message, "\n", source);

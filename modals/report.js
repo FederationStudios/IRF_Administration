@@ -58,6 +58,7 @@ module.exports = {
         iconURL: client.user.displayAvatarURL()
       }
     });
+    await client.channels.fetch(channels.mp_report, { cache: true });
     await client.channels.cache.get(channels.mp_report).send({ content: `Incoming MP report from ${interaction.user.tag} (ID: ${interaction.user.id})`, embeds: [embed] }); // NSC
     embed.fields.splice(2, 1); // Remove RoWifi
     interaction.user.send({ content: `Here is a copy of a **MP report** you filed at <t:${Math.floor(Date.now()/1000.0)}:T>`, embeds: [embed] }); // DM copy

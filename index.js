@@ -135,6 +135,7 @@ client.modals = new Collection();
 
   setInterval(async () => {
     if(!ready) return;
+    client.channels.cache.get(config.discord.banLogs) || await client.channels.fetch(config.discord.banLogs);
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
     for(const ban of parseBans) {
       const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
