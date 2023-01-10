@@ -391,7 +391,7 @@ process.on("unhandledRejection", async (reason, promise) => {
   const suppressChannel = await client.channels.fetch(config.discord.suppressChannel).catch(() => { return undefined; });
   if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${reason}`);
   if(String(reason).includes("Interaction has already been acknowledged.") || String(reason).includes("Unknown interaction") || String(reason).includes("Unknown Message") || String(reason).includes("Cannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${reason}`);
-  toConsole(`An [unhandledRejection] has occurred.\n\n> ${JSON.stringify(reason).replaceAll(/:/g, "\\:")}`, reason.stack || new Error().stack, client);
+  toConsole(`An [unhandledRejection] has occurred.\n\n> ${String(reason).replaceAll(/:/g, "\\:")}`, reason.stack || new Error().stack, client);
 });
 process.on("warning", async (warning) => {
   if(!ready) {
