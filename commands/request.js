@@ -62,7 +62,7 @@ module.exports = {
     if(bot.validationToken && presenceCheck.gameId === null) return interactionEmbed(3, "[ERR-UPRM]", "You must have your profile set to public in order to use this command. Try again later when your profile is public", interaction, client, [false, 0]);
     if(Array.isArray(presenceCheck)) toConsole(`Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(presenceCheck, null, 2)}\n\`\`\``, new Error().stack, client);
 
-    await client.channels.cache.fetch(channels.request, { cache: true });
+    await client.channels.fetch(channels.request, { cache: true });
     await client.channels.cache.get(channels.request).send({ content: role, embeds: [{
       title: `${rowifi.username} is requesting ${division}`,
       color: 0xDE2821,
