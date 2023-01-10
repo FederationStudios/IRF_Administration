@@ -41,6 +41,7 @@ module.exports = {
     if(cooldown.has(interaction.user.id)) return interactionEmbed(3, "[ERR-CLD]", `You can request <t:${Math.floor((cooldown.get(interaction.user.id)+900000)/1000)}:R>`, interaction, client, [false, 0]);
     if(interaction.guild.id != discord.mainServer) return interactionEmbed(3, "[ERR-ARGS]", "This command can only be used in the main server", interaction, client, [true, 15]);
     const division = options.getString("division");
+    await interaction.guild.roles.fetch({ cache: true });
     const role = interaction.guild.roles.cache.find(r => r.name === options.getString("division")).toString();
     const reason = options.getString("reason");
     const rowifi = await getRowifi(interaction.user.id, client);

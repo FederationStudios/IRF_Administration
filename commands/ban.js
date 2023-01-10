@@ -164,7 +164,7 @@ module.exports = {
           inline: true,
         }, {
           name: "Game",
-          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`).toString(),
+          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`),
           inline: true,
         }, {
           name: "Reason",
@@ -207,7 +207,7 @@ module.exports = {
           inline: true,
         }, {
           name: "Game",
-          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`).toString(),
+          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`),
           inline: true,
         }, {
           name: "Reason",
