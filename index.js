@@ -382,17 +382,16 @@ process.on("uncaughtException", (err, origin) => {
     `Caught exception: ${err}\n`+`Exception origin: ${origin}`
   );
 });
-process.on("unhandledRejection", async (promise) => {
+process.on("unhandledRejection", async (reason, promise) => {
   if(!ready) {
     console.warn("Exiting due to a [unhandledRejection] during start up");
-    console.error(promise);
+    console.error(reason, promise);
     return process.exit(15);
   }
   const suppressChannel = await client.channels.fetch(config.discord.suppressChannel).catch(() => { return undefined; });
-  if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${promise}`);
-  if(String(promise).includes("Interaction has already been acknowledged.") || String(promise).includes("Unknown interaction") || String(promise).includes("Unknown Message") || String(promise).includes("Cannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${promise}`);
-  // eslint-disable-next-line no-useless-escape
-  toConsole(`An [unhandledRejection] has occurred.\n\n> ${String(promise).replaceAll(/:/g, "\:")}`, new Error().stack, client);
+  if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${reason}`);
+  if(String(reason).includes("Interaction has already been acknowledged.") || String(reason).includes("Unknown interaction") || String(reason).includes("Unknown Message") || String(reason).includes("Cannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${reason}`);
+  toConsole(`An [unhandledRejection] has occurred.\n\n> ${JSON.stringify(reason).replaceAll(/:/g, "\\:")}`, reason.stack || new Error().stack, client);
 });
 process.on("warning", async (warning) => {
   if(!ready) {
