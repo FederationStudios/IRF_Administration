@@ -8,7 +8,7 @@ module.exports = {
   name: "check",
   data: new SlashCommandBuilder()
     .setName("check")
-    .setDescription("Checks for bans associated with a user (**THIS COMMAND IS UNSTABLE**)")
+    .setDescription("Checks for bans associated with a user")
     .setDMPermission(false)
     .addStringOption(option => {
       return option
@@ -45,6 +45,9 @@ module.exports = {
       .then(r => r.data[0].imageUrl);
     const embeds = [];
     for(const ban of bans) {
+      const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof)[1])
+        .then(c => c.messages.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.proof)[2]));
+      const image = evid.attachments.first().url.endsWith("mp4") ? null : { url: evid.attachments.first().url, proxyURL: evid.attachments.first().proxyURL };
       embeds.push(new EmbedBuilder({
         title: `__**Bans for ${id.Username}**__`,
         thumbnail: {
@@ -52,12 +55,10 @@ module.exports = {
         },
         fields: [
           { name: "Game ID", value: String(ban.gameID), inline: true },
-          { name: "Reason", value: ban.reason, inline: true },
+          { name: "Reason", value: evid.attachments.first().url.endsWith("mp4") ? `${ban.reason}\n\n**Evidence**: ${evid.attachments.first().proxyURL}` : ban.reason, inline: true },
           { name: "Date", value: `<t:${ban.unixtime}>`, inline: true },
         ],
-        image: {
-          url: ban.proof
-        },
+        image: image,
         footer: {
           text: `Ban ${bans.indexOf(ban) + 1} of ${bans.length}`
         },
@@ -88,8 +89,7 @@ module.exports = {
     );
     const data = { embeds: [embeds[page]], components: [paginationRow] };
     if(embeds.length < 2) delete data.components;
-    await interaction.editReply(data);
-    const coll = await interaction.fetchReply("@original")
+    const coll = await interaction.editReply(data)
       .then(r => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }));
       
     coll.on("collect", (i) => {

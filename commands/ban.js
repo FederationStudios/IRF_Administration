@@ -81,7 +81,7 @@ module.exports = {
     if(isNaN(options.getString("user_id"))) {
       id = await fetch(`https://api.roblox.com/users/get-by-username?username=${options.getString("user_id")}`)
         .then(res => res.json());
-      
+
       if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
       id = await fetch(`https://api.roblox.com/users/${options.getString("user_id")}`)
@@ -114,6 +114,9 @@ module.exports = {
     await Promise.allSettled(p);
     let error = false;
     let evidence = options.getAttachment("evidence") || { proxyURL: "https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png", contentType: "image/png" };
+    if(evidence.contentType.split("/")[0] !== "image" || evidence.contentType.split("/")[1] === "gif" || evidence.contentType.split("/")[1] === "mp4") {
+      return interactionEmbed(3, "[ERR-ARGS]", "Evidence must be an image (PNG, JPG, JPEG, or MP4)", interaction, client, [true, 15]);
+    }
     evidence = await client.channels.cache.get(channels.image_host).send({
       content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
       files: [
@@ -129,7 +132,7 @@ module.exports = {
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-          proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          proof: evidence.url,
           unixtime: Math.floor(Date.now()/1000)
         }, {
           where: {
@@ -142,7 +145,7 @@ module.exports = {
           userID: id.Id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-          proof: evidence.attachments.first().proxyURL || evidence.attachments.first().url,
+          proof: evidence.url,
           unixtime: Math.floor(Date.now()/1000)
         });
       }
@@ -164,11 +167,11 @@ module.exports = {
           inline: true,
         }, {
           name: "Game",
-          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`),
+          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`)[0],
           inline: true,
         }, {
           name: "Reason",
-          value: options.getString("reason") + `\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
+          value: options.getString("reason") + `\n\n**Evidence:** ${evidence.attachments.first().proxyURL}`,
           inline: false
         }]
       }] });
@@ -191,7 +194,7 @@ module.exports = {
         },
         {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL}`,
           inline: true
         }
       ],
@@ -207,11 +210,11 @@ module.exports = {
           inline: true,
         }, {
           name: "Game",
-          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`),
+          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`)[0],
           inline: true,
         }, {
           name: "Reason",
-          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL || evidence.attachments.first().url}`,
+          value: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})\n\n**Evidence:** ${evidence.attachments.first().proxyURL}`,
           inline: false
         }
       ]

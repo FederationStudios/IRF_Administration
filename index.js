@@ -145,7 +145,8 @@ client.modals = new Collection();
       let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first()).catch(false);
       if(reason.includes("FairPlay Anti-Cheat")) { // FairPlay Bypass
         await client.models.Ban.update({
-          reason: reason.replace(reason.split("Banned by ")[1], "FairPlay Anti-Cheat") + " (0)"
+          reason: reason.replace(reason.split("Banned by ")[1], "FairPlay Anti-Cheat") + " (0)",
+          proof: "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396"
         }, {
           where: {
             banId: ban.banId
@@ -240,6 +241,7 @@ client.on("interactionCreate", async (interaction) => {
   
   if(interaction.type === InteractionType.ApplicationCommand) {
     await interaction.guild.fetch();
+    await interaction.user.fetch();
     let command = client.commands.get(interaction.commandName);
     if(command) {
       const ack = command.run(client, interaction, interaction.options)
@@ -332,8 +334,9 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.respond(matches);
     }
     case "shutdown": {
-      const { name, value} = interaction.options.getFocused(true);
+      let { name, value = "Papers" } = interaction.options.getFocused(true);
       if(name !== "target") return;
+      if(value === "") value = "Papers";
       const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
       const matches = [];
       const idMap = new Map();
@@ -358,8 +361,6 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.respond([]); // Invalid commandName
     }
     }
-  } else {
-    interaction.deleteReply();
   }
 });
 
@@ -376,6 +377,7 @@ client.on("messageCreate", async (message) => {
 client.login(config.bot.token);
 
 //#region Error handling
+const recentErrors = []; 
 process.on("uncaughtException", (err, origin) => {
   fs.writeSync(
     process.stderr.fd,
@@ -388,6 +390,20 @@ process.on("unhandledRejection", async (reason, promise) => {
     console.error(reason, promise);
     return process.exit(15);
   }
+  // Anti-spam System
+  if(recentErrors.length > 2) {
+    recentErrors.push({ promise: String(reason), time: new Date() });
+    recentErrors.shift();
+  } else {
+    recentErrors.push({ promise: String(reason), time: new Date() });
+  }
+  if(recentErrors.length === 3
+    && (recentErrors[0].reason === recentErrors[1].reason && recentErrors[1].reason === recentErrors[2].reason)
+    && recentErrors[0].time.getTime() - recentErrors[2].time.getTime() < 1e4) {
+    fs.writeFileSync("./latest-error.log", JSON.stringify({code: 15, info: {source: "Anti spam triggered! Three errors with the same content have occurred recently", r: String(reason)+" <------------> "+reason.stack}, time: new Date().toString()}, null, 2));
+    return process.exit(17);
+  }
+  // Regular error handling
   const suppressChannel = await client.channels.fetch(config.discord.suppressChannel).catch(() => { return undefined; });
   if(!suppressChannel) return console.error(`An [unhandledRejection] has occurred.\n\n> ${reason}`);
   if(String(reason).includes("Interaction has already been acknowledged.") || String(reason).includes("Unknown interaction") || String(reason).includes("Unknown Message") || String(reason).includes("Cannot read properties of undefined (reading 'ephemeral')")) return suppressChannel.send(`A suppressed error has occured at process.on(unhandledRejection):\n>>> ${reason}`);
