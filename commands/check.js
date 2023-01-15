@@ -45,8 +45,8 @@ module.exports = {
       .then(r => r.data[0].imageUrl);
     const embeds = [];
     for(const ban of bans) {
-      const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof)[1])
-        .then(c => c.messages.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.proof)[2]));
+      const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[1])
+        .then(c => c.messages.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[2]));
       const image = evid.attachments.first().url.endsWith("mp4") ? null : { url: evid.attachments.first().url, proxyURL: evid.attachments.first().proxyURL };
       embeds.push(new EmbedBuilder({
         title: `__**Bans for ${id.Username}**__`,
