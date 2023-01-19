@@ -155,28 +155,6 @@ module.exports = {
     }
     if(error) return interactionEmbed(3, "[SQL-ERR]", "An error occurred while adding the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
 
-    // NSC Auditing
-    if(!(await getRowifi(id.Id, client)).success) {
-      client.channels.cache.get(channels.nsc_report).send({ content: "A ban for a user not verified with RoWifi has been added!", embeds: [{
-        title: "Ban Details",
-        color: 0xDE2821,
-        description: `**User:** ${id.Username} (${id.Id})`,
-        fields: [{
-          name: "Moderator",
-          value: `${interaction.user.username} (${interaction.user.id})`,
-          inline: true,
-        }, {
-          name: "Game",
-          value: ids.filter(pair => pair[1] == options.getString("game_id")).map(pair => `${pair[0]} (${pair[1]})`)[0],
-          inline: true,
-        }, {
-          name: "Reason",
-          value: options.getString("reason") + `\n\n**Evidence:** ${evidence.attachments.first().proxyURL}`,
-          inline: false
-        }]
-      }] });
-    }
-
     await client.channels.cache.get(discord.banLogs).send({ embeds: [{
       title: `${interaction.member.nickname ?? interaction.user.username} banned => ${id.Username}`,
       description: `**${interaction.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,

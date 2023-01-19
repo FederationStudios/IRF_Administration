@@ -181,7 +181,10 @@ module.exports = {
    * @returns {{success: boolean, error: string}|{success: undefined, roblox: number, username: string}}
    */
   getRowifi: async (user, client) => {
-    const discord = await client.users.fetch(user).catch(undefined) || await client.users.fetch("456226577798135808");
+    const discord = await client.users.fetch(user)
+      .catch(() => {
+        return client.users.fetch("456226577798135808");
+      });
     await client.guilds.fetch({ limit: 100, cache: true });
     if(client.guilds.cache.some((g) => {
       g.fetch({ cache: true });
