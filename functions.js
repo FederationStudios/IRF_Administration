@@ -182,12 +182,13 @@ module.exports = {
    */
   getRowifi: async (user, client) => {
     const discord = await client.users.fetch(user);
-    await client.guilds.fetch({ cache: true });
-    if(client.guilds.cache.some(async (g) => {
-      if(!(await g.members.fetch(user)))
-        return false;
+    await client.guilds.fetch({ limit: 100, cache: true });
+    if(client.guilds.cache.some((g) => {
+      g.fetch({ cache: true });
+      if(g.roles.cache.find(r => r.name.includes("Commissariat")))
+        return g.roles.cache.find(r => r.name.includes("Commissariat")).members.has(discord.id);
       else
-        return (await g.members.fetch(user)).roles.cache.some(r => r.name.includes("Commissariat"));
+        return false;
     })) {
       const roblox = await fetch(`https://api.roblox.com/users/get-by-username?username=${discord.username}`)
         .then(res => res.json());

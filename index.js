@@ -1,11 +1,8 @@
 const { Client, Collection, InteractionType, IntentsBitField } = require("discord.js");
-const { REST } = require("@discordjs/rest");
-const { Routes } = require("discord-api-types/v9");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed, toConsole, getRowifi, ids } = require("./functions.js");
 const config = require("./config.json");
 const fs = require("node:fs");
-const rest = new REST({ version: 9 }).setToken(config.bot.token);
 const Sequelize = require("sequelize");
 const wait = require("node:util").promisify(setTimeout);
 let ready = false;
@@ -62,75 +59,34 @@ client.sequelize = sequelize;
 client.models = sequelize.models;
 client.commands = new Collection();
 client.modals = new Collection();
+//#endregion
 
-(async () => {
+//#region Events
+client.on("ready", async () => {
+  console.info("[READY] Client is ready");
+  console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
+  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T> and **${ready ? "can" : "cannot"}** receive commands`, new Error().stack, client);
+  client.user.setActivity("users of the IRF", { type: "LISTENING" });
+
   if(!fs.existsSync("./commands")) await fs.mkdirSync("./commands");
   const commands = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
   console.info(`[CMD-LOAD] Loading commands, expecting ${commands.length} commands`);
-
-  for(let file of commands) {
+  for(const file of commands) {
     try {
-      console.info(`[CMD-LOAD] Loading file ${file}`);
-      let command = require(`./commands/${file}`);
-
-      if(command.name) {
-        console.info(`[CMD-LOAD] Loaded: ${file}`);
-        slashCommands.push(command.data.toJSON());
-        client.commands.set(command.name, command);
-      }
-    } catch(e) {
-      console.warn(`[CMD-LOAD] Unloaded: ${file}`);
-      console.warn(`[CMD-LOAD] ${e}`);
+      const command = require(`./commands/${file}`);
+      client.commands.set(command.name, command);
+      slashCommands.push(command.data.toJSON());
+      console.info(`[CMD-LOAD] Loaded command ${command.name}`);
+    } catch(err) {
+      console.error(`[CMD-LOAD] Failed to load command ${file}: ${err}`);
     }
   }
-
-  console.info("[CMD-LOAD] Loaded commands");
-
-  if(!fs.existsSync("./modals")) await fs.mkdirSync("./modals");
-  const modals = fs.readdirSync("./modals").filter(file => file.endsWith(".js"));
-  console.info(`[MDL-LOAD] Loading modals, expecting ${modals.length} modals`);
-  for(let file of modals) {
-    try {
-      console.info(`[MDL-LOAD] Loading file ${file}`);
-      let modal = require(`./modals/${file}`);
-
-      if(modal.name) {
-        console.info(`[MDL-LOAD] Loaded: ${file}`);
-        client.modals.set(modal.name, modal);
-      }
-    } catch(e) {
-      console.warn(`[MDL-LOAD] Unloaded: ${file}`);
-      console.warn(`[MDL-LOAD] ${e}`);
-    }
-  }
-  console.info("[MDL-LOAD] Loaded modals");
-  await wait(500); // Artificial wait to prevent instant sending
-  const now = Date.now();
-
   try {
-    console.info("[APP-CMD] Started refreshing application (/) commands.");
-
-    // Refresh based on environment
-    if(process.env.environment === "development") {
-      await rest.put(
-        Routes.applicationGuildCommands(config.bot.applicationId, config.bot.guildId),
-        { body: slashCommands }
-      );
-    } else {
-      await rest.put(
-        Routes.applicationCommands(config.bot.applicationId),
-        { body: slashCommands }
-      );
-    }
-    
-    const then = Date.now();
-    console.info(`[APP-CMD] Successfully reloaded application (/) commands after ${then - now}ms.`);
-  } catch(error) {
-    console.error("[APP-CMD] An error has occurred while attempting to refresh application commands.");
-    console.error(`[APP-CMD] ${error}`);
+    client.application.commands.set(slashCommands);
+  } catch(err) {
+    console.error(`[CMD-LOAD] Failed to load commands: ${err}`);
   }
-  console.info("[FILE-LOAD] All files loaded successfully");
-  toConsole(`[READY] Finished loading commands at <t:${Math.floor(Date.now()/1000)}:T>`, new Error().stack, client);
+
   ready = true;
 
   setInterval(async () => {
@@ -225,15 +181,6 @@ client.modals = new Collection();
       });
     }
   }, 20000);
-})();
-//#endregion
-
-//#region Events
-client.on("ready", async () => {
-  console.info("[READY] Client is ready");
-  console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
-  toConsole(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at <t:${Math.floor(Date.now()/1000)}:T> and **${ready ? "can" : "cannot"}** receive commands`, new Error().stack, client);
-  client.user.setActivity("users of the IRF", { type: "LISTENING" });
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -299,7 +246,9 @@ client.on("interactionCreate", async (interaction) => {
         // GAME RULES //
         { name: "Rules - Glitching", value: "Game Rules - Glitching" },
         { name: "Rules - RK", value: "Game Rules - Mass random killing (RK)" },
-        { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" }
+        // RULES //
+        { name: "Rules - Ban Bypass (Alt)", value: "Rules - Bypassing ban using alternative account" },
+        { name: "Rules - DDoS Attack", value: "Rules - Attempting or causing a Distributed Denial of Service attack" },
       ];
       if(!value) return interaction.respond(commonReasons);
       const matches = commonReasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));
@@ -311,10 +260,11 @@ client.on("interactionCreate", async (interaction) => {
       const value = interaction.options.getString("reason");
       const reasons = [
         // DIVISIONS //
-        { name: "MoA - No admissions", value: "There is no Admissions in the server" },
-        { name: "MP - Military Law", value: "User is violating Military Law" },
         { name: "GA - Random killing", value: "User is mass random killing" },
-        { name: "Gamepass Admissions abuse", value: "Admissions is abusing their powers (Gamepass)" },
+        { name: "MP - Military Law", value: "User is violating Military Law" },
+        { name: "FSS - Bolshevik Law", value: "User is violating Bolshevik Law" },
+        { name: "MoA - No admissions", value: "There is no Admissions in the server" },
+        { name: "MoA - Gamepass Admissions abuse", value: "Admissions is abusing their powers (Gamepass)" },
         // RAIDS //
         { name: "Immigrant Raid", value: "Immigrant(s) are raiding against Military personnel" },
         { name: "Small Raid (1-7 raiders)", value: "There is chaos at the border and we are struggling to maintain control (1-7 raiders)" },
@@ -326,6 +276,7 @@ client.on("interactionCreate", async (interaction) => {
         { name: "Higher authority needed (Temp/Perm Ban)", value: "Need someone to temp/perm ban a user" },
         // BACKUP //
         { name: "General backup", value: "Control has been lost, general backup is needed" },
+        { name: "DDoS Attack", value: "There is a DDoS attack on the server" }
       ];
       if(!value) return interaction.respond(reasons);
       const matches = reasons.filter(r => r.value.toLowerCase().includes(value.toLowerCase()));

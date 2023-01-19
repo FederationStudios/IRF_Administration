@@ -19,8 +19,9 @@ module.exports.import = (sequelize) => sequelize.define("Ban", {
     allowNull: false,
   },
   proof: {
-    type: DataTypes.TEXT,
+    type: DataTypes.CHAR(100),
     allowNull: false,
+    defaultValue: "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396"
   },
   unixtime: {
     type: DataTypes.BIGINT(12),
