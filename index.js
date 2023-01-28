@@ -127,7 +127,7 @@ client.on("ready", async () => {
               },
               {
                 name: "Reason",
-                value: reason.replace(reason.split("Banned by ")[1], discord.toString() || "Unknown!") + ` (${rowifi.roblox || reason.split("Banned by ")[1].trim()})`,
+                value: `${reason.replace(reason.split("Banned by ")[1], "FairPlay Anticheat")} (0)`,
                 inline: true
               }
             ],
@@ -136,7 +136,7 @@ client.on("ready", async () => {
         });
         continue;
       }
-      if(!discord) { // Hopefully stop spam
+      if(!discord) {
         await client.models.Ban.update({
           reason: reason.replace(reason.split("Banned by ")[1], "Unknown!") + " (0)"
         }, {
