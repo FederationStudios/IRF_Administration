@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord-api-types": "0.37.30",
+    "discord-api-types": "0.37.31",
     "discord.js": "14.7.1",
     "mysql2": "3.1.0",
     "node-fetch": "2.6.8",
