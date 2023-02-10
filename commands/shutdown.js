@@ -8,7 +8,7 @@ module.exports = {
   name: "shutdown",
   data: new SlashCommandBuilder()
     .setName("shutdown")
-    .setDescription("Shuts down a Papers, Please server")
+    .setDescription("Shuts down a server")
     .setDMPermission(false)
     .addStringOption(option => {
       return option
@@ -31,9 +31,9 @@ module.exports = {
   run: async (client, interaction, options) => {
     const rowifi = await getRowifi(interaction.user.id, client);
     if(rowifi.error) return interactionEmbed(3, "", rowifi.error, interaction, client, [true, 10]);
-    const roblox = await getGroup(rowifi.username, 872876);
+    const roblox = await getGroup(rowifi.username, 4899462);
     if(!roblox.success) return interactionEmbed(3, "", roblox.error, interaction, client, [true, 10]);
-    if(roblox.data.role.rank < 240) return interactionEmbed(3, "[ERR-UPRM]", "You do not have permission to use this command (Engineer+)", interaction, client, [true, 10]);
+    if(roblox.data.role.rank < 200) return interactionEmbed(3, "[ERR-UPRM]", "You do not have permission to use this command (Engineer+)", interaction, client, [true, 10]);
     const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
     if(!servers.success) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 503)", interaction, client, [true, 10]);
     const target = options.getString("target");
