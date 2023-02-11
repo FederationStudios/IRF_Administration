@@ -20,7 +20,7 @@ module.exports = {
     .addStringOption(option => {
       return option
         .setName("reason")
-        .setDescription("Reason for shutting down")
+        .setDescription("Reason for kicking the player")
         .setRequired(true);
     }),
   /**
@@ -29,6 +29,7 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options
    */
   run: async (client, interaction, options) => {
+    await interaction.deferReply(); // In case of overload
     const rowifi = await getRowifi(interaction.user.id, client);
     if(rowifi.error) return interactionEmbed(3, "", rowifi.error, interaction, client, [true, 10]);
     const roblox = await getGroup(rowifi.username, 4899462);
@@ -42,7 +43,7 @@ module.exports = {
     // For each server in each game, check if the target is in the server
     let playerFound = false;
     for(const [gameId, gameServers] in Object.entries(servers)) {
-      for(const [players] in Object.values(gameServers)) {
+      for(const [players] in gameServers) {
         if(!players.includes(target)) continue;
         const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${gameId}/universe`).then(r => r.json()).then(r => r.universeId);
         const req = await fetch(`https://apis.roblox.com/messaging-service/v1/universes/${universeId}/topics/remoteAdminCommands`, {

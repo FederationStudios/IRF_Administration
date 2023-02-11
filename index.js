@@ -311,7 +311,7 @@ client.on("interactionCreate", async (interaction) => {
     case "kick": {
       const { name, value } = interaction.options.getFocused(true);
       if(name !== "target") return;
-      if(value === "" || value.length <= 4) return interaction.respond([]);
+      if(value === "" || value.length <= 4 || /[^0-9A-Z]/i.test(value)) return interaction.respond([]);
       const matches = await fetch(`https://users.roblox.com/v1/users/search?keyword=${value}`)
         .then(r => r.json())
         .then(r => {
