@@ -311,8 +311,13 @@ client.on("interactionCreate", async (interaction) => {
     case "kick": {
       const { name, value } = interaction.options.getFocused(true);
       if(name !== "target") return;
-      const matches = fetch(`https://users.roblox.com/v1/users/search?keyword=${value}`)
+      if(value === "" || value.length <= 4) return interaction.respond([]);
+      const matches = await fetch(`https://users.roblox.com/v1/users/search?keyword=${value}`)
         .then(r => r.json())
+        .then(r => {
+          if(r.errors[0].code === 0) r.data = [{ name: "Autocomplete ratelimited, enter user ID manually", id: "N/A" }];
+          return r;
+        })
         .then(r => r.data)
         .then(r => r.map(p => ({ name: `${p.name} (${p.id})`, value: p.id })));
 
