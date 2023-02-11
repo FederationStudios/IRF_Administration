@@ -57,7 +57,7 @@ module.exports = {
         if(!req.ok) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 400)", interaction, client, [true, 10]);
       }
     }
-    if(!playerFound) return interactionEmbed(3, "[ERR-INV]", "Invalid target (User is not in any servers)", interaction, client, [true, 10]);
+    if(!playerFound) return interactionEmbed(3, "[ERR-ARGS]", "Invalid target (User is not in any servers)", interaction, client, [true, 10]);
     return interactionEmbed(1, "", `Kicked ${target} from the server`, interaction, client, [false, 0]);
   }
 };
