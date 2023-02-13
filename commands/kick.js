@@ -1,4 +1,4 @@
-const { interactionEmbed, getGroup, getRowifi } = require("../functions.js");
+const { interactionEmbed, getGroup, getRowifi, toConsole } = require("../functions.js");
 // eslint-disable-next-line no-unused-vars
 const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
@@ -13,9 +13,8 @@ module.exports = {
     .addStringOption(option => {
       return option
         .setName("target")
-        .setDescription("The user you wish to kick")
-        .setRequired(true)
-        .setAutocomplete(true);
+        .setDescription("The user you wish to kick (Roblox ID)")
+        .setRequired(true);
     })
     .addStringOption(option => {
       return option
@@ -31,33 +30,40 @@ module.exports = {
   run: async (client, interaction, options) => {
     await interaction.deferReply(); // In case of overload
     const rowifi = await getRowifi(interaction.user.id, client);
-    if(rowifi.error) return interactionEmbed(3, "", rowifi.error, interaction, client, [true, 10]);
+    if(rowifi.error) return interactionEmbed(3, "[ERR-ARGS]", rowifi.error, interaction, client, [true, 10]);
     const roblox = await getGroup(rowifi.username, 4899462);
-    if(!roblox.success) return interactionEmbed(3, "", roblox.error, interaction, client, [true, 10]);
+    if(!roblox.success) return interactionEmbed(3, "[ERR-ARGS]", roblox.error, interaction, client, [true, 10]);
     if(roblox.data.role.rank < 200) return interactionEmbed(3, "[ERR-UPRM]", "You do not have permission to use this command (Engineer+)", interaction, client, [true, 10]);
     const servers = await fetch("https://tavis.page/test_servers").then(r => r.json());
-    if(!servers.success) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 503)", interaction, client, [true, 10]);
-    const target = options.getString("target");
-    if(isNaN(target)) return interactionEmbed(3, "[ERR-INV]", "Invalid target (Must be a user ID)", interaction, client, [true, 10]);
+    if(!servers.success) return interactionEmbed(3, "[ERR-UNK]", "The remote access system is having issues. Please try again later (Status code: 503)", interaction, client, [true, 10]);
+    let target = options.getString("target");
+    if(isNaN(target)) return interactionEmbed(3, "[ERR-ARGS]", "Invalid target (Must be a user ID)", interaction, client, [true, 10]);
+    target = parseInt(target);
     const reason = options.getString("reason");
     // For each server in each game, check if the target is in the server
     let playerFound = false;
-    for(const [gameId, gameServers] in Object.entries(servers)) {
-      for(const [players] in gameServers) {
-        if(!players.includes(target)) continue;
+    for(const gameId in servers.servers) {
+      for(const server in servers.servers[gameId]) {
+        const players = servers.servers[gameId][server][0];
+        if(players.findIndex(p => p === target) === -1) continue;
         const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${gameId}/universe`).then(r => r.json()).then(r => r.universeId);
         const req = await fetch(`https://apis.roblox.com/messaging-service/v1/universes/${universeId}/topics/remoteAdminCommands`, {
           headers: {
             "Content-Type": "application/json",
             "x-api-key": bot.mainOCtoken
           },
-          body: `{"message": '{"type": "kick", "userId": "${target}", "reason": "${reason}"}'}`,
+          body: `{"message": '{"type": "kick", "target": "${server}", "userId": "${target}", "reason": "${reason}"}'}`,
           method: "POST"
         });
-        if(!req.ok) return interactionEmbed(3, "", "The remote access system is having issues. Please try again later (Status code: 400)", interaction, client, [true, 10]);
+        playerFound = true;
+        console.info((await req.text()));
+        if(!req.ok) return interactionEmbed(3, "[ERR-UNK]", "The remote access system is having issues. Please try again later (Status code: 400)", interaction, client, [true, 10]);
       }
     }
+    // Send the response body to the user
     if(!playerFound) return interactionEmbed(3, "[ERR-ARGS]", "Invalid target (User is not in any servers)", interaction, client, [true, 10]);
-    return interactionEmbed(1, "", `Kicked ${target} from the server`, interaction, client, [false, 0]);
+    await interactionEmbed(1, "", `Kicked ${target} from the server`, interaction, client, [false, 0]);
+    toConsole(`[REMOTE ADMIN] ${interaction.user.username} (${interaction.user.id}) kicked ${target} from the server they were in`, new Error().stack, client);
+    return interaction.followUp({ files: [{ attachment: Buffer.from(JSON.stringify(servers, null, 2)), name: "servers.json", description: "List of IRF servers (DEBUGGING PURPOSES IF THIS COMMAND BACKFIRES)" }], ephemeral: true });
   }
 };

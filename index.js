@@ -308,21 +308,6 @@ client.on("interactionCreate", async (interaction) => {
       matches.unshift({ name: "All servers - DANGEROUS (*)", value: "*" });
       return interaction.respond(matches);
     }
-    case "kick": {
-      const { name, value } = interaction.options.getFocused(true);
-      if(name !== "target") return;
-      if(value === "" || value.length <= 4 || /[^0-9A-Z]/i.test(value)) return interaction.respond([]);
-      const matches = await fetch(`https://users.roblox.com/v1/users/search?keyword=${value}`)
-        .then(r => r.json())
-        .then(r => {
-          if(r.errors[0].code === 0) r.data = [{ name: "Autocomplete ratelimited, enter user ID manually", id: "N/A" }];
-          return r;
-        })
-        .then(r => r.data)
-        .then(r => r.map(p => ({ name: `${p.name} (${p.id})`, value: p.id })));
-
-      return interaction.respond(matches);
-    }
     default: {
       return interaction.respond([]); // Invalid commandName
     }

@@ -1,4 +1,4 @@
-const { interactionEmbed, getGroup, getRowifi, ids } = require("../functions.js");
+const { interactionEmbed, getGroup, getRowifi, ids, toConsole } = require("../functions.js");
 // eslint-disable-next-line no-unused-vars
 const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
@@ -94,6 +94,7 @@ module.exports = {
         }
       }
     }
-    return interactionEmbed(1, "", `Shut down server ${target === "*" ? "{*}" : server.JobId} with ${server.Players.length || "{?}"} players`, interaction, client, [true, 10]);
+    toConsole(`[REMOTE ADMIN] ${interaction.user.username} (${interaction.user.id}) shut down server ${target === "*" ? "{*}" : server.JobId} with ${server.Players.length || "{?}"} players`, new Error().stack, client);
+    return interactionEmbed(1, "", `Shut down server ${target === "*" ? "{*}" : server.JobId} with ${server.Players.length || "{?}"} players`, interaction, client, [false, 0]);
   }
 };
