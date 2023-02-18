@@ -45,8 +45,8 @@ module.exports = {
       .then(r => r.data[0].imageUrl);
     const embeds = [];
     for(const ban of bans) {
-      if(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396").length < 2) {
-        embeds.push(new EmbedBuilder({ title: "Error", description: `Proof invalid. RegEx could not find channel ID in \`${ban.proof}\` (ID: ${ban.banId})` }));
+      if(!/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")) {
+        embeds.push(new EmbedBuilder({ title: "Error", description: `Proof invalid. RegEx failed on \`${ban.proof}\` (ID: ${ban.banId})` }));
         continue;
       }
       const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[1])
