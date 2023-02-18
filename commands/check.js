@@ -45,7 +45,7 @@ module.exports = {
       .then(r => r.data[0].imageUrl);
     const embeds = [];
     for(const ban of bans) {
-      if(!/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396").length[1]) {
+      if(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396").length < 2) {
         embeds.push(new EmbedBuilder({ title: "Error", description: `Proof invalid. RegEx could not find channel ID in \`${ban.proof}\` (ID: ${ban.banId})` }));
         continue;
       }
@@ -68,7 +68,7 @@ module.exports = {
         },
         timestamp: new Date()
       }));
-    } // 
+    }
     if(bans.length === 0) embeds.push(new EmbedBuilder({
       title: `__**Bans for ${id.Username}**__`,
       thumbnail: {
