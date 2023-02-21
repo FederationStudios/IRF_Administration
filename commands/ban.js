@@ -125,7 +125,13 @@ module.exports = {
           name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.contentType.split("/")[1]}`
         }
       ]
-    });
+    })
+      .catch(err => {
+        error = true;
+        if(String(err).includes("Request entity too large")) return interactionEmbed(3, "[ERR-UPRM]", "Discord rejected the evidence (File too large). Try compressing the image first!", interaction, client, [true, 10]);
+        return interactionEmbed(3, "[ERR-UPRM]", "Failed to upload evidence to image host", interaction, client, [true, 10]);
+      });
+    if(error) return;
     try {
       if(bans.length > 0) {
         await client.models.Ban.update({

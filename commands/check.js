@@ -46,7 +46,7 @@ module.exports = {
     const embeds = [];
     for(const ban of bans) {
       if(!/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")) {
-        embeds.push(new EmbedBuilder({ title: "Error", description: `Proof invalid. RegEx failed on \`${ban.proof}\` (ID: ${ban.banId})` }));
+        embeds.push(new EmbedBuilder({ title: "Error Parsing Proof", description: `Proof given was invalid and could not be parsed. Report this to a developer.\n\nRegEx failed on \`${ban.proof}\` (ID: ${ban.banId})` }));
         continue;
       }
       const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[1])
