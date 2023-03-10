@@ -81,6 +81,17 @@ client.on("ready", async () => {
       console.error(`[CMD-LOAD] Failed to load command ${file}: ${err}`);
     }
   }
+  const modals = fs.readdirSync("./modals").filter(file => file.endsWith(".js"));
+  console.info(`[CMD-LOAD] Loading modals, expecting ${modals.length} modals`);
+  for(const file of modals) {
+    try {
+      const modal = require(`./modals/${file}`);
+      client.modals.set(modal.name, modal);
+      console.info(`[CMD-LOAD] Loaded modal ${modal.name}`);
+    } catch(err) {
+      console.error(`[CMD-LOAD] Failed to load modal ${file}: ${err}`);
+    }
+  }
   try {
     client.application.commands.set(slashCommands);
   } catch(err) {
