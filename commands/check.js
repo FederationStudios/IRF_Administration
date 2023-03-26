@@ -26,10 +26,15 @@ module.exports = {
     const filter = (i) => i.user.id === interaction.user.id;
     let id = options.getString("user_id");
     if(isNaN(id)) {
-      id = await fetch(`https://api.roblox.com/users/get-by-username?username=${id}`)
-        .then(r => r.json());
-      
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
+      id = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [options.getString("user_id")] })
+      })
+        .then(res => res.json())
+        .then(r => r.data[0]);
+
+      if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
     } else {
       if(Math.floor(id) != id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID", interaction, client, [true, 15]);
       id = await fetch(`https://api.roblox.com/users/${Math.floor(id)}`)

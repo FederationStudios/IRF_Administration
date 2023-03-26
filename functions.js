@@ -156,10 +156,15 @@ module.exports = {
   getGroup: async (username, groupId) => {
     if(!groupId) return {success: false, error: "No group ID provided"};
     if(isNaN(username)) {
-      const user = await fetch(`https://api.roblox.com/users/get-by-username?username=${username}`)
-        .then(res => res.json());
-      
-      if(user.success) return {success: false, error: `Interpreted \`${username}\` as Username but no user was found`};
+      const user = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [username] })
+      })
+        .then(res => res.json())
+        .then(r => r.data[0]);
+
+      if(!user) return {success: false, error: `Interpreted \`${username}\` as Username but no user was found`};
       username = user.Id;
     } else {
       const user = await fetch(`https://api.roblox.com/users/${username}`)
@@ -193,8 +198,13 @@ module.exports = {
       else
         return false;
     })) {
-      const roblox = await fetch(`https://api.roblox.com/users/get-by-username?username=${discord.username}`)
-        .then(res => res.json());
+      const roblox = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [discord.username] })
+      })
+        .then(res => res.json())
+        .then(r => r.data[0]);
       module.exports.toConsole(`[ROWIFI] ${discord.tag} (${discord.id}) is a member of the Commissariat and has been bypassed`, new Error().stack, client);
       return {success: true, roblox: roblox.Id, username: roblox.Username}; // Commissariat bypass
     }

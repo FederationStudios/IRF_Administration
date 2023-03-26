@@ -22,10 +22,15 @@ module.exports = {
   run: async (client, interaction, options) =>{
     await interaction.deferReply(); // In case of overload
     let username = options.getString("username");
-    username = await fetch(`https://api.roblox.com/users/get-by-username?username=${username}`)
-      .then(r => r.json());
+    username = await fetch("https://users.roblox.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usernames: [username] })
+    })
+      .then(res => res.json())
+      .then(r => r.data[0]);
     
-    if(username.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("username")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
+    if(!username) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("username")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
 
     const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${username.Id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())

@@ -79,14 +79,18 @@ module.exports = {
     if(!interaction.member.roles.cache.find(r => r.name === "Administration Access")) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to use this command", interaction, client, [true, 10]);
     let id = options.getString("user_id");
     if(isNaN(options.getString("user_id"))) {
-      id = await fetch(`https://api.roblox.com/users/get-by-username?username=${options.getString("user_id")}`)
-        .then(res => res.json());
+      id = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [options.getString("user_id")] })
+      })
+        .then(res => res.json())
+        .then(r => r.data[0]);
 
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as username but found no user`, interaction, client, [true, 15]);
+      if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
       id = await fetch(`https://api.roblox.com/users/${options.getString("user_id")}`)
         .then(async res => JSON.parse((await res.text()).trim()));
-      // IDs that don't exist will return an error with spaces, causing normal parses to fail
 
       if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but found no user`, interaction, client, [true, 15]);
     }

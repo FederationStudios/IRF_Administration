@@ -24,10 +24,15 @@ module.exports = {
     await interaction.deferReply(); // In case of overload
     let user = options.getString("roblox");
     if(!isNaN(options.getString("roblox_username"))) {
-      user = await fetch(`https://api.roblox.com/users/get-by-username?username=${options.getString("roblox")}`)
-        .then(res => res.json());
+      user = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [options.getString("roblox")] })
+      })
+        .then(res => res.json())
+        .then(r => r.data[0]);
 
-      if(user.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as username but found no user`, interaction, client, [true, 15]);
+      if(!user) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
       user = await fetch(`https://api.roblox.com/users/${options.getString("roblox")}`)
         .then(async res => JSON.parse((await res.text()).trim()));
