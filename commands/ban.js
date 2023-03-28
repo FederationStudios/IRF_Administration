@@ -89,22 +89,22 @@ module.exports = {
 
       if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
-      id = await fetch(`https://api.roblox.com/users/${options.getString("user_id")}`)
+      id = await fetch(`https://users.roblox.com/v1/users/${options.getString("user_id")}`)
         .then(async res => JSON.parse((await res.text()).trim()));
 
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but found no user`, interaction, client, [true, 15]);
+      if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but found no user`, interaction, client, [true, 15]);
     }
     if(isNaN(options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a number", interaction, client, [true, 15]);
     if(!ids.some(pair => pair[1] == options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a Military game ID. Use `/ids` to see all recognised games", interaction, client, [true, 15]);
 
     const bans = await client.models.Ban.findAll({
       where: {
-        userID: id.Id,
+        userID: id.id,
         gameID: options.getString("game_id")
       }
     });
     if(bans.length > 0) {
-      interactionEmbed(2, "", `A ban already exists for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}. This will overwrite the ban!\n(Adding ban in 5 seconds)`, interaction, client, [false, 0]);
+      interactionEmbed(2, "", `A ban already exists for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}. This will overwrite the ban!\n(Adding ban in 5 seconds)`, interaction, client, [false, 0]);
       await require("node:util").promisify(setTimeout)(5000); // Show warning
     }
     const rowifi = await getRowifi(interaction.user.id, client);
@@ -139,20 +139,20 @@ module.exports = {
     try {
       if(bans.length > 0) {
         await client.models.Ban.update({
-          userID: id.Id,
+          userID: id.id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           proof: evidence.url,
           unixtime: Math.floor(Date.now()/1000)
         }, {
           where: {
-            userID: id.Id,
+            userID: id.id,
             gameID: options.getString("game_id")
           }
         });
       } else {
         await client.models.Ban.create({
-          userID: id.Id,
+          userID: id.id,
           gameID: options.getString("game_id"),
           reason: `${options.getString("reason")} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
           proof: evidence.url,
@@ -160,14 +160,14 @@ module.exports = {
         });
       }
     } catch (e) {
-      toConsole(`An error occurred while adding a ban for ${id.Username} (${id.Id})\n> ${String(e)}`, new Error().stack, client);
+      toConsole(`An error occurred while adding a ban for ${id.name} (${id.id})\n> ${String(e)}`, new Error().stack, client);
       error = true;
     }
     if(error) return interactionEmbed(3, "[SQL-ERR]", "An error occurred while adding the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
 
     await client.channels.cache.get(discord.banLogs).send({ embeds: [{
-      title: `${interaction.member.nickname ?? interaction.user.username} banned => ${id.Username}`,
-      description: `**${interaction.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
+      title: `${interaction.member.nickname ?? interaction.user.username} banned => ${id.name}`,
+      description: `**${interaction.user.id}** has added a ban for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
       fields: [
         {
@@ -177,7 +177,7 @@ module.exports = {
         },
         {
           name: "User",
-          value: `${id.Username} (${id.Id})`,
+          value: `${id.name} (${id.id})`,
           inline: true
         },
         {
@@ -194,7 +194,7 @@ module.exports = {
       fields: [
         {
           name: "User",
-          value: `${id.Username} (${id.Id})`,
+          value: `${id.name} (${id.id})`,
           inline: true,
         }, {
           name: "Game",

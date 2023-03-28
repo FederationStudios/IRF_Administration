@@ -34,29 +34,29 @@ module.exports = {
 
       if(!user) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
-      user = await fetch(`https://api.roblox.com/users/${options.getString("roblox")}`)
+      user = await fetch(`https://users.roblox.com/v1/users/${options.getString("roblox")}`)
         .then(async res => JSON.parse((await res.text()).trim()));
       // IDs that don't exist will return an error with spaces, causing normal parses to fail
 
-      if(user.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as ID but found no user`, interaction, client, [true, 15]);
+      if(user.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as ID but found no user`, interaction, client, [true, 15]);
     }
 
-    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${user.Id}&size=720x720&format=Png&isCircular=false`)
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${user.id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);
     
-    const bans = await client.models.Ban.findAll({ where: { userID: user.Id } });
+    const bans = await client.models.Ban.findAll({ where: { userID: user.id } });
 
     //#region Fetching data
     const data = {};
     const promises = [];
-    promises.push(fetch(`https://users.roblox.com/v1/users/${user.Id}`).then(r => r.json()).then(r => data.user = r));
-    promises.push(fetch(`https://friends.roblox.com/v1/users/${user.Id}/friends`).then(r => r.json()).then(r => data.friends = r.data));
-    promises.push(fetch(`https://groups.roblox.com/v1/users/${user.Id}/groups/roles`).then(r => r.json()).then(r => data.groups = r.data));
-    promises.push(fetch(`https://users.roblox.com/v1/users/${user.Id}/username-history`).then(r => r.json()).then(r => data.history = r.data.map(u => u.name)));
+    promises.push(fetch(`https://users.roblox.com/v1/users/${user.id}`).then(r => r.json()).then(r => data.user = r));
+    promises.push(fetch(`https://friends.roblox.com/v1/users/${user.id}/friends`).then(r => r.json()).then(r => data.friends = r.data));
+    promises.push(fetch(`https://groups.roblox.com/v1/users/${user.id}/groups/roles`).then(r => r.json()).then(r => data.groups = r.data));
+    promises.push(fetch(`https://users.roblox.com/v1/users/${user.id}/username-history`).then(r => r.json()).then(r => data.history = r.data.map(u => u.name)));
     promises.push(fetch("https://presence.roblox.com/v1/presence/users", {
       method: "POST",
-      body: JSON.stringify({userIds: [user.Id]}),
+      body: JSON.stringify({userIds: [user.id]}),
       headers: { "Content-Type": "application/json", "Cookie": `.ROBLOSECURITY=${bot.validationToken || "abcdef123456"}`}
     }).then(r => r.json()).then(r => data.presence = r.userPresences[0]));
     await Promise.allSettled(promises);
@@ -75,19 +75,19 @@ module.exports = {
         thumbnail: {
           url: client.user.avatarURL()
         },
-        description: data.user.description+"\n\n[Visit Profile](https://www.roblox.com/users/"+user.Id+"/profile)",
+        description: data.user.description+"\n\n[Visit Profile](https://www.roblox.com/users/"+user.id+"/profile)",
         image: {
           url: avatar
         },
         fields: [
           {
             name: "Username",
-            value: user.Username,
+            value: user.name,
             inline: true
           },
           {
             name: "ID",
-            value: user.Id,
+            value: user.id,
             inline: true
           },
           {
@@ -129,12 +129,12 @@ module.exports = {
     });
     for(let i = 0; i < friendFields.length; i += 9) {
       categories.friends[1].push(new EmbedBuilder({
-        title: `${user.Username}'s Friends`,
+        title: `${user.name}'s Friends`,
         color: 0xDE2821,
         thumbnail: {
           url: client.user.avatarURL()
         },
-        description: `https://roblox.com/users/${user.Id}/profile`,
+        description: `https://roblox.com/users/${user.id}/profile`,
         image: {
           url: avatar
         },
@@ -181,12 +181,12 @@ module.exports = {
     });
     // ACTIVITY //
     categories.activity[1] = [new EmbedBuilder({
-      title: `${user.Username}'s Activity`,
+      title: `${user.name}'s Activity`,
       color: 0xDE2821,
       thumbnail: {
         url: client.user.avatarURL()
       },
-      description: `https://roblox.com/users/${user.Id}/profile`,
+      description: `https://roblox.com/users/${user.id}/profile`,
       image: {
         url: avatar
       },
@@ -232,25 +232,25 @@ module.exports = {
           {
             label: "Overview",
             value: "overview",
-            description: `View general information on ${user.Username}`,
+            description: `View general information on ${user.name}`,
             emoji: "🔍"
           },
           {
             label: "Friends",
             value: "friends",
-            description: `${user.Username}'s friends`,
+            description: `${user.name}'s friends`,
             emoji: "👥"
           },
           {
             label: "Groups",
             value: "groups",
-            description: `${user.Username}'s groups`,
+            description: `${user.name}'s groups`,
             emoji: "🎖️"
           },
           {
             label: "Activity",
             value: "activity",
-            description: `${user.Username}'s status`,
+            description: `${user.name}'s status`,
             emoji: "📊"
           },
           {

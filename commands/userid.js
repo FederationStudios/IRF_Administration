@@ -32,13 +32,13 @@ module.exports = {
     
     if(!username) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("username")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
 
-    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${username.Id}&size=720x720&format=Png&isCircular=false`)
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${username.id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);
     return interaction.editReply({ embeds: [{
-      title: `Roblox ID for ${username.Username}`,
+      title: `Roblox ID for ${username.name}`,
       color: 0xDE2821,
-      description: `${username.Id}`,
+      description: `${username.id}`,
       thumbnail: {
         url: avatar
       }

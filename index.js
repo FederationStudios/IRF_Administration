@@ -106,7 +106,7 @@ client.on("ready", async () => {
     client.guilds.cache.get(config.discord.mainServer) || await client.guilds.fetch(config.discord.mainServer);
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
     for(const ban of parseBans) {
-      const id = await fetch(`https://api.roblox.com/users/${ban.userID}`).then(r => r.text()).then(r => JSON.parse(r.trim()));
+      const id = await fetch(`https://users.roblox.com/v1/users/${ban.userID}`).then(r => r.json());
       if(id.errors) continue; // Doesn't exist for some reason
       const reason = ban.reason.replace("___irf", "");
       let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: reason.split("Banned by ")[1].trim(), limit: 1 }).then(coll => coll.first()).catch(false);
@@ -122,8 +122,8 @@ client.on("ready", async () => {
         
         client.channels.cache.get(config.discord.banLogs).send({
           embeds: [{
-            title: `FairPlay Anticheat banned => ${id.Username} (In Game)`,
-            description: `**FairPlay Anticheat** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
+            title: `FairPlay Anticheat banned => ${id.name} (In Game)`,
+            description: `**FairPlay Anticheat** has added a ban for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
             color: 0x00FF00,
             fields: [
               {
@@ -133,7 +133,7 @@ client.on("ready", async () => {
               },
               {
                 name: "User",
-                value: `${id.Username} (${id.Id})`,
+                value: `${id.name} (${id.id})`,
                 inline: true
               },
               {
@@ -167,8 +167,8 @@ client.on("ready", async () => {
       });
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
-          title: `${discord.nickname ?? discord.user.username} banned => ${id.Username} (In Game)`,
-          description: `**${discord.user.id}** has added a ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
+          title: `${discord.nickname ?? discord.user.username} banned => ${id.name} (In Game)`,
+          description: `**${discord.user.id}** has added a ban for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
           color: 0x00FF00,
           fields: [
             {
@@ -178,7 +178,7 @@ client.on("ready", async () => {
             },
             {
               name: "User",
-              value: `${id.Username} (${id.Id})`,
+              value: `${id.name} (${id.id})`,
               inline: true
             },
             {

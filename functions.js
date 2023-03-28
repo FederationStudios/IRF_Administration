@@ -165,11 +165,11 @@ module.exports = {
         .then(r => r.data[0]);
 
       if(!user) return {success: false, error: `Interpreted \`${username}\` as Username but no user was found`};
-      username = user.Id;
+      username = user.id;
     } else {
-      const user = await fetch(`https://api.roblox.com/users/${username}`)
+      const user = await fetch(`https://users.roblox.com/v1/users/${username}`)
         .then(res => res.json());
-      if(user.success) return {success: false, error: `Interpreted \`${username}\` as ID but no user was found`};
+      if(user.errors) return {success: false, error: `Interpreted \`${username}\` as ID but no user was found`};
     }
     const group = await fetch(`https://groups.roblox.com/v2/users/${username}/groups/roles`)
       .then(res => res.json());
@@ -206,7 +206,7 @@ module.exports = {
         .then(res => res.json())
         .then(r => r.data[0]);
       module.exports.toConsole(`[ROWIFI] ${discord.tag} (${discord.id}) is a member of the Commissariat and has been bypassed`, new Error().stack, client);
-      return {success: true, roblox: roblox.Id, username: roblox.Username}; // Commissariat bypass
+      return {success: true, roblox: roblox.id, username: roblox.name}; // Commissariat bypass
     }
     if(!user) return {success: false, error: "No username provided"};
     const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, { headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` } })
@@ -219,12 +219,11 @@ module.exports = {
       });
     if(userData.success !== undefined) return {success: false, error: "Rowifi failed to return any data! (If you are signed in with Rowifi, report this to a developer)"};
 
-    const roblox = await fetch(`https://api.roblox.com/users/${userData.roblox_id}`)
-      .then(res => res.text())
-      .then(res => JSON.parse(res.trim()));
+    const roblox = await fetch(`https://users.roblox.com/v1/users/${userData.roblox_id}`)
+      .then(res => res.json());
     if(roblox.errors) return {success: false, error: "Roblox ID does not exist"};
 
-    return {success: true, roblox: userData.roblox_id, username: roblox.Username};
+    return {success: true, roblox: userData.roblox_id, username: roblox.name};
   },
 
   // -- //

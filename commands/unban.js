@@ -93,31 +93,31 @@ module.exports = {
 
     const bans = await client.models.Ban.findAll({
       where: {
-        userID: id.Id,
+        userID: id.id,
         gameID: options.getString("game_id")
       }
     });
     if (bans.length === 0) {
-      return interactionEmbed(3, "[ERR-ARGS]", `No bans exist for \`${id.Username}\` (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`, interaction, client, [false, 0]);
+      return interactionEmbed(3, "[ERR-ARGS]", `No bans exist for \`${id.name}\` (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`, interaction, client, [false, 0]);
     }
 
     let error = false;
     try {
       await client.models.Ban.destroy({
         where: {
-          userID: id.Id,
+          userID: id.id,
           gameID: options.getString("game_id")
         }
       });
     } catch (e) {
-      toConsole(`An error occurred while removing a ban for ${id.Username} (${id.Id})\n> ${String(e)}`, new Error().stack, client);
+      toConsole(`An error occurred while removing a ban for ${id.name} (${id.id})\n> ${String(e)}`, new Error().stack, client);
       error = true;
     }
     if(error) return interactionEmbed(3, "[ERR-SQL]", "An error occurred while removing the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
     await client.channels.fetch(discord.unbanLogs, { cache: true });
     await client.channels.cache.get(discord.unbanLogs).send({ embeds: [{
-      title: `${interaction.member.nickname ?? interaction.user.username} has removed a ban for ${id.Username}`,
-      description: `**${interaction.user.id}** unbanned => ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
+      title: `${interaction.member.nickname ?? interaction.user.username} has removed a ban for ${id.name}`,
+      description: `**${interaction.user.id}** unbanned => ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
       fields: [
         {
@@ -127,7 +127,7 @@ module.exports = {
         },
         {
           name: "User",
-          value: `${id.Username} (${id.Id})`,
+          value: `${id.name} (${id.id})`,
           inline: true
         },
         {
@@ -139,6 +139,6 @@ module.exports = {
       timestamp: new Date()
     }] });
 
-    return interactionEmbed(1, "", `Removed ban for ${id.Username} (${id.Id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}\n> Reason: ${options.getString("reason")} - Unbanned by ${interaction.member.toString()}`, interaction, client, [false, 0]);
+    return interactionEmbed(1, "", `Removed ban for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}\n> Reason: ${options.getString("reason")} - Unbanned by ${interaction.member.toString()}`, interaction, client, [false, 0]);
   }
 };

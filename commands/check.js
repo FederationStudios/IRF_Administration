@@ -37,15 +37,15 @@ module.exports = {
       if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
     } else {
       if(Math.floor(id) != id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID", interaction, client, [true, 15]);
-      id = await fetch(`https://api.roblox.com/users/${Math.floor(id)}`)
-        .then(async r => JSON.parse((await r.text()).trim()));
+      id = await fetch(`https://users.roblox.com/v1/users/${Math.floor(id)}`)
+        .then(r => r.json());
 
       if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
     }
-    if(!id.Id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID provided", interaction, client, [true, 15]);
+    if(!id.id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID provided", interaction, client, [true, 15]);
 
-    let bans = await client.models.Ban.findAll({ where: { userID: id.Id } });
-    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.Id}&size=720x720&format=Png&isCircular=false`)
+    let bans = await client.models.Ban.findAll({ where: { userID: id.id } });
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);
     const embeds = [];
@@ -58,7 +58,7 @@ module.exports = {
         .then(c => c.messages.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[2]));
       const image = evid.attachments.first().url.endsWith("mp4") ? null : { url: evid.attachments.first().url, proxyURL: evid.attachments.first().proxyURL };
       embeds.push(new EmbedBuilder({
-        title: `__**Bans for ${id.Username}**__`,
+        title: `__**Bans for ${id.name}**__`,
         thumbnail: {
           url: avatar
         },
@@ -75,7 +75,7 @@ module.exports = {
       }));
     }
     if(bans.length === 0) embeds.push(new EmbedBuilder({
-      title: `__**Bans for ${id.Username}**__`,
+      title: `__**Bans for ${id.name}**__`,
       thumbnail: {
         url: avatar
       },
