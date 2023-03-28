@@ -53,7 +53,7 @@ module.exports = {
     promises.push(fetch(`https://users.roblox.com/v1/users/${user.id}`).then(r => r.json()).then(r => data.user = r));
     promises.push(fetch(`https://friends.roblox.com/v1/users/${user.id}/friends`).then(r => r.json()).then(r => data.friends = r.data));
     promises.push(fetch(`https://groups.roblox.com/v1/users/${user.id}/groups/roles`).then(r => r.json()).then(r => data.groups = r.data));
-    promises.push(fetch(`https://users.roblox.com/v1/users/${user.id}/username-history`).then(r => r.json()).then(r => data.history = r.data.map(u => u.name)));
+    promises.push(fetch(`https://users.roblox.com/v1/users/${user.id}/username-history?limit=50`).then(r => r.json()).then(r => data.history = r.data.map(u => u.name)));
     promises.push(fetch("https://presence.roblox.com/v1/presence/users", {
       method: "POST",
       body: JSON.stringify({userIds: [user.id]}),
@@ -112,7 +112,7 @@ module.exports = {
           },
           {
             name: "Previous Usernames",
-            value: data.history.length > 0 ? data.history.join("\n") : "None",
+            value: data.history ? data.history.join("\n") : "None",
             inline: false
           }
         ],
@@ -127,6 +127,23 @@ module.exports = {
         inline: true
       };
     });
+    if(friendFields.length === 0)
+      categories.friends[1].push(new EmbedBuilder({
+        title: `${user.name}'s Friends`,
+        color: 0xDE2821,
+        thumbnail: {
+          url: client.user.avatarURL()
+        },
+        description: `https://roblox.com/users/${user.id}/profile`,
+        image: {
+          url: avatar
+        },
+        fields: [{ name: "No friends", value: "This user has no friends!" }],
+        footer: {
+          text: "Page 1 of 1"
+        },
+        timestamp: new Date()
+      }));
     for(let i = 0; i < friendFields.length; i += 9) {
       categories.friends[1].push(new EmbedBuilder({
         title: `${user.name}'s Friends`,
@@ -179,6 +196,23 @@ module.exports = {
         })
       );
     });
+    if(data.groups.length === 0)
+      categories.groups[1].push(new EmbedBuilder({
+        title: `${user.name}'s Groups`,
+        color: 0xDE2821,
+        thumbnail: {
+          url: client.user.avatarURL()
+        },
+        description: `https://roblox.com/users/${user.id}/profile`,
+        image: {
+          url: avatar
+        },
+        fields: [{ name: "No groups", value: "This user is not in any groups!" }],
+        footer: {
+          text: "Page 1 of 1"
+        },
+        timestamp: new Date()
+      }));
     // ACTIVITY //
     categories.activity[1] = [new EmbedBuilder({
       title: `${user.name}'s Activity`,
