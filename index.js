@@ -198,10 +198,14 @@ client.on("interactionCreate", async (interaction) => {
   if(!ready) return interactionEmbed(4, "", "The bot is starting up, please wait", interaction, client, [true, 10]);
   
   if(interaction.type === InteractionType.ApplicationCommand) {
-    await interaction.guild.fetch();
-    await interaction.user.fetch();
     let command = client.commands.get(interaction.commandName);
     if(command) {
+      if(!command.modal) {
+        await interaction.deferReply({ ephemeral: command.ephemeral });
+        // Can't Promise.all(...), deferReply must be first
+        await interaction.guild.fetch();
+        await interaction.user.fetch();
+      }
       const ack = command.run(client, interaction, interaction.options)
         .catch((e) => {
           interaction.editReply({ content: "Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)", embeds: [] });

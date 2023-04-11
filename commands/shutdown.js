@@ -6,6 +6,7 @@ const { bot } = require("../config.json");
 
 module.exports = {
   name: "shutdown",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("shutdown")
     .setDescription("Shuts down a server")

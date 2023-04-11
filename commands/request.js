@@ -7,6 +7,7 @@ const cooldown = new Map();
 
 module.exports = {
   name: "request",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("request")
     .setDescription("Requests a division to assist you (Cooldown: 15 minutes)")
@@ -37,7 +38,6 @@ module.exports = {
     * @param {CommandInteractionOptionResolver} options
     */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     if(cooldown.has(interaction.user.id)) return interactionEmbed(3, "[ERR-CLD]", `You can request <t:${Math.floor((cooldown.get(interaction.user.id)+900000)/1000)}:R>`, interaction, client, [false, 0]);
     if(interaction.guild.id != discord.mainServer) return interactionEmbed(3, "[ERR-ARGS]", "This command can only be used in the main server", interaction, client, [true, 15]);
     const division = options.getString("division");

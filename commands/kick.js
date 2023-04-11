@@ -6,6 +6,7 @@ const { bot } = require("../config.json");
 
 module.exports = {
   name: "kick",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("kick")
     .setDescription("Kicks a player from a server")
@@ -28,7 +29,6 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options
    */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     const rowifi = await getRowifi(interaction.user.id, client);
     if(rowifi.error) return interactionEmbed(3, "[ERR-ARGS]", rowifi.error, interaction, client, [true, 10]);
     const roblox = await getGroup(rowifi.username, 4899462);

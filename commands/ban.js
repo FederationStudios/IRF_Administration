@@ -6,6 +6,7 @@ const { channels, discord } = require("../config.json");
 
 module.exports = {
   name: "ban",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Bans a user from an IRF game")
@@ -75,7 +76,6 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options 
    */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     if(!interaction.member.roles.cache.find(r => r.name === "Administration Access")) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to use this command", interaction, client, [true, 10]);
     let id = options.getString("user_id");
     if(isNaN(options.getString("user_id"))) {

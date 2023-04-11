@@ -5,6 +5,7 @@ const { default: fetch } = require("node-fetch");
 
 module.exports = {
   name: "username",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("username")
     .setDescription("Provides a Roblox username when given a Roblox ID")
@@ -20,7 +21,6 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options
    */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     let id = options.getInteger("id");
     id = await fetch(`https://api.roblox.com/users/${id}`)
       .then(async r => JSON.parse((await r.text()).trim()));

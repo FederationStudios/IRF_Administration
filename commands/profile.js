@@ -6,6 +6,7 @@ const { bot } = require("../config.json");
 
 module.exports = {
   name: "profile",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("profile")
     .setDescription("Returns a user's profile")
@@ -21,7 +22,6 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options
    */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     let user = options.getString("roblox");
     if(!isNaN(options.getString("roblox_username"))) {
       user = await fetch("https://users.roblox.com/v1/usernames/users", {

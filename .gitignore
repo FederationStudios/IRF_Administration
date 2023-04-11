@@ -1,4 +1,8 @@
-/.vscode
+# NPM
 /node_modules
+package-lock.json
+
+# Custom Ignores
+/.vscode
 config.json
 *.sh

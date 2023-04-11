@@ -4,6 +4,7 @@ const { ids } = require("../functions");
 
 module.exports = {
   name: "ids",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("ids")
     .setDescription("Returns all IRF Game IDs")
@@ -13,7 +14,6 @@ module.exports = {
     * @param {CommandInteraction} interaction 
     */
   run: async (client, interaction) => {
-    await interaction.deferReply(); // In case of overload
     return interaction.editReply({ embeds: [new Embed({
       color: 0xDE2821,
       title: "IRF Game IDs",

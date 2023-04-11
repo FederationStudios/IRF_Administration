@@ -6,6 +6,7 @@ const { interactionEmbed } = require("../functions.js");
 
 module.exports = {
   name: "check",
+  ephemeral: false,
   data: new SlashCommandBuilder()
     .setName("check")
     .setDescription("Checks for bans associated with a user")
@@ -22,7 +23,6 @@ module.exports = {
    * @param {CommandInteractionOptionResolver} options
    */
   run: async (client, interaction, options) => {
-    await interaction.deferReply(); // In case of overload
     const filter = (i) => i.user.id === interaction.user.id;
     let id = options.getString("user_id");
     if(isNaN(id)) {
