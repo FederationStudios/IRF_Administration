@@ -52,7 +52,7 @@ if(!fs.existsSync("./models")) {
 
 // Discord bot
 const client = new Client({
-  intents: [IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent]
+  intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent]
 });
 const slashCommands = [];
 client.sequelize = sequelize;
@@ -203,8 +203,7 @@ client.on("interactionCreate", async (interaction) => {
       if(!command.modal) {
         await interaction.deferReply({ ephemeral: command.ephemeral });
         // Can't Promise.all(...), deferReply must be first
-        await interaction.guild.fetch();
-        await interaction.user.fetch();
+        await interaction.user.fetch(false);
       }
       const ack = command.run(client, interaction, interaction.options)
         .catch((e) => {
@@ -334,9 +333,35 @@ client.on("messageCreate", async (message) => {
   if(message.guild.id != config.discord.mainServer) return;
   if(message.author.bot) return;
   if(!message.channel.name.includes("reports")) return;
-  if(!/(?:Mass (?:RK|(?:kill.*)))|(?:([^\w\d]RK)|Random(ly)?(?: )?kill.*)/i.test(message.content)) return;
-  await message.react("790001925411700746");
-  return message.reply({ content: "<:NoVote:790001925411700746> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*" });
+  // Message handler
+  let refMessage;
+  if(message.reference && message.content === "CHECK_IA_VIOLATIONS") {
+    setTimeout(() => message.delete(), 5000);
+    refMessage = await message.channel.messages.fetch(message.reference.messageId);
+    if(refMessage.author.bot) return;
+  } else {
+    refMessage = message;
+  }
+  // Check attachments for direct files
+  if(refMessage.attachments.size > 0) {
+    for(const attachment of refMessage.attachments) {
+      if(!/png|jpg|jpeg|webm|mov|mp4/i.test(attachment[1].name.split(".").pop())) {
+        refMessage.react("1095481555431997460");
+        message.react("1095484268219732028");
+        return refMessage.reply({ content: "<:denied:1095481555431997460> | Direct recordings are **not allowed** for security reasons. Upload your files to YouTube, Medal.TV, or Streamable.com and send the link instead.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*" });
+      }
+    }
+  }
+  // RK check
+  if(!/(?:Mass (?:RK|(?:kill.*)))|(?:([^\w\d]RK)|Random(ly)?(?: )?kill.*)/i.test(refMessage.content))
+    if(message.content === "CHECK_IA_VIOLATIONS")
+      return message.react("1095481555431997460");
+    else
+      return;
+  refMessage.react("1095481555431997460");
+  if(message.content === "CHECK_IA_VIOLATIONS")
+    message.react("1095484268219732028"); // Successful RK detection
+  refMessage.reply({ content: "<:denied:1095481555431997460> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*" });
 });
 //#endregion
 
