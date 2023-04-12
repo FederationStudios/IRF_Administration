@@ -5,48 +5,48 @@ const config = require("./config.json");
 const fs = require("node:fs");
 const Sequelize = require("sequelize");
 const wait = require("node:util").promisify(setTimeout);
-let ready = false;
+let ready = true;
 
 //#region Setup
 // Database
-const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config.mysql.password, {
-  host: config.mysql.host,
-  dialect: "mysql",
-  logging: process.env.environment === "development" ? console.log : false,
-});
+// const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config.mysql.password, {
+//   host: config.mysql.host,
+//   dialect: "mysql",
+//   logging: process.env.environment === "development" ? console.log : false,
+// });
 if(!fs.existsSync("./models")) {
   console.warn("[DB] No models detected");
 } else {
-  console.info("[DB] Models detected");
-  const models = fs.readdirSync("models").filter(file => file.endsWith(".js"));
-  console.info(`[DB] Expecting ${models.length} models`);
-  for(const model of models) {
-    try {
-      const file = require(`./models/${model}`);
-      file.import(sequelize);
-      console.info(`[DB] Loaded ${model}`);
-    } catch(e) {
-      console.error(`[DB] Unloaded ${model}`);
-      console.error(`[DB] ${e}`);
-    }
-  }
+  // console.info("[DB] Models detected");
+  // const models = fs.readdirSync("models").filter(file => file.endsWith(".js"));
+  // console.info(`[DB] Expecting ${models.length} models`);
+  // for(const model of models) {
+  //   try {
+  //     const file = require(`./models/${model}`);
+  //     file.import(sequelize);
+  //     console.info(`[DB] Loaded ${model}`);
+  //   } catch(e) {
+  //     console.error(`[DB] Unloaded ${model}`);
+  //     console.error(`[DB] ${e}`);
+  //   }
+  // }
   console.info("[DB] Loaded models");
-  try {
-    sequelize.authenticate();
-    console.info("[DB] Authenticated connection successfully");
-  } catch(e) {
-    console.error("[DB] Failed to authenticate connection");
-    console.error(`[DB] ${e}`);
-    ready = "fail";
-  }
-  try {
-    if(ready === "fail") throw new Error("Connection authentication failed");
-    sequelize.sync({ alter: process.env.environment === "development" });
-    console.info("[DB] Synced models");
-  } catch(e) {
-    console.error("[DB] Failed to sync models");
-    console.error(`[DB] ${e}`);
-  }
+  // try {
+  //   sequelize.authenticate();
+  //   console.info("[DB] Authenticated connection successfully");
+  // } catch(e) {
+  //   console.error("[DB] Failed to authenticate connection");
+  //   console.error(`[DB] ${e}`);
+  //   ready = "fail";
+  // }
+  // try {
+  //   if(ready === "fail") throw new Error("Connection authentication failed");
+  //   sequelize.sync({ alter: process.env.environment === "development" });
+  //   console.info("[DB] Synced models");
+  // } catch(e) {
+  //   console.error("[DB] Failed to sync models");
+  //   console.error(`[DB] ${e}`);
+  // }
   ready = false; // Reset ready state
 }
 
@@ -55,8 +55,8 @@ const client = new Client({
   intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages, IntentsBitField.Flags.MessageContent]
 });
 const slashCommands = [];
-client.sequelize = sequelize;
-client.models = sequelize.models;
+// client.sequelize = sequelize;
+// client.models = sequelize.models;
 client.commands = new Collection();
 client.modals = new Collection();
 //#endregion
@@ -101,6 +101,7 @@ client.on("ready", async () => {
   ready = true;
 
   setInterval(async () => {
+    return;
     if(!ready) return;
     client.channels.cache.get(config.discord.banLogs) || await client.channels.fetch(config.discord.banLogs);
     client.guilds.cache.get(config.discord.mainServer) || await client.guilds.fetch(config.discord.mainServer);

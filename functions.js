@@ -58,7 +58,7 @@ module.exports = {
         color: 0xDE2821,
         description: `${message}`,
         footer: {
-          text: `Source: ${source} @ ${new Date().toLocaleTimeString()} ${new Date().toString().match(/GMT([+-]\d{2})(\d{2})/)[0]}`
+          text: `Source: ${source} @ ${new Date().toUTCString()} ${new Date().toUTCString().match(/GMT([+-]\d{2})(\d{2})/)[0]}`
         },
         timestamp: new Date()
       })
@@ -237,5 +237,23 @@ module.exports = {
     ["Moscow Parade Grounds", 6887031333],
     ["Ryazan Airbase", 4424975098],
     ["Tank Training Grounds", 2451182763]
-  ]
+  ],
+  options: {
+    "path": "Unknown",
+    "DS": 0,
+    "OA": 0,
+    "BoA": 0,
+    "STAVKA": 0,
+    "NKVD": 0,
+    "Spetsnaz": 0,
+    "98AD": 0,
+    "3GT": 0,
+    "24GR": 0,
+    "ND": 0,
+    "RG": 0,
+    "MP": 0,
+    "FS": 0,
+    "ACS": 0,
+    "GA": 0
+  }
 };
