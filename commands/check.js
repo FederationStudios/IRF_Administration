@@ -1,6 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder } = require("discord.js");
-const { ButtonStyle, ComponentType } = require("discord-api-types/v10");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } = require("discord.js");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed } = require("../functions.js");
 
