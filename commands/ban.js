@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, Collection } = require("discord.js");
 const { default: fetch } = require("node-fetch");
 const { interactionEmbed, toConsole, ids, getRowifi } = require("../functions.js");
 const { channels, discord } = require("../config.json");
@@ -118,24 +118,37 @@ module.exports = {
     await Promise.allSettled(p);
     let error = false;
     let evidence = options.getAttachment("evidence") || { proxyURL: "https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png", contentType: "image/png" };
-    if(evidence.contentType.split("/")[0] !== "image" || evidence.contentType.split("/")[1] === "gif" || evidence.contentType.split("/")[1] === "mp4") {
+    if(evidence.contentType.split("/")[0] !== "image" && evidence.contentType.split("/")[1] === "gif" && evidence.contentType.split("/")[0] === "video") {
       return interactionEmbed(3, "[ERR-ARGS]", "Evidence must be an image (PNG, JPG, JPEG, or MP4)", interaction, client, [true, 15]);
     }
-    evidence = await client.channels.cache.get(channels.image_host).send({
-      content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
-      files: [
-        {
-          attachment: evidence.proxyURL || evidence.url,
-          name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.contentType.split("/")[1]}`
-        }
-      ]
-    })
-      .catch(err => {
-        error = true;
-        if(String(err).includes("Request entity too large")) return interactionEmbed(3, "[ERR-UPRM]", "Discord rejected the evidence (File too large). Try compressing the image first!", interaction, client, [true, 10]);
-        return interactionEmbed(3, "[ERR-UPRM]", "Failed to upload evidence to image host", interaction, client, [true, 10]);
+    console.info(evidence);
+    // If no attachment, do not send to image_host
+    if(options.getAttachment("evidence")) {
+      evidence = await client.channels.cache.get(channels.image_host).send({
+        content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
+        files: [
+          {
+            attachment: evidence.proxyURL || evidence.url,
+            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.name.split(".").splice(-1)[0]}`
+          }
+        ]
+      })
+        .catch(err => {
+          error = true;
+          if(String(err).includes("Request entity too large")) return interactionEmbed(3, "[ERR-UPRM]", "Discord rejected the evidence (File too large). Try compressing the file first!", interaction, client, [true, 10]);
+          return interactionEmbed(3, "[ERR-UPRM]", "Failed to upload evidence to image host", interaction, client, [true, 10]);
+        });
+      if(error) return;
+    } else {
+      const coll = new Collection();
+      coll.set("0", {
+        proxyURL: "https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png"
       });
-    if(error) return;
+      evidence = {
+        attachments: coll,
+        url: "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396"
+      };
+    }
     try {
       if(bans.length > 0) {
         await client.models.Ban.update({

@@ -56,7 +56,7 @@ module.exports = {
       }
       const evid = await client.channels.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[1])
         .then(c => c.messages.fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.proof || "https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396")[2]));
-      const image = evid.attachments.first().url.endsWith("mp4") ? null : { url: evid.attachments.first().url, proxyURL: evid.attachments.first().proxyURL };
+      const image = evid.attachments.first().contentType.startsWith("video") ? null : { url: evid.attachments.first().url, proxyURL: evid.attachments.first().proxyURL };
       embeds.push(new EmbedBuilder({
         title: `__**Bans for ${id.name}**__`,
         thumbnail: {
@@ -64,7 +64,7 @@ module.exports = {
         },
         fields: [
           { name: "Game ID", value: String(ban.gameID), inline: true },
-          { name: "Reason", value: evid.attachments.first().url.endsWith("mp4") ? `${ban.reason}\n\n**Evidence**: ${evid.attachments.first().proxyURL}` : ban.reason, inline: true },
+          { name: "Reason", value: evid.attachments.first().contentType.startsWith("video") ? `${ban.reason}\n\n**Evidence**: ${evid.attachments.first().proxyURL}` : ban.reason, inline: true },
           { name: "Date", value: `<t:${ban.unixtime}>`, inline: true },
         ],
         image: image,
