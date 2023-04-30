@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [15.x, 16.x, 17.x]
+        node-version: [17.x, 18.x, 19.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -23,7 +23,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm install
     - run: npm ci
     # Run an audit check, and fail if any dependencies aren't met.
     - run: npm audit --audit-level=moderate
