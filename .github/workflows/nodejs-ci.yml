@@ -23,6 +23,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: npm install
     - run: npm ci
     # Run an audit check, and fail if any dependencies aren't met.
     - run: npm audit --audit-level=moderate

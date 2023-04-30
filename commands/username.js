@@ -26,13 +26,13 @@ module.exports = {
       .then(r => r.json());
 
     if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getInteger("id")}\` as a user ID but Roblox API returned: \`${id.errors[0].message}\``, interaction, client, [true, 15]);
-    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.Id}&size=720x720&format=Png&isCircular=false`)
+    const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);
     return interaction.editReply({ embeds: [{
-      title: `Roblox Username for ${id.Id}`,
+      title: `Roblox Username for ${id.id}`,
       color: 0xDE2821,
-      description: `${id.Username}`,
+      description: `${id.name} (${id.displayName})`,
       thumbnail: {
         url: avatar
       }
