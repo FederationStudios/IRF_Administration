@@ -79,14 +79,13 @@ module.exports = {
       })
         .then(res => res.json())
         .then(r => r.data[0]);
-      
+
       if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
-      id = await fetch(`https://api.roblox.com/users/${options.getString("user_id")}`)
-        .then(async res => JSON.parse((await res.text()).trim()));
-      // IDs that don't exist will return an error with spaces, causing normal parses to fail
+      id = await fetch(`https://users.roblox.com/v1/users/${options.getString("user_id")}`)
+        .then(r => r.json());
 
-      if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but found no user`, interaction, client, [true, 15]);
+      if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but Roblox API returned: \`${id.errors[0].message}\``, interaction, client, [true, 15]);
     }
     if(isNaN(options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a number", interaction, client, [true, 15]);
     if(!ids.some(pair => pair[1] == options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a Military game ID. Use `/ids` to see all recognised games", interaction, client, [true, 15]);

@@ -95,7 +95,7 @@ module.exports = {
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
         .setFooter({ text: "The operation was completed successfully with no errors" })
         .setTimestamp();
-  
+
       break;
     case 2:
       embed
@@ -105,7 +105,7 @@ module.exports = {
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
         .setFooter({ text: "The operation was completed successfully with a minor error" })
         .setTimestamp();
-  
+
       break;
     case 3:
       embed
@@ -115,7 +115,7 @@ module.exports = {
         .setDescription(!errors[content] ? `I don't understand the error "${content}" but was expecting ${expected}. Please report this to the support server!` : `${errors[content]}\n> ${expected}`)
         .setFooter({ text: "The operation failed to complete due to an error" })
         .setTimestamp();
-  
+
       break;
     case 4:
       embed
@@ -125,7 +125,7 @@ module.exports = {
         .setDescription(!errors[content] ? expected : `${errors[content]}\n> ${expected}`)
         .setFooter({ text: "The operation is pending completion" })
         .setTimestamp();
-  
+
       break;
     }
     await interaction.editReply({ content: "​", embeds: [embed] });
@@ -169,7 +169,8 @@ module.exports = {
     } else {
       const user = await fetch(`https://users.roblox.com/v1/users/${username}`)
         .then(res => res.json());
-      if(user.errors) return {success: false, error: `Interpreted \`${username}\` as ID but no user was found`};
+
+      if(user.errors) return {success: false, error: `Interpreted \`${username}\` as ID but Roblox API returned: \`${user.errors[0].message}\``};
     }
     const group = await fetch(`https://groups.roblox.com/v2/users/${username}/groups/roles`)
       .then(res => res.json());
@@ -221,7 +222,8 @@ module.exports = {
 
     const roblox = await fetch(`https://users.roblox.com/v1/users/${userData.roblox_id}`)
       .then(res => res.json());
-    if(roblox.errors) return {success: false, error: "Roblox ID does not exist"};
+
+    if(roblox.errors) return {success: false, error: `\`${roblox.errors[0].message}\``};
 
     return {success: true, roblox: userData.roblox_id, username: roblox.name};
   },

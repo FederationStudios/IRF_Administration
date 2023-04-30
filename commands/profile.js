@@ -35,16 +35,15 @@ module.exports = {
       if(!user) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as username but found no user`, interaction, client, [true, 15]);
     } else {
       user = await fetch(`https://users.roblox.com/v1/users/${options.getString("roblox")}`)
-        .then(async res => JSON.parse((await res.text()).trim()));
-      // IDs that don't exist will return an error with spaces, causing normal parses to fail
+        .then(r => r.json());
 
-      if(user.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as ID but found no user`, interaction, client, [true, 15]);
+      if(user.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("roblox")}\` as ID but Roblox API returned: \`${user.errors[0].message}\``, interaction, client, [true, 15]);
     }
 
     const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${user.id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);
-    
+
     const bans = await client.models.Ban.findAll({ where: { userID: user.id } });
 
     //#region Fetching data

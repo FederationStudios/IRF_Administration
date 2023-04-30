@@ -22,11 +22,10 @@ module.exports = {
    */
   run: async (client, interaction, options) => {
     let id = options.getInteger("id");
-    id = await fetch(`https://api.roblox.com/users/${id}`)
-      .then(async r => JSON.parse((await r.text()).trim()));
-    // IDs that don't exist will return an error with spaces, causing normal parses to fail 
+    id = await fetch(`https://users.roblox.com/v1/users/${id}`)
+      .then(r => r.json());
 
-    if(id.errorMessage) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getInteger("id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
+    if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getInteger("id")}\` as a user ID but Roblox API returned: \`${id.errors[0].message}\``, interaction, client, [true, 15]);
     const avatar = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${id.Id}&size=720x720&format=Png&isCircular=false`)
       .then(r => r.json())
       .then(r => r.data[0].imageUrl);

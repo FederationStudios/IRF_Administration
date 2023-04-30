@@ -119,7 +119,7 @@ client.on("ready", async () => {
             banId: ban.banId
           }
         });
-        
+
         client.channels.cache.get(config.discord.banLogs).send({
           embeds: [{
             title: `FairPlay Anticheat banned => ${id.name} (In Game)`,
@@ -196,7 +196,7 @@ client.on("ready", async () => {
 
 client.on("interactionCreate", async (interaction) => {
   if(!ready) return interactionEmbed(4, "", "The bot is starting up, please wait", interaction, client, [true, 10]);
-  
+
   if(interaction.type === InteractionType.ApplicationCommand) {
     let command = client.commands.get(interaction.commandName);
     if(command) {
@@ -210,7 +210,7 @@ client.on("interactionCreate", async (interaction) => {
           interaction.editReply({ content: "Something went wrong while executing the command. Please report this to <@409740404636909578> (Tavi#0001)", embeds: [] });
           return toConsole(e.stack, new Error().stack, client);
         });
-      
+
       await wait(1e4);
       if(ack != null) return; // Already executed
       interaction.fetchReply()

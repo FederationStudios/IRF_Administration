@@ -33,13 +33,13 @@ module.exports = {
         .then(res => res.json())
         .then(r => r.data[0]);
 
-      if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username and found no users with that username`, interaction, client, [true, 15]);
+      if(!id) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a username but found no user`, interaction, client, [true, 15]);
     } else {
       if(Math.floor(id) != id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID", interaction, client, [true, 15]);
       id = await fetch(`https://users.roblox.com/v1/users/${Math.floor(id)}`)
         .then(r => r.json());
 
-      if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as a user ID and found no users with that ID`, interaction, client, [true, 15]);
+      if(id.errors) return interactionEmbed(3, "[ERR-ARGS]", `Interpreted \`${options.getString("user_id")}\` as ID but Roblox API returned: \`${id.errors[0].message}\``, interaction, client, [true, 15]);
     }
     if(!id.id) return interactionEmbed(3, "[ERR-ARGS]", "Invalid user ID provided", interaction, client, [true, 15]);
 
@@ -99,7 +99,7 @@ module.exports = {
     if(embeds.length < 2) delete data.components;
     const coll = await interaction.editReply(data)
       .then(r => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }));
-      
+
     coll.on("collect", (i) => {
       if(i.customId === "next") {
         page = page + 1;
