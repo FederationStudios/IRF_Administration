@@ -13,7 +13,7 @@
     "discord.js": "14.9.0",
     "mysql2": "3.2.4",
     "node-fetch": "2.6.9",
-    "sequelize": "6.31.0"
+    "sequelize": "6.31.1"
   },
   "devDependencies": {
     "eslint": "8.39.0"
