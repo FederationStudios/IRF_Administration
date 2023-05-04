@@ -13,6 +13,7 @@ const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config
   host: config.mysql.host,
   dialect: "mysql",
   logging: process.env.environment === "development" ? console.log : false,
+  port: config.mysql.port
 });
 if(!fs.existsSync("./models")) {
   console.warn("[DB] No models detected");
@@ -175,7 +176,7 @@ client.on("ready", async () => {
           toString: () => "<@1>"
         };
       }
-      const rowifi = await getRowifi(discord.id, client);
+      const rowifi = await getRowifi(discord.id, client).catch(() => new Object());
       if(discord.id === "1")
         rowifi.roblox = "N/A";
       await client.models.Ban.update({
