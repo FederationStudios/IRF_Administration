@@ -184,7 +184,7 @@ module.exports = {
    * @async
    * @param {number} user Discord user ID
    * @param {Client} client Discord client
-   * @returns {{success: boolean, error: string}|{success: undefined, roblox: number, username: string}}
+   * @returns {Promise<{success: boolean, error: string}|{success: undefined, roblox: number, username: string}>}
    */
   getRowifi: async (user, client) => {
     const discord = await client.users.fetch(user)
