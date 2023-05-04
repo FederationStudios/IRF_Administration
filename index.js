@@ -108,14 +108,21 @@ client.on("ready", async () => {
     const parseBans = await client.models.Ban.findAll({ where: { reason: { [Sequelize.Op.like]: "%___irf" } } });
     for(const ban of parseBans) {
       /**
-       * @type {id: string, name: string}
+       * @type {{id: string, name: string}}
        */
       const id = await fetch(`https://users.roblox.com/v1/users/${ban.userID}`).then(r => r.json());
       if(id.errors) continue; // Doesn't exist for some reason
       const reason = ban.reason.replace("___irf", "");
       const moderator = reason.split("Banned by ")[1].trim();
+      /**
+       * @type {{id: string, displayName: string, name: string}}
+       */
+      const mod = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [moderator] })
+      }).then(r => r.json()).then(r => r.data[0]);
       // Query their username via the username
-      let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: moderator, limit: 1 }).then(coll => coll.first()).catch(false);
+      let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: mod.name, limit: 1 }).then(coll => coll.first()).catch(false);
       if(reason.includes("FairPlay Anti-Cheat")) { // FairPlay Bypass
         await client.models.Ban.update({
           reason: reason.replace(reason.split("Banned by ")[1], "FairPlay Anti-Cheat") + " (0)",
@@ -155,13 +162,13 @@ client.on("ready", async () => {
       }
       if(!discord) {
         // Query via Rowifi
-        const rowifiResp = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/roblox/${id.id}`, {
+        const rowifiResp = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/roblox/${mod.id}`, {
           headers: { "Authorization": `Bot ${config.bot.rowifiApiKey}` }
         });
         // Returns 404 if not found
         if(rowifiResp.ok) {
           const json = await rowifiResp.json();
-          discord = await client.users.fetch(json[0]);
+          discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch(json[0].discord_id);
         }
       }
       if(!discord) {
@@ -178,9 +185,9 @@ client.on("ready", async () => {
       }
       const rowifi = await getRowifi(discord.id, client).catch(() => new Object());
       if(discord.id === "1")
-        rowifi.roblox = "N/A";
+        rowifi.roblox = mod.name;
       await client.models.Ban.update({
-        reason: reason.replace(reason.split("Banned by ")[1], discord.toString() || discord.id) + ` (${rowifi.roblox || moderator})`
+        reason: reason.replace(reason.split("Banned by ")[1], discord.toString()) + ` (${rowifi.roblox})`
       }, {
         where: {
           banId: ban.banId

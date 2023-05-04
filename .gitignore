@@ -3,5 +3,6 @@
 
 # Custom Ignores
 /.vscode
+latest-error.log
 config.json
 *.sh
