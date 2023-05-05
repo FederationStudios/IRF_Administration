@@ -121,6 +121,7 @@ client.on("ready", async () => {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usernames: [moderator] })
       }).then(r => r.json()).then(r => r.data[0]);
+      if(!mod) break; // Ratelimited by Roblox
       // Query their username via the username
       let discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch({ query: mod.name, limit: 1 }).then(coll => coll.first()).catch(false);
       if(reason.includes("FairPlay Anti-Cheat")) { // FairPlay Bypass
