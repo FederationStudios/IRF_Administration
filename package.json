@@ -12,7 +12,7 @@
   "dependencies": {
     "discord.js": "14.11.0",
     "mysql2": "3.3.0",
-    "node-fetch": "2.6.10",
+    "node-fetch": "2.6.11",
     "sequelize": "6.31.1"
   },
   "devDependencies": {
