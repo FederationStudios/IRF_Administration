@@ -16,6 +16,6 @@
     "sequelize": "6.32.0"
   },
   "devDependencies": {
-    "eslint": "8.41.0"
+    "eslint": "8.42.0"
   }
 }
