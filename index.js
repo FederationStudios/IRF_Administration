@@ -121,17 +121,12 @@ client.on("ready", async () => {
        * @type {{id:number,name:string,displayName:string}}
        */
       let moderator = {};
-      if(reason[1].includes("FairPlay")) {
-        moderator = {
-          id: 0,
-          name: "FairPlay AntiCheat",
-          displayName: "FairPlay AntiCheat"
-        };
-      } else {
-        moderator = await fetch("https://users.roblox.com/v1/usernames/users", {
-          method: "POST", body: JSON.stringify({ usernames: [reason[1]] }), headers: { "Content-Type": "application/json" }
-        }).then(r => r.json()).then(r => r.data[0]);
-      }
+      if(reason[1].includes("FairPlay"))
+        reason[1] = "FairPlay_AntiCheat"; // Rewrite name
+      // Fetch from Roblox
+      moderator = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST", body: JSON.stringify({ usernames: [reason[1]] }), headers: { "Content-Type": "application/json" }
+      }).then(r => r.json()).then(r => r.data[0]);
       /**
        * @type {{user:{username:string,id:string},nickname:string}}
        */
@@ -162,7 +157,6 @@ client.on("ready", async () => {
           nickname: moderator.displayName
         };
 
-      console.info(discord);
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
           title: `${moderator.name} banned => ${victim.name} (In Game)`,
@@ -189,7 +183,7 @@ client.on("ready", async () => {
         }]
       });
       // Post new ban data
-      await ban.update({ reason: `${reason[0]} - Banned by <@${discord.id}> (${moderator.id})` });
+      await ban.update({ reason: `${reason[0]} - Banned by ${discord.id === 0 ? moderator.name : `<@${discord.id}>`} (${moderator.id})` });
     }
   }, 20000);
 });

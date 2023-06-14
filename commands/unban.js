@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, Embed, SlashCommandBuilder } = require("discord.js");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
-const { interactionEmbed, toConsole, ids } = require("../functions.js");
+const { interactionEmbed, toConsole, getGroup, ids } = require("../functions.js");
 const { discord } = require("../config.json");
 
 module.exports = {
@@ -98,6 +98,10 @@ module.exports = {
     });
     if (bans.length === 0) {
       return interactionEmbed(3, "[ERR-ARGS]", `No bans exist for \`${id.name}\` (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`, interaction, client, [false, 0]);
+    }
+    if (bans[0].reason.includes("FairPlay")) {
+      const data = await getGroup(interaction.member.nickname, 4899462);
+      if(data.success && data.data.role.rank < 200) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to unban a FairPlay ban. Contact a developer to arrange the unban", interaction, client, [true, 10]);
     }
 
     let error = false;

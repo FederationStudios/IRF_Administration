@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, ModalSubmitInteraction, ModalSubmitFields, Embed } = require("discord.js");
+const { Client, ModalSubmitInteraction, ModalSubmitFields, EmbedBuilder } = require("discord.js");
 const { getRowifi } = require("../functions.js");
 const { channels } = require("../config.json");
 
@@ -13,7 +13,7 @@ module.exports = {
   run: async (client, interaction, fields) => {
     // Filing
     const rowifi = await getRowifi(interaction.user.id, client);
-    const embed = new Embed({
+    const embed = new EmbedBuilder({
       title: "NSC Report",
       color: 0xDE2821,
       fields: [

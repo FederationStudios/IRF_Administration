@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, Embed, Interaction, EmbedBuilder } = require("discord.js");
+const { Client, EmbedBuilder, Interaction } = require("discord.js");
 const { default: fetch } = require("node-fetch");
 const config = require("./config.json");
 
@@ -53,7 +53,7 @@ module.exports = {
 
     await channel.send(`Incoming message from \`${source}\` at <t:${Math.floor(Date.now()/1000)}:F>`);
     const check = await channel.send({ embeds: [
-      new Embed({
+      new EmbedBuilder({
         title: "Message to Console",
         color: 0xDE2821,
         description: `${message}`,
@@ -151,7 +151,7 @@ module.exports = {
    * @async
    * @param {string} username Roblox username
    * @param {number} groupId Group ID to fetch
-   * @returns {{success: false, error: string}|{success: true, data: RobloxGroupUserData}}
+   * @returns {Promise<{success: false, error: string}|{success: true, data: RobloxGroupUserData}>}
    */
   getGroup: async (username, groupId) => {
     if(!groupId) return {success: false, error: "No group ID provided"};
