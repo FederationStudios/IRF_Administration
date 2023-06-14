@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-const { Client, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, SlashCommandBuilder } = require("discord.js");
+const { Client, CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } = require("discord.js");
 const { default: fetch } = require("node-fetch");
-const { interactionEmbed, toConsole, getGroup, ids } = require("../functions.js");
+const { interactionEmbed, toConsole, getGroup, ids, getRowifi } = require("../functions.js");
 const { discord } = require("../config.json");
 
 module.exports = {
@@ -90,6 +90,11 @@ module.exports = {
     if(isNaN(options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a number", interaction, client, [true, 15]);
     if(!ids.some(pair => pair[1] == options.getString("game_id"))) return interactionEmbed(3, "[ERR-ARGS]", "Arg `game_id` must be a Military game ID. Use `/ids` to see all recognised games", interaction, client, [true, 15]);
 
+    // Rowifi
+    const rowifi = await getRowifi(interaction.user.id, client);
+    if(typeof rowifi.success !== "undefined") return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
+
+    // Find bans
     const bans = await client.models.Ban.findAll({
       where: {
         userID: id.id,
@@ -100,7 +105,7 @@ module.exports = {
       return interactionEmbed(3, "[ERR-ARGS]", `No bans exist for \`${id.name}\` (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`, interaction, client, [false, 0]);
     }
     if (bans[0].reason.includes("FairPlay")) {
-      const data = await getGroup(interaction.member.nickname, 4899462);
+      const data = await getGroup(rowifi.username, 4899462);
       if(data.success && data.data.role.rank < 200) return interactionEmbed(3, "[ERR-UPRM]", "You are not authorized to unban a FairPlay ban. Contact a developer to arrange the unban", interaction, client, [true, 10]);
     }
 
@@ -119,8 +124,8 @@ module.exports = {
     if(error) return interactionEmbed(3, "[ERR-SQL]", "An error occurred while removing the ban. This has been reported to the bot developers", interaction, client, [true, 15]);
     await client.channels.fetch(discord.unbanLogs, { cache: true });
     await client.channels.cache.get(discord.unbanLogs).send({ embeds: [{
-      title: `${interaction.member.nickname ?? interaction.user.username} has removed a ban for ${id.name}`,
-      description: `**${interaction.user.id}** unbanned => ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
+      title: `${interaction.member.nickname ?? interaction.user.username} unbanned => ${id.name}`,
+      description: `**${interaction.user.id}** has removed a ban for ${id.name} (${id.id}) on ${ids.filter(pair => pair[1] == options.getString("game_id"))[0][0]}`,
       color: 0x00FF00,
       fields: [
         {
