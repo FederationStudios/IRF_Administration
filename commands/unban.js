@@ -92,7 +92,7 @@ module.exports = {
 
     // Rowifi
     const rowifi = await getRowifi(interaction.user.id, client);
-    if(typeof rowifi.success !== "undefined") return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
+    if(!rowifi.success) return interactionEmbed(3, "[ERR-UPRM]", rowifi.error ?? "Unknown error (Report this to a developer)", interaction, client, [true, 10]);
 
     // Find bans
     const bans = await client.models.Ban.findAll({
