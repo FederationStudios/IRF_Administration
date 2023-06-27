@@ -157,10 +157,11 @@ client.on("ready", async () => {
           nickname: moderator.displayName
         };
 
+      const gameName = ids.find(pair => pair[1]) ? ids.find(pair => pair[1])[0] : ban.gameId;
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
           title: `${moderator.name} banned => ${victim.name} (In Game)`,
-          description: `**${discord.user.id}** has added a ban for ${victim.name} (${victim.id}) on ${ids.filter(pair => pair[1] == ban.gameID)[0][0]}`,
+          description: `**${discord.user.id}** has added a ban for ${victim.name} (${victim.id}) on ${gameName}`,
           color: 0x00FF00,
           fields: [
             {
