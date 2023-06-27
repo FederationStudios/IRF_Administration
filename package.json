@@ -1,13 +1,17 @@
 {
   "name": "irf_administration",
   "version": "1.6.2",
-  "description": "",
+  "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["discord.js", "discord", "bot", "automation"],
+  "author": {
+    "name": "TaviShadows (Tavi)",
+    "email": "github@sl.tavis.page",
+    "url": "https://tavis.page"
+  },
   "license": "ISC",
   "dependencies": {
     "discord.js": "14.11.0",
