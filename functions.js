@@ -238,6 +238,7 @@ module.exports = {
     ["Triumphal Arch of Moscow", 2506054725],
     ["Moscow Parade Grounds", 6887031333],
     ["Ryazan Airbase", 4424975098],
-    ["Tank Training Grounds", 2451182763]
+    ["Tank Training Grounds", 2451182763],
+    ["Papers, Please! Testing", 13883173412]
   ]
 };
