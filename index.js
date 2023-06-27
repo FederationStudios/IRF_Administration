@@ -158,6 +158,7 @@ client.on("ready", async () => {
         };
 
       const gameName = ids.find(pair => pair[1]) ? ids.find(pair => pair[1])[0] : ban.gameId;
+      if(gameName === ban.gameId) toConsole(`[BAN] Failed to find game name for \`${ban.gameId}\``, new Error().stack, client);
       client.channels.cache.get(config.discord.banLogs).send({
         embeds: [{
           title: `${moderator.name} banned => ${victim.name} (In Game)`,
@@ -166,7 +167,7 @@ client.on("ready", async () => {
           fields: [
             {
               name: "Game",
-              value: ids.filter(pair => pair[1] == ban.gameID)[0][0],
+              value: gameName,
               inline: true 
             },
             {
