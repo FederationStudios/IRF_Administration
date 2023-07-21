@@ -19,7 +19,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const wait = promisify(setTimeout);
 let ready = false;
-let csrf = '';
 
 //#region Setup
 //#region Database
