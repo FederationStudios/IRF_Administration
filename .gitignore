@@ -1,8 +1,10 @@
 # NPM
 /node_modules
 
+# TypeScript
+/dist
+
 # Custom Ignores
-/.vscode
 latest-error.log
 config.json
 *.sh

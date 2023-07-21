@@ -4,22 +4,40 @@
   "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npx eslint . --ext .ts",
+    "prestart": "npx tsc -b",
+    "start": "node dist/index.js"
   },
-  "keywords": ["discord.js", "discord", "bot", "automation"],
+  "keywords": [
+    "discord.js",
+    "discord",
+    "bot",
+    "automation"
+  ],
   "author": {
-    "name": "TaviShadows (Tavi)",
-    "email": "github@sl.tavis.page",
-    "url": "https://tavis.page"
+    "name": "Federation Studios",
+    "url": "https://github.com/FederationStudios"
   },
+  "contributors": [
+    {
+      "name": "TaviShadows (Tavi)",
+      "email": "github@sl.tavis.page",
+      "url": "https://tavis.page"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
     "discord.js": "14.11.0",
     "mysql2": "3.5.2",
-    "node-fetch": "2.6.12",
-    "sequelize": "6.32.1"
+    "sequelize": "6.32.1",
+    "typescript": "4.9.5"
   },
   "devDependencies": {
-    "eslint": "8.45.0"
-  }
+    "@typescript-eslint/eslint-plugin": "6.0.0",
+    "@typescript-eslint/parser": "6.0.0",
+    "eslint": "8.45.0",
+    "eslint-plugin-prettier": "5.0.0",
+    "prettier": "3.0.0"
+  },
+  "type": "module"
 }
