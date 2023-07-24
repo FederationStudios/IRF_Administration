@@ -127,6 +127,11 @@ export async function run(
             name: 'Reason',
             value: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()}`,
             inline: true
+          },
+          {
+            name: "Original Ban Reason",
+            value: bans[0].reason,
+            inline: false
           }
         ],
         timestamp: new Date().toISOString()

@@ -72,7 +72,7 @@ export class bans extends Model<bansAttributes, bansCreationAttributes> implemen
       },
       {
         sequelize,
-        tableName: 'bans',
+        tableName: 'Bans',
         timestamps: true,
         indexes: [
           {
