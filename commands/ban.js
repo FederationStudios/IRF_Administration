@@ -126,12 +126,12 @@ module.exports = {
     if(options.getAttachment("evidence")) {
       evidence = await client.channels.cache.get(channels.image_host).send({
         content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
-        files: [
-          {
-            attachment: evidence.proxyURL || evidence.url,
-            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.name.split(".").splice(-1)[0]}`
-          }
-        ]
+        files = [
+        {
+          attachment: (evidence.proxyURL || evidence.url).split('?')[0], // Remove query parameters
+          name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${evidence.name.split(".").splice(-1)[0]}`
+        }
+        ];
       })
         .catch(err => {
           error = true;
