@@ -140,8 +140,8 @@ export async function run(
         content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
         files: [
           {
-            attachment: rawEvidence.proxyURL,
-            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${rawEvidence.proxyURL.split('.').splice(-1)[0]}`
+            attachment: rawEvidence.proxyURL.split('?')[0],
+            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${rawEvidence.proxyURL.split('.').splice(-1)[0].split('?')[0]}`
           }
         ]
       })
