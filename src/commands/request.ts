@@ -5,9 +5,9 @@ import {
   SlashCommandBuilder
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-const { channels, discord, roblox } = config;
 import { ResultMessage, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
+const { channels, discord, roblox } = config;
 const cooldown = new Map();
 
 export const name = 'request';

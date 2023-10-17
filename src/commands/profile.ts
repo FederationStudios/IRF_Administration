@@ -11,9 +11,9 @@ import {
   StringSelectMenuInteraction
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-const { roblox } = config;
 import { getRoblox, interactionEmbed } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
+const { roblox } = config;
 
 export const name = 'profile';
 export const ephemeral = false;
@@ -36,11 +36,12 @@ export async function run(
   )
     .then((r) => r.json())
     .then((r) => r.data[0].imageUrl);
-  const bans = await client.models!.Ban.findAll({ where: { userID: robloxData.user.id } });
+  const bans = await client.models.bans.findAll({ where: { user: robloxData.user.id } });
 
   //#region Fetching data
   const data: { [key: string]: any } = {};
   const promises: Promise<unknown>[] = [];
+  // We fetch the relevant data about the user
   promises.push(
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}`)
       .then((r) => r.json())
@@ -202,7 +203,9 @@ export async function run(
         fields: [
           {
             name: 'Owner',
-            value: `${group.group.owner.username} "${group.group.owner.displayName}" (${group.group.owner.userId})`,
+            value: `${group.group.owner.username || 'NO_USERNAME_WAS_RETURNED'} "${
+              group.group.owner.displayName || 'NO_DISPLAY_NAME_WAS_RETURNED'
+            }" (${group.group.owner.userId || 'NO_USERID_WAS_RETURNED'})`,
             inline: true
           },
           {
@@ -367,8 +370,7 @@ export async function run(
     // If they select the menu, switch category
     if (i.isStringSelectMenu()) {
       // If they cancel, stop the collector
-      if (i.values[0] === 'cancel')
-        return coll.stop();
+      if (i.values[0] === 'cancel') return coll.stop();
       // Get the category
       embeds = categories[i.values[0]];
       // New category, so page #0

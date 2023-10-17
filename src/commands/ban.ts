@@ -8,8 +8,8 @@ import {
   SlashCommandBuilder,
   TextChannel
 } from 'discord.js';
+import { promisify } from 'node:util';
 import { default as config } from '../config.json' assert { type: 'json' };
-const { channels, discord } = config;
 import {
   IRFGameId,
   ResultMessage,
@@ -21,7 +21,7 @@ import {
   toConsole
 } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
-import { promisify } from 'node:util';
+const { channels, discord } = config;
 const wait = promisify(setTimeout);
 
 export const name = 'ban';
@@ -39,13 +39,13 @@ export const data = new SlashCommandBuilder()
       .setDescription('Roblox game ID')
       .setRequired(true)
       .addChoices(
-        { name: "Global", value: "0" },
-        { name: "Papers, Please!", value: "583507031" },
-        { name: "Sevastopol Military Academy", value: "603943201" },
-        { name: "Triumphal Arch of Moscow", value: "2506054725" },
-        { name: "Tank Training Grounds", value: "2451182763" },
-        { name: "Ryazan Airbase", value: "4424975098" },
-        { name: "Prada Offensive", value: "4683162920" }
+        { name: 'Global', value: '0' },
+        { name: 'Papers, Please!', value: '583507031' },
+        { name: 'Sevastopol Military Academy', value: '603943201' },
+        { name: 'Triumphal Arch of Moscow', value: '2506054725' },
+        { name: 'Tank Training Grounds', value: '2451182763' },
+        { name: 'Ryazan Airbase', value: '4424975098' },
+        { name: 'Prada Offensive', value: '4683162920' }
       );
   })
   .addStringOption((option) => {
@@ -85,10 +85,10 @@ export async function run(
     );
 
   // Check if the user is already banned
-  const bans = await client.models!.Ban.findAll({
+  const bans = await client.models.bans.findAll({
     where: {
-      userID: id.id,
-      gameID: options.getString('game_id', true)
+      user: id.id,
+      game: options.getString('game_id', true)
     }
   });
   // If the user is already banned, show a warning
@@ -117,14 +117,15 @@ export async function run(
   if (!image_host || !nsc_report || !ban)
     return interactionEmbed(3, 'One or more channels could not be fetched. Please try again later', interaction);
   // Validate the evidence
-  let rawEvidence: Attachment | { proxyURL: string; contentType: string } = options.getAttachment('evidence') || {
-    proxyURL: 'https://media.discordapp.net/attachments/1059784888603127898/1059808550840451123/unknown.png',
-    contentType: 'image/png'
-  };
+  let rawEvidence: Attachment = options.getAttachment('evidence');
+  // If no evidence was provided, fetch the default proof
+  if (!rawEvidence) {
+    rawEvidence = image_host.messages.cache.get(discord.defaultProofURL.split('/')[6]).attachments.first();
+  }
   if (
-    rawEvidence.contentType!.split('/')[0] !== 'image' &&
-    rawEvidence.contentType!.split('/')[1] === 'gif' &&
-    rawEvidence.contentType!.split('/')[0] === 'video'
+    rawEvidence.contentType.split('/')[0] !== 'image' &&
+    rawEvidence.contentType.split('/')[1] === 'gif' &&
+    rawEvidence.contentType.split('/')[0] === 'video'
   ) {
     interactionEmbed(3, 'Evidence must be an image (PNG, JPG, JPEG, or MP4)', interaction);
     return;
@@ -146,7 +147,9 @@ export async function run(
         ]
       })
       .catch((err) => {
+        // Throw error and safely exit
         error = true;
+        // Detect too large files
         if (String(err).includes('Request entity too large')) {
           return interactionEmbed(
             3,
@@ -156,6 +159,7 @@ export async function run(
         }
         return interactionEmbed(3, 'Failed to upload evidence to image host', interaction);
       });
+    // Drop further handling - we've already responded
     if (error) return;
   } else {
     // Extract the message ID and channel ID from the URL
@@ -172,28 +176,40 @@ export async function run(
   try {
     // If the user is already banned, update the ban
     if (bans.length > 0) {
-      await client.models!.Ban.update(
+      await client.models.bans.update(
         {
-          userID: id.id,
-          gameID: Number(options.getString('game_id', true)),
+          user: id.id,
+          game: Number(options.getString('game_id', true)),
           reason: `${options.getString('reason', true)} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-          proof: evidence.url,
-          unixtime: Math.floor(Date.now() / 1000)
+          data: {
+            proof: evidence.url,
+            privacy: 'Public'
+          },
+          mod: {
+            discord: interaction.user.id,
+            roblox: rowifi.roblox
+          }
         },
         {
           where: {
-            userID: id.id,
-            gameID: Number(options.getString('game_id', true))
+            user: id.id,
+            game: Number(options.getString('game_id', true))
           }
         }
       );
     } else {
-      await client.models!.Ban.create({
-        userID: id.id,
-        gameID: Number(options.getString('game_id')),
+      await client.models.bans.create({
+        user: id.id,
+        game: Number(options.getString('game_id')),
         reason: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
-        proof: evidence.url,
-        unixtime: Math.floor(Date.now() / 1000)
+        data: {
+          privacy: 'Public',
+          proof: evidence.url
+        },
+        mod: {
+          discord: interaction.user.id,
+          roblox: rowifi.roblox
+        }
       });
     }
   } catch (e) {

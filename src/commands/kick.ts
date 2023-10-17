@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-const { roblox, urls } = config;
 import { getGroup, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, ServerList } from '../typings/Extensions.js';
+const { roblox, urls } = config;
 
 export const name = 'kick';
 export const ephemeral = false;

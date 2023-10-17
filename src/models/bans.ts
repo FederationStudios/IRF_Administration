@@ -1,88 +1,84 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import { default as config } from "../config.json" assert { type: "json" };
-const { discord } = config;
 
 export interface bansAttributes {
-  banId: number;
-  userID: number;
-  gameID: number;
+  banId: string;
+  user: number;
+  game: number;
+  mod: bansModData;
+  data: bansData;
   reason: string;
-  proof: string;
-  unixtime: number;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export type bansPk = 'banId';
 export type bansId = bans[bansPk];
-export type bansOptionalAttributes = 'banId' | 'proof' | 'createdAt' | 'updatedAt';
+export type bansOptionalAttributes = bansPk;
 export type bansCreationAttributes = Optional<bansAttributes, bansOptionalAttributes>;
+export type bansModData = {
+  roblox: number;
+  discord: string;
+};
+export type bansData = {
+  privacy: 'Public' | 'Restricted' | 'Private' | 'Database';
+  proof: string;
+};
 
 export class bans extends Model<bansAttributes, bansCreationAttributes> implements bansAttributes {
-  declare banId: number;
-  declare userID: number;
-  declare gameID: number;
+  declare banId: string;
+  declare user: number;
+  declare game: number;
+  declare mod: bansModData;
+  declare data: bansData;
   declare reason: string;
-  declare proof: string;
-  declare unixtime: number;
   declare createdAt: Date;
   declare updatedAt: Date;
 
+
   static initModel(sequelize: Sequelize.Sequelize): typeof bans {
-    return bans.init(
+    return bans.init({
+    banId: {
+      type: DataTypes.CHAR(36),
+      allowNull: false,
+      primaryKey: true,
+      comment: "UUID V4"
+    },
+    user: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    game: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    mod: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      comment: "{ roblox: number, discord: string }"
+    },
+    data: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      comment: "{ privacy: string, proof: string }"
+    },
+    reason: {
+      type: DataTypes.CHAR(255),
+      allowNull: false
+    }
+  }, {
+    sequelize,
+    tableName: 'bans',
+    timestamps: true,
+    paranoid: true,
+    indexes: [
       {
-        banId: {
-          autoIncrement: true,
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          primaryKey: true
-        },
-        userID: {
-          type: DataTypes.BIGINT,
-          allowNull: false
-        },
-        gameID: {
-          type: DataTypes.BIGINT,
-          allowNull: false
-        },
-        reason: {
-          type: DataTypes.TEXT,
-          allowNull: false
-        },
-        proof: {
-          type: DataTypes.CHAR(100),
-          allowNull: false,
-          defaultValue: discord.defaultProofURL
-        },
-        unixtime: {
-          type: DataTypes.BIGINT,
-          allowNull: false
-        },
-        createdAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-        }
-      },
-      {
-        sequelize,
-        tableName: 'Bans',
-        timestamps: true,
-        indexes: [
-          {
-            name: 'PRIMARY',
-            unique: true,
-            using: 'BTREE',
-            fields: [{ name: 'banId' }]
-          }
+        name: "PRIMARY",
+        unique: true,
+        using: "BTREE",
+        fields: [
+          { name: "banId" },
         ]
-      }
-    );
+      },
+    ]
+  });
   }
 }

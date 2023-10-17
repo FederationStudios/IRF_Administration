@@ -10,8 +10,10 @@ import {
   SlashCommandBuilder,
   TextChannel
 } from 'discord.js';
+import { default as config } from '../config.json' assert { type: 'json' };
 import { getRoblox, interactionEmbed } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
+const { discord } = config;
 
 export const name = 'check';
 export const ephemeral = false;
@@ -32,40 +34,38 @@ export async function run(
   const roblox = await getRoblox(user_id);
   if (roblox.success === false) return interactionEmbed(3, roblox.error, interaction);
 
-  let bans = await client.models!.Ban.findAll({ where: { userID: roblox.user.id } });
+  let bans = (await client.models.bans.findAll({ where: { user: roblox.user.id } })).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  );
+  // Get the user's avatar
   const avatar = await fetch(
     `https://thumbnails.roblox.com/v1/users/avatar?userIds=${roblox.user.id}&size=720x720&format=Png&isCircular=false`
   )
     .then((r: Response) => r.json())
     .then((r) => r.data[0].imageUrl);
+  // Create array holder for bans
   const embeds: EmbedBuilder[] = [];
   for (const ban of bans) {
-    if (
-      !/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(
-        ban.proof || 'https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396'
-      )
-    ) {
+    // Check if proof is valid
+    if (!/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.data.proof || discord.defaultProofURL)) {
+      // If not, add an embed with an error message
       embeds.push(
         new EmbedBuilder({
           title: 'Error Parsing Proof',
-          description: `Proof given was invalid and could not be parsed. Report this to a developer.\n\nRegEx failed on \`${ban.proof}\` (ID: ${ban.banId})`
+          description: `Proof given was invalid and could not be parsed. Report this to a developer.\n\nRegEx failed on \`${ban.data.proof}\` (ID: ${ban.banId})`
         })
       );
       continue;
     }
+    // Get the evidence message
     const evid = await client.channels
-      .fetch(
-        /.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(
-          ban.proof || 'https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396'
-        )![1]
-      )
+      .fetch(/.+\/([0-9]{0,20})\/([0-9]{0,20})$/.exec(ban.data.proof || discord.defaultProofURL)![1])
       .then((c) =>
         (c as TextChannel).messages.fetch(
-          /.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(
-            ban.proof || 'https://discord.com/channels/989558770801737778/1059784888603127898/1063318255265120396'
-          )![2]
+          /.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.data.proof || discord.defaultProofURL)![2]
         )
       );
+    // If the evidence message is not found, add an embed with an error message
     const image = evid.attachments.first()!.contentType!.startsWith('video')
       ? undefined
       : { url: evid.attachments.first()!.url, proxyURL: evid.attachments.first()!.proxyURL };
@@ -76,7 +76,7 @@ export async function run(
           url: avatar
         },
         fields: [
-          { name: 'Game ID', value: String(ban.gameID), inline: true },
+          { name: 'Game ID', value: String(ban.game), inline: true },
           {
             name: 'Reason',
             value: evid.attachments.first()!.contentType!.startsWith('video')
@@ -84,7 +84,8 @@ export async function run(
               : ban.reason,
             inline: true
           },
-          { name: 'Date', value: `<t:${ban.unixtime}>`, inline: true }
+          { name: 'Date', value: `<t:${ban.createdAt.getTime() / 1000}>`, inline: true },
+          { name: 'Status', value: ban.isSoftDeleted() ? 'Revoked' : 'Active', inline: false }
         ],
         image: image,
         footer: {

@@ -18,7 +18,7 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
         description: Object.entries(IRFGameId)
           .filter(([_k, v]) => typeof v === 'number')
           .map(([k, v]) => `**${k}**: ${v}`)
-          .join("\n"),
+          .join('\n'),
         timestamp: new Date()
       })
     ]

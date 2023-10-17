@@ -1,4 +1,15 @@
-import { AutocompleteInteraction, EmbedBuilder, Interaction } from 'discord.js';
+import {
+  ActionRowBuilder,
+  AutocompleteInteraction,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  ComponentType,
+  EmbedBuilder,
+  Interaction,
+  InteractionEditReplyOptions,
+  InteractionType
+} from 'discord.js';
 import { default as config } from './config.json' assert { type: 'json' };
 import { CustomClient } from './typings/Extensions.js';
 
@@ -281,6 +292,88 @@ function getEnumKey(enumObj: any, value: number): string | undefined {
   }
   return undefined;
 }
+
+async function paginationRow(
+  interaction: Exclude<Interaction, { type: InteractionType.ApplicationCommandAutocomplete }>,
+  buttonRows: ButtonBuilder[][],
+  args: InteractionEditReplyOptions,
+  embeds?: EmbedBuilder[]
+): Promise<ButtonInteraction> {
+  // Create the row
+  const paginationRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({
+    components: [
+      new ButtonBuilder({ customId: 'prev', style: ButtonStyle.Primary, emoji: '⬅️' }),
+      new ButtonBuilder({ customId: 'cancel', style: ButtonStyle.Danger, emoji: '🟥' }),
+      new ButtonBuilder({ customId: 'next', style: ButtonStyle.Primary, emoji: '➡️' })
+    ]
+  });
+  // Pair the embed with the buttons
+  const rows: [ActionRowBuilder<ButtonBuilder>, EmbedBuilder?][] = buttonRows.map((r, i) => {
+    // Create the row
+    const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({ components: r });
+    // If no embeds exist, just return the row
+    if (!embeds) return [row];
+    // Else, return the row and the embed
+    else return [row, embeds[i]];
+  });
+  // Configure message
+  if (rows.length === 0 || (embeds && embeds.length !== rows.length)) return Promise.reject('No rows were provided');
+  let index = 0,
+    returnedInteraction;
+  if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+  while (typeof returnedInteraction === 'undefined') {
+    // Create message
+    const coll = await interaction
+      // Edit the reply
+      .editReply({
+        content: args.content || 'Please select an option below',
+        embeds: args.embeds || undefined,
+        components: [rows[index][0], paginationRow]
+      })
+      // Add listener
+      .then((m) =>
+        m.awaitMessageComponent({
+          time: 15_000,
+          filter: (i) => i.user.id === interaction.user.id,
+          componentType: ComponentType.Button
+        })
+      )
+      // Handle no response
+      .catch((e) => e);
+    // Check the custom id
+    if (coll instanceof Error && coll.name === 'Error [InteractionCollectorError]') {
+      returnedInteraction = null; // Timeout
+      break;
+    } else if (coll instanceof Error) {
+      throw coll; // Not an error we can handle
+    }
+    // Drop the update
+    await coll.update({});
+    // If it's anything other than
+    // next or prev, return it
+    if (!/next|prev/.test(coll.customId)) {
+      // Return the interaction
+      returnedInteraction = coll;
+      break;
+    }
+    // Configure index
+    if (coll.customId === 'next') {
+      if (index === rows.length - 1) index = 0;
+      else index++;
+    } else {
+      if (index === 0) index = rows.length - 1;
+      else index--;
+    }
+    // Configure message
+    if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+    else args.embeds = [];
+    args.components = [rows[index][0], paginationRow];
+    // And the loop continues...
+  }
+  // Remove embeds and components
+  await interaction.editReply({ content: args.content || 'Please select an option below', embeds: [], components: [] });
+  return Promise.resolve(returnedInteraction);
+}
 //#endregion
 
 export {
@@ -292,6 +385,7 @@ export {
   getRoblox,
   getRowifi,
   interactionEmbed,
+  paginationRow,
   parseTime,
   toConsole
 };

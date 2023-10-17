@@ -6,9 +6,9 @@ import {
   SlashCommandBuilder
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-const { channels, roblox } = config;
 import { IRFGameId, ResultMessage, getGroup, getRoblox, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
+const { channels, roblox } = config;
 
 export const name = 'unban';
 export const ephemeral = false;
@@ -25,13 +25,13 @@ export const data = new SlashCommandBuilder()
       .setDescription('Roblox game ID')
       .setRequired(true)
       .addChoices(
-        { name: "Global", value: "0" },
-        { name: "Papers, Please!", value: "583507031" },
-        { name: "Sevastopol Military Academy", value: "603943201" },
-        { name: "Triumphal Arch of Moscow", value: "2506054725" },
-        { name: "Tank Training Grounds", value: "2451182763" },
-        { name: "Ryazan Airbase", value: "4424975098" },
-        { name: "Prada Offensive", value: "4683162920" }
+        { name: 'Global', value: '0' },
+        { name: 'Papers, Please!', value: '583507031' },
+        { name: 'Sevastopol Military Academy', value: '603943201' },
+        { name: 'Triumphal Arch of Moscow', value: '2506054725' },
+        { name: 'Tank Training Grounds', value: '2451182763' },
+        { name: 'Ryazan Airbase', value: '4424975098' },
+        { name: 'Prada Offensive', value: '4683162920' }
       );
   })
   .addStringOption((option) => {
@@ -53,10 +53,10 @@ export async function run(
   if (rowifi.success === false) return interactionEmbed(3, rowifi.error, interaction);
 
   // Find bans
-  const bans = await client.models.Ban.findAll({
+  const bans = await client.models.bans.findAll({
     where: {
-      userID: id.user.id,
-      gameID: options.getString('game_id')
+      user: id.user.id,
+      game: options.getString('game_id')
     }
   });
   // If no bans exists, return
@@ -82,10 +82,10 @@ export async function run(
   // Destroy the ban
   let error = false;
   try {
-    await client.models.Ban.destroy({
+    await client.models.bans.destroy({
       where: {
-        userID: id.user.id,
-        gameID: options.getString('game_id')
+        user: id.user.id,
+        game: options.getString('game_id')
       }
     });
   } catch (e) {
@@ -129,7 +129,7 @@ export async function run(
             inline: true
           },
           {
-            name: "Original Ban Reason",
+            name: 'Original Ban Reason',
             value: bans[0].reason,
             inline: false
           }

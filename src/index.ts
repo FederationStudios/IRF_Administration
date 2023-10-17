@@ -1,22 +1,15 @@
-import {
-  ActivityType,
-  Client,
-  Collection,
-  GuildMember,
-  IntentsBitField,
-  InteractionType,
-  Message,
-  RESTPostAPIChatInputApplicationCommandsJSONBody
-} from 'discord.js';
+import { ButtonInteraction, Client, Collection, IntentsBitField, InteractionType, Message } from 'discord.js';
 import * as fs from 'node:fs';
-import { Op, Sequelize } from 'sequelize';
-import { default as config } from './config.json' assert { type: 'json' };
-import { CommandFile, CustomClient, ModalFile, ServerList } from './typings/Extensions.js';
-import { IRFGameId, ResultType, interactionEmbed, toConsole } from './functions.js';
-import { Ban, initModels } from './models/init-models.js';
-import { promisify } from 'node:util';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { Sequelize } from 'sequelize';
+import { default as config } from './config.json' assert { type: 'json' };
+import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
+import { default as readyHandler } from './functions/ready.js';
+import { claimTicket, closeTicket, replyTicket, transferTicket, unclaimTicket } from './functions/tickets.js';
+import { initModels, tickets } from './models/init-models.js';
+import { CustomClient, ServerList } from './typings/Extensions.js';
 const wait = promisify(setTimeout);
 let ready = false;
 
@@ -39,7 +32,6 @@ try {
 } catch (e) {
   console.error(`[SQL] ${e}`);
 }
-ready = false; // Reset ready state
 //#endregion
 //#region Discord bot
 const client: CustomClient = new Client({
@@ -53,161 +45,15 @@ const client: CustomClient = new Client({
 client.sequelize = sequelize;
 client.models = initModels(sequelize);
 client.commands = new Collection();
-client.modals = new Collection();
 //#endregion
 //#endregion
 
 //#region Events
 client.on('ready', async () => {
-  console.info('[READY] Client is ready');
-  console.info(`[READY] Logged in as ${client.user!.tag} (${client.user!.id}) at ${new Date()}`);
-  toConsole(
-    `[READY] Logged in as ${client.user?.tag} (${client.user!.id}) at <t:${Math.floor(Date.now() / 1000)}:T> and **${
-      ready ? 'can' : 'cannot'
-    }** receive commands`,
-    new Error().stack!,
-    client
-  );
-  client.user!.setActivity('users of the IRF', { type: ActivityType.Listening });
-
-  // Create directory if doesn't exist, then read all files
-  if (!fs.existsSync('./commands')) return console.error('[CMD] No command file detected');
-  const commands = fs.readdirSync('./commands').filter((file) => file.endsWith('.js'));
-  const slashCommands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
-  for (const file of commands) {
-    try {
-      // Load the command
-      const command: CommandFile = await import(`./commands/${file}`);
-      // Set command & push data
-      client.commands!.set(command.name, command);
-      slashCommands.push(command.data!.toJSON());
-      console.info(`[CMD-LOAD] Loaded command ${command.name}`);
-    } catch (err) {
-      // Log error
-      console.error(`[CMD-LOAD] Failed to load command ${file}: ${err}`);
-    }
-  }
-  // Read all modal files
-  const modals = fs.readdirSync('./modals').filter((file) => file.endsWith('.js'));
-  console.info(`[CMD-LOAD] Loading modals, expecting ${modals.length} modals`);
-  for (const file of modals) {
-    try {
-      // Load the modal
-      const modal: ModalFile = await import(`./modals/${file}`);
-      // Set modal & log
-      client.modals!.set(modal.name, modal);
-      console.info(`[CMD-LOAD] Loaded modal ${modal.name}`);
-    } catch (err) {
-      // Log error
-      console.error(`[CMD-LOAD] Failed to load modal ${file}: ${err}`);
-    }
-  }
-  try {
-    client.application!.commands.set(slashCommands);
-  } catch (err) {
-    console.error(`[CMD-LOAD] Failed to load commands: ${err}`);
-  }
-
-  ready = true;
-
-  setInterval(async () => {
-    if (!ready) return;
-    client.channels.cache.get(config.channels.ban) || (await client.channels.fetch(config.channels.ban));
-    client.guilds.cache.get(config.discord.mainServer) || (await client.guilds.fetch(config.discord.mainServer));
-    const parseBans: Ban[] = await client.models!.Ban.findAll({ where: { reason: { [Op.like]: '%___irf' } } });
-    for (const ban of parseBans) {
-      // Extract data from ban
-      const reason: string[] = ban.reason.replace('___irf', '').split(' - Banned by ');
-      const victim: { id: number; name: string; displayName: string } = await fetch(
-        `https://users.roblox.com/v1/users/${ban.userID}`
-      ).then((r) => r.json());
-      // Add placeholder data
-      let moderator: { id: number; name: string; displayName: string } = {
-        id: 0,
-        name: 'Unknown',
-        displayName: 'Unknown'
-      };
-      if (reason[1].includes('FairPlay')) reason[1] = 'FairPlay_AntiCheat'; // Rewrite name
-      // Fetch from Roblox
-      moderator = await fetch('https://users.roblox.com/v1/usernames/users', {
-        method: 'POST',
-        body: JSON.stringify({ usernames: [reason[1]] }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-        .then((r: Response) => r.json())
-        .then((r: { data: (typeof moderator)[] }) => r.data[0]);
-      // Fetch Discord information
-      let discord: GuildMember | { user: { username: string; id: string }; nickname: string } | undefined;
-      if (moderator.id !== 0) {
-        // Attempt #1: Query via Discord
-        discord = (
-          await client.guilds.cache.get(config.discord.mainServer)!.members.search({ query: moderator.name, limit: 1 })
-        ).first();
-        if (!discord) {
-          // Attempt #2: Query via RoWifi
-          const rowifiData = await fetch(
-            `https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/roblox/${moderator.id}`,
-            {
-              headers: { Authorization: `Bot ${config.bot.rowifiApiKey}` }
-            }
-          );
-          if (rowifiData.ok) {
-            const json = await rowifiData.json();
-            discord = await client.guilds.cache.get(config.discord.mainServer)!.members.fetch(json[0].discord_id);
-          }
-        }
-      }
-      // Can't find them, use Roblox data
-      if (!discord)
-        discord = {
-          user: {
-            id: '0',
-            username: moderator.name
-          },
-          nickname: moderator.displayName
-        };
-
-      const gameName = IRFGameId[ban.gameID] || ban.gameID;
-      if (gameName === ban.gameID)
-        toConsole(`[BAN] Failed to find game name for \`${ban.gameID}\``, new Error().stack!, client);
-      // Check logging channel exists
-      const banLog = client.channels.cache.get(config.channels.ban);
-      if (!banLog || !banLog.isTextBased()) break;
-      banLog.send({
-        embeds: [
-          {
-            title: `${moderator.name} banned => ${victim.name} (In Game)`,
-            description: `**${discord.user.id}** has added a ban for ${victim.name} (${victim.id}) on ${gameName}`,
-            color: 0x00ff00,
-            fields: [
-              {
-                name: 'Game',
-                value: String(gameName),
-                inline: true
-              },
-              {
-                name: 'User',
-                value: `${victim.name} (${victim.id})`,
-                inline: true
-              },
-              {
-                name: 'Reason',
-                value: `${reason[0]} - Banned by <@${discord.user.id}> (${moderator.id})`,
-                inline: true
-              }
-            ],
-            timestamp: ban.createdAt.toString()
-          }
-        ]
-      });
-      // Post new ban data
-      await ban.update({
-        reason: `${reason[0]} - Banned by ${discord.user.id === '0' ? moderator.name : `<@${discord.user.id}>`} (${
-          moderator.id
-        })`
-      });
-    }
-  }, 20000);
+  ready = await readyHandler(client, ready).catch((e) => {
+    console.error(e);
+    return false;
+  });
 });
 
 client.on('interactionCreate', async (interaction): Promise<void> => {
@@ -230,7 +76,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
           content: 'Something went wrong. Please contact an Engineer',
           embeds: []
         });
-        return toConsole(e.stack, new Error().stack!, client);
+        return toConsole(e.stack || e, new Error().stack!, client);
       });
 
       // Wait for 10 seconds, if the command hasn't been executed, send a timeout message
@@ -242,32 +88,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
           interactionEmbed(3, 'The command timed out. Please contact an Engineer', interaction);
       });
     }
-  }
-  if (interaction.type === InteractionType.ModalSubmit) {
-    let modal = client.modals!.get(interaction.customId);
-    if (modal) {
-      // Defer reply
-      await interaction.deferReply({ ephemeral: true });
-      // Run modal handler
-      const ack = modal.run(client, interaction, interaction.fields).catch((e) => {
-        interaction.editReply({
-          content: 'Something went wrong. Please contact an Engineer',
-          embeds: []
-        });
-        return toConsole(e.stack, new Error().stack!, client);
-      });
-
-      // Wait for 10 seconds, if the command hasn't been executed, send a timeout message
-      await wait(10_000);
-      if (ack != null) return; // Already executed
-      interaction.fetchReply().then((m) => {
-        // If the message is empty and there are no embeds, it's a timeout
-        if (m.content === '' && m.embeds.length === 0)
-          interactionEmbed(ResultType.Error, 'The modal timed out. Please contact an Engineer', interaction);
-      });
-    }
-  }
-  if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+  } else if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
     switch (interaction.commandName) {
       case 'ban': {
         // If command is ban, offer a list of common reasons
@@ -379,6 +200,62 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         return interaction.respond([]); // Invalid commandName
       }
     }
+  } else if (interaction.type === InteractionType.MessageComponent) {
+    // If not a button or a ticket handler, return
+    if (!interaction.isButton()) return;
+    if (!/(?:reply|transfer|close|claim)\-[\w\-]{36}/.test(interaction.customId)) return;
+    // Get the ticket
+    let ticket: tickets = null;
+    if (interaction.customId.split('-')[0] !== 'reply') {
+      // If not a reply, defer reply and fetch ticket
+      await interaction.deferReply({ ephemeral: true });
+      ticket = await client.models!.tickets.findByPk(interaction.customId.split('-').slice(1).join('-'));
+      if (!ticket) {
+        // Run both edits at the same time
+        await Promise.all([
+          interaction.editReply({ content: 'This ticket does not exist' }),
+          (interaction as ButtonInteraction).message.edit({
+            content: 'This ticket does not exist. It may have been manually removed by a developer!',
+            components: []
+          })
+        ]);
+        return;
+      }
+    }
+    // Send to handler
+    switch (interaction.customId.split('-')[0]) {
+      case 'close': {
+        await closeTicket({ interaction, client, ticket });
+        break;
+      }
+      case 'claim': {
+        await claimTicket({ interaction, client, ticket });
+        break;
+      }
+      case 'unclaim': {
+        await unclaimTicket({ interaction, client, ticket });
+        break;
+      }
+      case 'transfer': {
+        await transferTicket({ interaction, client, ticket });
+        break;
+      }
+      case 'reply': {
+        await replyTicket({ interaction, client, ticket });
+        break;
+      }
+      default: {
+        if (!interaction.replied)
+          interaction.reply({
+            content: `You shouldn't see this! Contact an Engineer with this: ${interaction.customId.split('-')[0]}`
+          });
+        else
+          interaction.editReply({
+            content: `You shouldn't see this! Contact an Engineer with this: ${interaction.customId.split('-')[0]}`
+          });
+      }
+    }
+    return;
   }
 });
 
@@ -387,6 +264,7 @@ client.on('messageCreate', async (message): Promise<void> => {
   if (message.author.bot) return;
   if (!message.channel.name.includes('reports')) return;
   // Message handler
+  const denied = '<:denied:1095481555431997460>';
   let refMessage: Message;
   // If the message is a reply and the content matches a key string, check the referenced message
   if (message.reference && message.content === 'CHECK_IA_VIOLATIONS') {
@@ -398,38 +276,42 @@ client.on('messageCreate', async (message): Promise<void> => {
   } else {
     refMessage = message;
   }
-  // Check attachments for direct files
-  if (refMessage.attachments.size > 0) {
-    for (const attachment of Object.values(refMessage.attachments)) {
-      // Check for a non-embedding file
-      if (!/png|jpg|jpeg|webm|mov|mp4/i.test(attachment[1].name.split('.').pop()!)) {
-        refMessage.react('1095481555431997460');
-        // If message was manually checked, indicate success
-        if (message.content === 'CHECK_IA_VIOLATIONS') message.react('1095484268219732028');
-        // Inform the user of the violation
-        refMessage.reply({
-          content:
-            '<:denied:1095481555431997460> | Direct recordings are **not allowed** for security reasons. Upload your files to YouTube, Medal.TV, or Streamable.com and send the link instead.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*'
-        });
-        return;
-      }
-    }
+  // Test the message against the regex
+  if (refMessage.content.startsWith('<:')) return; // Ignore GA accept/denial messages
+  const msgContentRegex =
+    /^Suspect: (?<username>[\w\-]+)\nSuspect Roblox ID: (?<id>[\d]+)\nReason: (?<reason>[ -~]+)(?:\nProof:\n(?<proof>[\S\n]*))?/;
+  const result = msgContentRegex.exec(refMessage.content);
+  async function deny(msg) {
+    await refMessage.reactions.removeAll();
+    refMessage.react(denied);
+    refMessage.reply({ embeds: [{ color: 0xff0000, description: `${denied} | **Denied**. ${msg}` }] });
   }
-  // RK check
-  if (!/(?:Mass (?:RK|(?:kill.*)))|(?:([^\w\d]RK)|Random(ly)?(?: )?kill.*)/i.test(refMessage.content))
-    if (message.content === 'CHECK_IA_VIOLATIONS') {
-      // If message was manually checked, indicate success
-      message.react('1095481555431997460');
-      return;
-    } else return;
-  // React with denial emoji
-  refMessage.react('1095481555431997460');
-  if (message.content === 'CHECK_IA_VIOLATIONS') message.react('1095484268219732028'); // Successful RK detection
-  // Inform the user
-  refMessage.reply({
-    content:
-      '<:denied:1095481555431997460> | Random killing reports are **not allowed**. Read the pinned messages and request Game Administrators for help if you find a random killer.\n\n> *This was an automated action. If you think this was a mistake, DM <@409740404636909578> (Tavi#0001).*'
-  });
+  if (!result || !result.groups) {
+    await deny('Your report does not follow the format. Please check the pinned messages for the correct format');
+    return;
+  }
+  const matches = result.groups;
+  // Check if proof is present
+  if (!matches.proof && refMessage.attachments.size === 0) {
+    await deny(
+      'Your report does not contain proof. In order to properly process bans, we must have clear evidence of the crime'
+    );
+    return;
+  }
+  // Test links
+  const links = matches.proof.split('\n');
+  if (
+    !links.every((l) =>
+      /^https:\/\/(?:medal\.tv\/games\/roblox\/clips\/[\w]+\/[\w]+|youtube\.com\/watch\?v=[\w\-]+|youtu\.be\/[\w\-]+|gyazo\.com[\w]+|cdn\.discordapp\.com\/attachments\/[\d]{17,20}\/[\d]{17,20}\/[\w\-]+\.[a-z4]+)/.test(
+        l
+      )
+    )
+  ) {
+    await deny('Your proof does not contain valid links. Please check the pinned messages for the correct format');
+    return;
+  }
+  // Add reactions
+  refMessage.react('⚙️');
   return;
 });
 //#endregion
@@ -439,7 +321,7 @@ client.login(config.bot.token);
 //#region Error handling
 const recentErrors: { promise: Promise<unknown>; reason: string; time: Date }[] = [];
 process.on('uncaughtException', (err, origin) => {
-  fs.writeSync(process.stderr.fd, `Caught exception: ${err}\n` + `Exception origin: ${origin}`);
+  toConsole(`Uncaught exception: ${err}\n` + `Exception origin: ${origin}`, new Error().stack, client);
 });
 process.on('unhandledRejection', async (reason, promise) => {
   if (!ready) {
@@ -478,6 +360,8 @@ process.on('unhandledRejection', async (reason, promise) => {
     );
     return process.exit(17);
   }
+
+  toConsole('An [unhandledRejection] has occurred.\n\n> ' + reason, new Error().stack!, client);
 });
 process.on('warning', async (warning) => {
   if (!ready) {
