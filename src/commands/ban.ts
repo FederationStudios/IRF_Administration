@@ -120,7 +120,8 @@ export async function run(
   let rawEvidence: Attachment = options.getAttachment('evidence');
   // If no evidence was provided, fetch the default proof
   if (!rawEvidence) {
-    rawEvidence = image_host.messages.cache.get(discord.defaultProofURL.split('/')[6]).attachments.first();
+    rawEvidence = await image_host.messages.fetch(discord.defaultProofURL.split('/')[6])
+      .then((m) => m.attachments.first());
   }
   if (
     rawEvidence.contentType.split('/')[0] !== 'image' &&
@@ -246,7 +247,7 @@ export async function run(
             // Attachment will always be present, checks are above
             value: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${
               rowifi.roblox
-            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL}`,
+            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL.split('?')[0]}`,
             inline: true
           }
         ],
@@ -276,7 +277,7 @@ export async function run(
             // Attachment will always be present, checks are above
             value: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${
               rowifi.roblox
-            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL}`,
+            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL.split('?')[0]}`,
             inline: false
           }
         ]

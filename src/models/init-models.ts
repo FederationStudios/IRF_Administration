@@ -26,6 +26,7 @@ export type {
 };
 
 export function initModels(sequelize: Sequelize) {
+  const bans = _bans.initModel(sequelize);
   const departments = _departments.initModel(sequelize);
   const divisions = _divisions.initModel(sequelize);
   const msgs = _msgs.initModel(sequelize);
@@ -41,7 +42,7 @@ export function initModels(sequelize: Sequelize) {
   tickets.hasMany(msgs, { as: 'msgs', foreignKey: 'tick' });
 
   return {
-    bans: _bans,
+    bans: bans,
     departments: departments,
     divisions: divisions,
     msgs: msgs,

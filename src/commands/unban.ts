@@ -82,12 +82,17 @@ export async function run(
   // Destroy the ban
   let error = false;
   try {
-    await client.models.bans.destroy({
-      where: {
-        user: id.user.id,
-        game: options.getString('game_id')
-      }
-    });
+    bans
+      .filter((b) => !b.isSoftDeleted())
+      .forEach((b) => {
+        // Add unban reason and destroy
+        b.update({
+          unbanReason: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()} (${
+            rowifi.roblox
+          })`
+        });
+        b.destroy();
+      });
   } catch (e) {
     // Error handling
     toConsole(
@@ -125,7 +130,7 @@ export async function run(
           },
           {
             name: 'Reason',
-            value: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()}`,
+            value: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()} (${rowifi.roblox})`,
             inline: true
           },
           {

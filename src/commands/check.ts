@@ -34,8 +34,8 @@ export async function run(
   const roblox = await getRoblox(user_id);
   if (roblox.success === false) return interactionEmbed(3, roblox.error, interaction);
 
-  let bans = (await client.models.bans.findAll({ where: { user: roblox.user.id } })).sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  let bans = (await client.models.bans.findAll({ where: { user: roblox.user.id }, paranoid: false })).sort(
+    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
   );
   // Get the user's avatar
   const avatar = await fetch(
@@ -69,6 +69,7 @@ export async function run(
     const image = evid.attachments.first()!.contentType!.startsWith('video')
       ? undefined
       : { url: evid.attachments.first()!.url, proxyURL: evid.attachments.first()!.proxyURL };
+    const banReason = ban.isSoftDeleted() ? `${ban.unbanReason}\n--\n${ban.reason}` : ban.reason;
     embeds.push(
       new EmbedBuilder({
         title: `__**Bans for ${roblox.user.name} (${roblox.user.displayName})**__`,
@@ -80,12 +81,12 @@ export async function run(
           {
             name: 'Reason',
             value: evid.attachments.first()!.contentType!.startsWith('video')
-              ? `${ban.reason}\n\n**Evidence**: ${evid.attachments.first()!.proxyURL}`
-              : ban.reason,
+              ? `${banReason}\n\n**Evidence**: ${evid.attachments.first()!.proxyURL}`
+              : banReason,
             inline: true
           },
           { name: 'Date', value: `<t:${ban.createdAt.getTime() / 1000}>`, inline: true },
-          { name: 'Status', value: ban.isSoftDeleted() ? 'Revoked' : 'Active', inline: false }
+          { name: 'Status', value: ban.isSoftDeleted() ? `Revoked` : 'Active', inline: false }
         ],
         image: image,
         footer: {
