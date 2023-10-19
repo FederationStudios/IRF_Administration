@@ -299,15 +299,15 @@ client.on('messageCreate', async (message): Promise<void> => {
     return;
   }
   // Test links
-  const links = matches.proof.split('\n');
+  const links = matches.proof ? matches.proof.split('\n') : [];
   if (
     !links.every((l) =>
-      /^https:\/\/(?:medal\.tv\/games\/roblox\/clips\/[\w]+\/[\w]+|youtube\.com\/watch\?v=[\w\-]+|youtu\.be\/[\w\-]+|gyazo\.com[\w]+|cdn\.discordapp\.com\/attachments\/[\d]{17,20}\/[\d]{17,20}\/[\w\-]+\.[a-z4]+)/.test(
+      /^https:\/\/(?:medal\.tv\/games\/roblox\/clips\/[\w]+\/[\w]+|youtube\.com\/watch\?v=[\w\-]+|youtu\.be\/[\w\-]+|gyazo\.com\/[\w]+|cdn\.discordapp\.com\/attachments\/[\d]{17,20}\/[\d]{17,20}\/[\w\-]+\.[a-z4]+)/.test(
         l
       )
     )
   ) {
-    await deny('Your proof does not contain valid links. Please check the pinned messages for the correct format');
+    await deny('Your proof does not contain valid links. Please check the pinned messages for the valid sources');
     return;
   }
   // Add reactions

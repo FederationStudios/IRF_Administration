@@ -34,10 +34,11 @@ export class msgs extends Model<msgsAttributes, msgsCreationAttributes> implemen
     return msgs.init(
       {
         mId: {
-          type: DataTypes.CHAR(36),
+          type: DataTypes.UUID,
           allowNull: false,
           primaryKey: true,
-          comment: 'UUID V4'
+          comment: 'UUID V4',
+          defaultValue: Sequelize.UUIDV4
         },
         author: {
           type: DataTypes.CHAR(20),
@@ -45,7 +46,7 @@ export class msgs extends Model<msgsAttributes, msgsCreationAttributes> implemen
           comment: 'Snowflake'
         },
         tick: {
-          type: DataTypes.CHAR(36),
+          type: DataTypes.UUID,
           allowNull: false,
           comment: 'Associated ticket',
           references: {

@@ -47,10 +47,11 @@ export class tickets extends Model<ticketsAttributes, ticketsCreationAttributes>
     return tickets.init(
       {
         ticketId: {
-          type: DataTypes.CHAR(36),
+          type: DataTypes.UUID,
           allowNull: false,
           primaryKey: true,
-          comment: 'UUID V4'
+          comment: 'UUID V4',
+          defaultValue: Sequelize.UUIDV4
         },
         status: {
           type: DataTypes.ENUM('Open', 'Stale', 'Closed', 'Transferring'),
