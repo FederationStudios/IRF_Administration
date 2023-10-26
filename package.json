@@ -1,12 +1,12 @@
 {
   "name": "irf_administration",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {
     "lint": "npx eslint . --ext .ts",
     "prestart": "npx tsc -b",
-    "start": "node dist/index.js"
+    "start": "cd dist && node index.js"
   },
   "keywords": [
     "discord.js",

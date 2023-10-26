@@ -65,8 +65,17 @@ export async function run(
           /.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.data.proof || discord.defaultProofURL)![2]
         )
       );
+    if (!evid.attachments.first() || !evid.attachments.first()!.contentType) {
+      embeds.push(
+        new EmbedBuilder({
+          title: 'Error Parsing Proof',
+          description: `Proof given was invalid and could not be parsed. Report this to a developer.\n\nAttachment failed on \`${evid.url}\` (ID: ${ban.banId})`
+        })
+      );
+      continue;
+    }
     // If the evidence message is not found, add an embed with an error message
-    const image = evid.attachments.first()!.contentType!.startsWith('video')
+    const image = evid.attachments.first()!.contentType.startsWith('video')
       ? undefined
       : { url: evid.attachments.first()!.url, proxyURL: evid.attachments.first()!.proxyURL };
     const banReason = ban.isSoftDeleted() ? `${ban.unbanReason}\n--\n${ban.reason}` : ban.reason;
