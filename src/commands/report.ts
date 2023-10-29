@@ -57,7 +57,8 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
         }) as ActionRowBuilder<ButtonBuilder>
       ]
     })
-    .then((i) => i.awaitMessageComponent({ componentType: ComponentType.Button, time: 10_000, filter }));
+    .then((i) => i.awaitMessageComponent({ componentType: ComponentType.Button, time: 10_000, filter }))
+    .catch(() => null);
   // If no confirmation, cancel
   if (!confirm || confirm.customId === 'no') {
     confirm.update({ content: 'Report cancelled', components: [] });
@@ -131,7 +132,8 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
   const mi = await confirm.awaitModalSubmit({
     filter,
     time: 120_000
-  });
+  })
+    .catch(() => null);
   if (!mi) {
     interaction.editReply({ content: 'You did not submit a report in time. Please re-run the command' });
     return;

@@ -11,7 +11,7 @@ import {
   TextChannel
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-import { getRoblox, interactionEmbed } from '../functions.js';
+import { IRFGameId, getRoblox, interactionEmbed } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 const { discord } = config;
 
@@ -65,7 +65,10 @@ export async function run(
           /.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.data.proof || discord.defaultProofURL)![2]
         )
       );
-    if (!evid.attachments.first() || !evid.attachments.first()!.contentType) {
+    // First attachment
+    const fa = evid.attachments.first();
+    // If the evidence message is not found, add an embed with an error message
+    if (!fa || !fa.contentType) {
       embeds.push(
         new EmbedBuilder({
           title: 'Error Parsing Proof',
@@ -74,34 +77,33 @@ export async function run(
       );
       continue;
     }
-    // If the evidence message is not found, add an embed with an error message
-    const image = evid.attachments.first()!.contentType.startsWith('video')
-      ? undefined
-      : { url: evid.attachments.first()!.url, proxyURL: evid.attachments.first()!.proxyURL };
-    const banReason = ban.isSoftDeleted() ? `${ban.unbanReason}\n--\n${ban.reason}` : ban.reason;
+    // Try to get the image, else set to undefined
+    const image = fa.contentType.startsWith('video') ? undefined : { url: fa.url, proxyURL: fa.proxyURL };
+    // Create the fields so we can modify later
+    const f = [
+      { name: 'Game', value: IRFGameId[ban.game], inline: true },
+      { name: 'Status', value: ban.isSoftDeleted() ? `Revoked` : 'Active', inline: true },
+      { name: 'Moderator', value: `Roblox ID: ${ban.mod.roblox}\nDiscord: <@${ban.mod.discord}>`, inline: false }
+    ];
+    // If the proof isn't an image, it's a video, so add a field for it
+    if (typeof image === 'undefined') {
+      f.push({ name: 'Evidence', value: `[Video provided by moderator](${evid.url})`, inline: true });
+    }
+    // Add the embed to the array
     embeds.push(
       new EmbedBuilder({
         title: `__**Bans for ${roblox.user.name} (${roblox.user.displayName})**__`,
+        description: `**Reason**: ${ban.reason}${ban.isSoftDeleted() ? `\n**Unban Reason**: ${ban.unbanReason}` : ''}`,
+        color: ban.isSoftDeleted() ? 0x00ff00 : 0xff0000,
         thumbnail: {
           url: avatar
         },
-        fields: [
-          { name: 'Game ID', value: String(ban.game), inline: true },
-          {
-            name: 'Reason',
-            value: evid.attachments.first()!.contentType!.startsWith('video')
-              ? `${banReason}\n\n**Evidence**: ${evid.attachments.first()!.proxyURL}`
-              : banReason,
-            inline: true
-          },
-          { name: 'Date', value: `<t:${ban.createdAt.getTime() / 1000}>`, inline: true },
-          { name: 'Status', value: ban.isSoftDeleted() ? `Revoked` : 'Active', inline: false }
-        ],
+        fields: f,
         image: image,
         footer: {
-          text: `Ban ${bans.indexOf(ban) + 1} of ${bans.length}`
+          text: `Ban ${bans.indexOf(ban) + 1} of ${bans.length} - Ban created:`
         },
-        timestamp: new Date()
+        timestamp: ban.createdAt
       })
     );
   }
@@ -109,14 +111,11 @@ export async function run(
     embeds.push(
       new EmbedBuilder({
         title: `__**Bans for ${roblox.user.name} (${roblox.user.displayName})**__`,
+        description: `No bans found for this user`,
+        color: 0xaaaaaa,
         thumbnail: {
           url: avatar
         },
-        fields: [
-          { name: 'Game ID', value: '-', inline: true },
-          { name: 'Reason', value: 'No bans found!', inline: true },
-          { name: 'Date', value: '-', inline: true }
-        ],
         footer: {
           text: 'Ban 0 of 0'
         },

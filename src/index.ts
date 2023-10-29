@@ -174,6 +174,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers).then(
           (r: Response) => r.json()
         );
+        if (!servers.success) return interaction.respond([]);
         const matches: { name: string; value: string }[] = [];
         const idMap = new Map();
         let matchedGame = 0;

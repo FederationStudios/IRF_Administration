@@ -130,7 +130,7 @@ export default async function (client: CustomClient, ready: boolean): Promise<bo
               },
               {
                 name: 'Reason',
-                value: `${ban.reason} - Banned by <@${discord.user.id}> (${moderator.id})`,
+                value: ban.reason,
                 inline: true
               }
             ],

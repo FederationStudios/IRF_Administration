@@ -33,7 +33,7 @@ type ServerList = {
      */
     [key: string]: [players: number[], date: string];
   };
-}
+};
 type RobloxUserPresenceData = {
   userPresenceType: number;
   lastLocation: string;
@@ -44,6 +44,6 @@ type RobloxUserPresenceData = {
   userId: number;
   lastOnline: string;
   invisibleModeExpiry: string;
-}
+};
 
 export { CustomClient, CommandFile, ModalFile, ServerList, RobloxUserPresenceData };

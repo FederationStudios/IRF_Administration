@@ -120,7 +120,8 @@ export async function run(
   let rawEvidence: Attachment = options.getAttachment('evidence');
   // If no evidence was provided, fetch the default proof
   if (!rawEvidence) {
-    rawEvidence = await image_host.messages.fetch(discord.defaultProofURL.split('/')[6])
+    rawEvidence = await image_host.messages
+      .fetch(discord.defaultProofURL.split('/')[6])
       .then((m) => m.attachments.first());
   }
   if (
@@ -143,7 +144,9 @@ export async function run(
         files: [
           {
             attachment: rawEvidence.proxyURL.split('?')[0],
-            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${rawEvidence.proxyURL.split('.').splice(-1)[0].split('?')[0]}`
+            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${
+              rawEvidence.proxyURL.split('.').splice(-1)[0].split('?')[0]
+            }`
           }
         ]
       })
@@ -181,7 +184,7 @@ export async function run(
         {
           user: id.id,
           game: Number(options.getString('game_id', true)),
-          reason: `${options.getString('reason', true)} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+          reason: options.getString('reason', true),
           data: {
             proof: evidence.url,
             privacy: 'Public'
@@ -202,7 +205,7 @@ export async function run(
       await client.models.bans.create({
         user: id.id,
         game: Number(options.getString('game_id')),
-        reason: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${rowifi.roblox})`,
+        reason: options.getString('reason'),
         data: {
           privacy: 'Public',
           proof: evidence.url
@@ -245,9 +248,9 @@ export async function run(
           {
             name: 'Reason',
             // Attachment will always be present, checks are above
-            value: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${
-              rowifi.roblox
-            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL.split('?')[0]}`,
+            value: `${options.getString('reason')}\n\n**Evidence:** ${
+              evidence.attachments.first()!.proxyURL.split('?')[0]
+            }`,
             inline: true
           }
         ],
@@ -275,9 +278,9 @@ export async function run(
           {
             name: 'Reason',
             // Attachment will always be present, checks are above
-            value: `${options.getString('reason')} - Banned by ${interaction.user.toString()} (${
-              rowifi.roblox
-            })\n\n**Evidence:** ${evidence.attachments.first()!.proxyURL.split('?')[0]}`,
+            value: `${options.getString('reason')}\n\n**Evidence:** ${
+              evidence.attachments.first()!.proxyURL.split('?')[0]
+            }`,
             inline: false
           }
         ]

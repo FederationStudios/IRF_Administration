@@ -87,9 +87,7 @@ export async function run(
       .forEach((b) => {
         // Add unban reason and destroy
         b.update({
-          unbanReason: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()} (${
-            rowifi.roblox
-          })`
+          unbanReason: options.getString('reason')
         });
         b.destroy();
       });
@@ -130,7 +128,7 @@ export async function run(
           },
           {
             name: 'Reason',
-            value: `${options.getString('reason')} - Unbanned by ${interaction.member.toString()} (${rowifi.roblox})`,
+            value: options.getString('reason'),
             inline: true
           },
           {
@@ -149,9 +147,7 @@ export async function run(
     1,
     `Removed ban for ${id.user.name} (${id.user.id}) on ${
       IRFGameId[options.getString('game_id', true)]
-    } (${options.getString('game_id', true)})\n> Reason: ${options.getString(
-      'reason'
-    )} - Unbanned by ${interaction.member.toString()}`,
+    } (${options.getString('game_id', true)})\n> Reason: ${options.getString('reason')}`,
     interaction
   );
 }
