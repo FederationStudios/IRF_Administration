@@ -63,7 +63,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       .then(() => void Promise); // Hacky method to return void promise
 
   if (interaction.type === InteractionType.ApplicationCommand) {
-    let command = client.commands!.get(interaction.commandName);
+    const command = client.commands!.get(interaction.commandName);
     if (command) {
       // If the command is not a modal, defer reply and fetch user
       if (!command.modal) {
@@ -169,7 +169,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       }
       case 'shutdown': {
         // If the command is shutdown, offer the list of active servers
-        let { name, value = 'Papers' } = interaction.options.getFocused(true);
+        const { name, value = 'Papers' } = interaction.options.getFocused(true);
         if (name !== 'target') return; // Not focused on the server list
         const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers).then(
           (r: Response) => r.json()
@@ -188,7 +188,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         // Push all servers with the game ID in matchedGame to matches
         for (const [placeId, jobs] of Object.entries(servers.servers)) {
           if (Number(placeId) == matchedGame) {
-            for (const [jobId, [players, _date]] of Object.entries(jobs)) {
+            for (const [jobId, [players]] of Object.entries(jobs)) {
               // RTT if we don't know the name
               matches.push({ name: `${jobId} - ${idMap.get(placeId) || 'RTT'} (${players.length})`, value: jobId });
             }
@@ -204,6 +204,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
   } else if (interaction.type === InteractionType.MessageComponent) {
     // If not a button or a ticket handler, return
     if (!interaction.isButton()) return;
+    // eslint-disable-next-line no-useless-escape
     if (!/(?:reply|transfer|close|claim)\-[\w\-]{36}/.test(interaction.customId)) return;
     // Get the ticket
     let ticket: tickets = null;
@@ -280,6 +281,7 @@ client.on('messageCreate', async (message): Promise<void> => {
   // Test the message against the regex
   if (refMessage.content.startsWith('<:')) return; // Ignore GA accept/denial messages
   const msgContentRegex =
+    // eslint-disable-next-line no-useless-escape
     /^Suspect: (?<username>[\w\-]+)\nSuspect Roblox ID: (?<id>[\d]+)\nReason: (?<reason>[ -~]+)(?:\nProof:\n(?<proof>[\S\n]*))?/;
   const result = msgContentRegex.exec(refMessage.content);
   async function deny(msg) {
@@ -303,6 +305,7 @@ client.on('messageCreate', async (message): Promise<void> => {
   const links = matches.proof ? matches.proof.split('\n') : [];
   if (
     !links.every((l) =>
+      // eslint-disable-next-line no-useless-escape
       /^https:\/\/(?:medal\.tv\/games\/roblox\/clips\/[\w]+\/[\w]+|youtube\.com\/watch\?v=[\w\-]+|youtu\.be\/[\w\-]+|gyazo\.com\/[\w]+|cdn\.discordapp\.com\/attachments\/[\d]{17,20}\/[\d]{17,20}\/[\w\-]+\.[a-z4]+)/.test(
         l
       )

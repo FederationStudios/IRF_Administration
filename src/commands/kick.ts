@@ -37,7 +37,7 @@ export async function run(
       'The remote access system is having issues. Please try again later (Status code: 503)',
       interaction
     );
-  let target = Number(options.getString('target', true));
+  const target = Number(options.getString('target', true));
   if (isNaN(target)) return interactionEmbed(3, 'Invalid target (Must be a user ID)', interaction);
   const reason = options.getString('reason');
   // For each server in each game, check if the target is in the server

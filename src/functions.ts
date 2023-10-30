@@ -1,6 +1,5 @@
 import {
   ActionRowBuilder,
-  AutocompleteInteraction,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
@@ -43,7 +42,7 @@ enum ResultType {
 }
 //#endregion
 //#region Types
-type RobloxGroupUserData = {
+export type RobloxGroupUserData = {
   group: RobloxGroupGroupData;
   role: RobloxGroupRoleData;
 };
@@ -52,17 +51,23 @@ type RobloxGroupUserData = {
  * @prop {string} name Name of the group
  * @prop {number} memberCount Member count of the group
  */
-type RobloxGroupGroupData = {
+export type RobloxGroupGroupData = {
   id: string;
   name: string;
+  description: string;
   memberCount: number;
+  owner: {
+    username: string;
+    displayName: string;
+    userId: number;
+  };
 };
 /**
  * @prop {number} id Numeric identifier of the role
  * @prop {string} name Name of the role
  * @prop {number} rank Rank of the role (0-255)
  */
-type RobloxGroupRoleData = {
+export type RobloxGroupRoleData = {
   id: number;
   name: string;
   rank: number;
@@ -74,12 +79,16 @@ type RobloxGroupRoleData = {
  * @prop {string} name Username of the user
  * @prop {string} displayName Display name of the user
  */
-type RobloxUserData = {
+export type RobloxUserData = {
   requestedUsername: string;
   hasVerifiedBadge: boolean;
   id: number;
+  isOnline: boolean;
   name: string;
   displayName: string;
+  description: string;
+  created: string;
+  createdAt: string;
 };
 //#endregion
 
@@ -126,7 +135,7 @@ async function toConsole(message: string, source: string, client: CustomClient):
 async function interactionEmbed(
   type: ResultType,
   content: ResultMessage | string,
-  interaction: Exclude<Interaction, AutocompleteInteraction>
+  interaction: Exclude<Interaction, { type: InteractionType.ApplicationCommandAutocomplete }>
 ): Promise<void> {
   if (!interaction.deferred) await interaction.deferReply();
   const embed = new EmbedBuilder()
@@ -284,9 +293,9 @@ async function getRoblox(
   }
 }
 
-function getEnumKey(enumObj: any, value: number): string | undefined {
+function getEnumKey(enumObj: object, value: number): string | undefined {
   for (const key in enumObj) {
-    if (enumObj.hasOwnProperty(key) && enumObj[key] === (value as number)) {
+    if (Object.prototype.hasOwnProperty.call(enumObj, key) && enumObj[key] === (value as number)) {
       return key;
     }
   }

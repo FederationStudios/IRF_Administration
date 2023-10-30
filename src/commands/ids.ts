@@ -16,7 +16,7 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
         title: 'IRF Game IDs',
         // Convert the map to an array of strings, then join them with newlines
         description: Object.entries(IRFGameId)
-          .filter(([_k, v]) => typeof v === 'number')
+          .filter(([, v]) => typeof v === 'number')
           .map(([k, v]) => `**${k}**: ${v}`)
           .join('\n'),
         timestamp: new Date()

@@ -34,7 +34,7 @@ export async function run(
   const roblox = await getRoblox(user_id);
   if (roblox.success === false) return interactionEmbed(3, roblox.error, interaction);
 
-  let bans = (await client.models.bans.findAll({ where: { user: roblox.user.id }, paranoid: false })).sort(
+  const bans = (await client.models.bans.findAll({ where: { user: roblox.user.id }, paranoid: false })).sort(
     (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
   );
   // Get the user's avatar

@@ -348,7 +348,7 @@ async function unclaimTicket({ interaction, ticket, client }: ticketFunctionArgs
   // Return the ticket
   return ticket;
 }
-async function getDivision({ interaction, ticket, client }: ticketFunctionArgs): Promise<divisions> {
+async function getDivision(interaction): Promise<divisions> {
   // Fetch all divisions and departments
   // We use Promise.all for shorthanding and running the requests asynchronously
   const [dep, div] = await Promise.all([

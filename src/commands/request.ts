@@ -59,16 +59,19 @@ export async function run(
     return;
   }
 
-  const presenceCheck: RobloxUserPresenceData | {}[] = await fetch('https://presence.roblox.com/v1/presence/users', {
-    method: 'POST',
-    body: JSON.stringify({
-      userIds: [rowifi.roblox]
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: `.ROBLOSECURITY=${roblox.validationToken || 'abcdef123456'}`
+  const presenceCheck: RobloxUserPresenceData | object[] = await fetch(
+    'https://presence.roblox.com/v1/presence/users',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        userIds: [rowifi.roblox]
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `.ROBLOSECURITY=${roblox.validationToken || 'abcdef123456'}`
+      }
     }
-  })
+  )
     .then((r) => r.json())
     .then((r) => r.errors || r.userPresences[0]);
   if (Array.isArray(presenceCheck)) {

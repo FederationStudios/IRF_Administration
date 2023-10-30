@@ -66,7 +66,7 @@ export async function run(
   // Loop through servers
   for (const [PlaceId, game] of Object.entries(servers.servers)) {
     if (target === '*') break; // Not handled here, but later on
-    for (const [JobId, _Data] of Object.entries(game)) {
+    for (const [JobId] of Object.entries(game)) {
       // If JobId matches
       if (JobId === target) {
         // Fetch universeId

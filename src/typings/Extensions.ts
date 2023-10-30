@@ -7,6 +7,11 @@ interface CustomClient extends Client {
   modals?: Map<string, ModalFile>;
   sequelize?: Sequelize;
   models?: ReturnType<typeof initModels>;
+  // Manually importing types due to TS not being able to find them
+  channels: Client['channels'];
+  guilds: Client['guilds'];
+  user: Client['user'];
+  users: Client['users'];
 }
 interface CommandFile {
   name: string;

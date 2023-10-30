@@ -129,10 +129,11 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
     content: 'Please submit the report within 120 seconds. Open a new report if needed',
     components: []
   });
-  const mi = await confirm.awaitModalSubmit({
-    filter,
-    time: 120_000
-  })
+  const mi = await confirm
+    .awaitModalSubmit({
+      filter,
+      time: 120_000
+    })
     .catch(() => null);
   if (!mi) {
     interaction.editReply({ content: 'You did not submit a report in time. Please re-run the command' });

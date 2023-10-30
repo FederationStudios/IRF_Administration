@@ -68,9 +68,9 @@ export async function run(
 ): Promise<void> {
   if (!(interaction.member!.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
     return interactionEmbed(ResultType.Error, ResultMessage.UserPermission, interaction);
-  let user_id = options.getString('user_id', true);
+  const user_id = options.getString('user_id', true);
   // Check if the user ID is a valid ID
-  let roblox = await getRoblox(user_id);
+  const roblox = await getRoblox(user_id);
   if (roblox.success === false) {
     interactionEmbed(3, roblox.error, interaction);
     return;

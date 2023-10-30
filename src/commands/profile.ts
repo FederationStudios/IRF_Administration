@@ -11,8 +11,8 @@ import {
   StringSelectMenuInteraction
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-import { getRoblox, interactionEmbed } from '../functions.js';
-import { CustomClient } from '../typings/Extensions.js';
+import { RobloxGroupUserData, getRoblox, interactionEmbed, type RobloxUserData } from '../functions.js';
+import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
 const { roblox } = config;
 
 export const name = 'profile';
@@ -39,13 +39,50 @@ export async function run(
   const bans = await client.models.bans.findAll({ where: { user: robloxData.user.id } });
 
   //#region Fetching data
-  const data: { [key: string]: any } = {};
+  // We create the data object for later use
+  const data: {
+    user: RobloxUserData;
+    friends: RobloxUserData[];
+    groups: RobloxGroupUserData[];
+    history: string[];
+    presence: RobloxUserPresenceData;
+    created: string;
+    createdAt: string;
+  } = {
+    user: {
+      requestedUsername: '',
+      hasVerifiedBadge: false,
+      id: 0,
+      isOnline: false,
+      name: '',
+      displayName: '',
+      description: '',
+      created: '',
+      createdAt: ''
+    },
+    friends: [],
+    groups: [],
+    history: [],
+    presence: {
+      userPresenceType: 0,
+      lastLocation: '',
+      placeId: 0,
+      rootPlaceId: 0,
+      gameId: '',
+      universeId: 0,
+      userId: 0,
+      lastOnline: '',
+      invisibleModeExpiry: ''
+    },
+    created: '',
+    createdAt: ''
+  };
   const promises: Promise<unknown>[] = [];
   // We fetch the relevant data about the user
   promises.push(
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}`)
       .then((r) => r.json())
-      .then((r: unknown) => (data.user = r))
+      .then((r: RobloxUserData) => (data.user = r))
   );
   promises.push(
     fetch(`https://friends.roblox.com/v1/users/${robloxData.user.id}/friends`)
@@ -103,7 +140,7 @@ export async function run(
         },
         {
           name: 'ID',
-          value: robloxData.user.id,
+          value: String(robloxData.user.id),
           inline: true
         },
         {
@@ -116,17 +153,17 @@ export async function run(
         },
         {
           name: 'IRF Game Bans',
-          value: bans.length,
+          value: String(bans.length),
           inline: true
         },
         {
           name: 'Friends',
-          value: data.friends.length,
+          value: String(data.friends.length),
           inline: true
         },
         {
           name: 'Groups',
-          value: data.groups.length,
+          value: String(data.groups.length),
           inline: true
         },
         {
@@ -210,7 +247,7 @@ export async function run(
           },
           {
             name: 'Members',
-            value: group.group.memberCount,
+            value: String(group.group.memberCount),
             inline: true
           },
           {
