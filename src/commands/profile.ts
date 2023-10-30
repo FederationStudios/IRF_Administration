@@ -181,7 +181,7 @@ export async function run(
     return {
       name: friend.displayName,
       value: `Username: ${friend.name}\nID: ${friend.id}\nOnline: ${friend.isOnline ? 'Yes' : 'No'}`,
-      inline: true
+      inline: false
     };
   });
   if (friendFields.length === 0)
@@ -203,7 +203,7 @@ export async function run(
         timestamp: new Date()
       })
     );
-  for (let i = 0; i < friendFields.length; i += 9) {
+  for (let i = 0; i < friendFields.length; i += 6) {
     categories.friends.push(
       new EmbedBuilder({
         title: `${robloxData.user.name}'s Friends`,
@@ -215,9 +215,9 @@ export async function run(
         image: {
           url: avatar
         },
-        fields: friendFields.slice(i, i + 9),
+        fields: friendFields.slice(i, i + 6),
         footer: {
-          text: `Page ${Math.floor(i / 9) + 1} of ${Math.ceil(friendFields.length / 9)}`
+          text: `Page ${Math.floor(i / 6) + 1} of ${Math.ceil(friendFields.length / 6)}`
         },
         timestamp: new Date()
       })
@@ -326,7 +326,7 @@ export async function run(
     })
   ];
   if (data.presence.userPresenceType === 2 && data.presence.placeId) {
-    categories.activity[1][0].addFields([
+    categories.activity[0].addFields([
       {
         name: 'Game',
         value: `[${data.presence.lastLocation}](https://roblox.com/games/${data.presence.placeId}) ([https://roblox.com/games/${data.presence.placeId}](https://roblox.com/games/${data.presence.placeId}))`,
@@ -334,7 +334,7 @@ export async function run(
       }
     ]);
   } else if (data.presence.userPresenceType === 2 && !data.presence.placeId) {
-    categories.activity[1][0].addFields([
+    categories.activity[0].addFields([
       {
         name: 'Game',
         value: '❗ Profile is private, unable to fetch current game',

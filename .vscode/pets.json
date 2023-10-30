@@ -4,5 +4,11 @@
     "type": "fox",
     "size": "nano",
     "name": "Tavi (TaviShadows)"
+  },
+  {
+    "color": "yellow",
+    "type": "rubber-duck",
+    "size": "nano",
+    "name": "Magi (MagiShira)"
   }
 ]

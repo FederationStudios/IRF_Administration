@@ -18,6 +18,7 @@ IRF Administration would not be possible without contributions from the followin
 | Position | — | Github | Discord |
 | --- | --- | --- | --- |
 | Primary Developer | — | [@totallytavi](https://github.com/totallytavi) | totallytavi |
+| Developer | - | [@MagiShira](https://github.com/MagiShira) | magishira |
 
 ## Installation
 ### Pre-requisites
