@@ -1,25 +1,43 @@
 {
   "name": "irf_administration",
-  "version": "1.6.2",
+  "version": "2.2.0",
   "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npx prettier --write ./src",
+    "prestart": "npx tsc -b",
+    "start": "cd dist && node index.js"
   },
-  "keywords": ["discord.js", "discord", "bot", "automation"],
+  "keywords": [
+    "discord.js",
+    "discord",
+    "bot",
+    "automation"
+  ],
   "author": {
-    "name": "TaviShadows (Tavi)",
-    "email": "github@sl.tavis.page",
-    "url": "https://tavis.page"
+    "name": "Federation Studios",
+    "url": "https://github.com/FederationStudios"
   },
+  "contributors": [
+    {
+      "name": "TaviShadows (Tavi)",
+      "email": "github@sl.tavis.page",
+      "url": "https://tavis.page"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
-    "discord.js": "14.13.0",
-    "mysql2": "3.6.1",
-    "node-fetch": "2.7.0",
-    "sequelize": "6.33.0"
+    "discord.js": "14.11.0",
+    "mysql2": "3.6.2",
+    "sequelize": "6.33.0",
+    "typescript": "5.2.2"
   },
   "devDependencies": {
-    "eslint": "8.51.0"
-  }
+    "@typescript-eslint/eslint-plugin": "6.9.0",
+    "@typescript-eslint/parser": "6.9.0",
+    "eslint": "8.52.0",
+    "eslint-plugin-prettier": "5.0.1",
+    "prettier": "3.0.3"
+  },
+  "type": "module"
 }

@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Build & Run IRF:A",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "preLaunchTask": "npm: prestart",
+      "cwd": "${workspaceFolder}\\dist",
+      "program": "index.js",
+      "env": {
+        "environment": "development"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run IRF:A",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "cwd": "${workspaceFolder}\\dist",
+      "program": "index.js"
+    }
+  ]
+}
