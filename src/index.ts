@@ -1,12 +1,10 @@
 import { ButtonInteraction, Client, Collection, IntentsBitField, InteractionType, Message } from 'discord.js';
 import * as fs from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
 import { default as config } from './config.json' assert { type: 'json' };
 import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
-import { default as readyHandler } from './functions/ready.js';
+import { default as readyHandler, handleBans } from './functions/ready.js';
 import { claimTicket, closeTicket, replyTicket, transferTicket, unclaimTicket } from './functions/tickets.js';
 import { initModels, tickets } from './models/init-models.js';
 import { CustomClient, ServerList } from './typings/Extensions.js';
@@ -22,15 +20,18 @@ const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config
   port: config.mysql.port
 });
 // Check for existing models folder
-if (!fs.existsSync(join(dirname(fileURLToPath(import.meta.url)), 'models'))) console.warn('[SQL] No models detected');
-// Load database models
-const file = await import('./models/init-models.js');
-try {
-  file.initModels(sequelize);
-  sequelize.authenticate();
-  sequelize.sync({ alter: process.env.environment === 'development' });
-} catch (e) {
-  console.error(`[SQL] ${e}`);
+if (!fs.existsSync('./models')) {
+  console.warn('No models are present! Models will not be loaded');
+} else {
+  // Load database models
+  const file = await import('./models/init-models.js');
+  try {
+    file.initModels(sequelize);
+    sequelize.authenticate();
+    sequelize.sync({ alter: process.env.environment === 'development' });
+  } catch (e) {
+    console.error(`[SQL] ${e}`);
+  }
 }
 //#endregion
 //#region Discord bot
@@ -54,6 +55,10 @@ client.on('ready', async () => {
     console.error(e);
     return false;
   });
+  setInterval(() => {
+    if (!ready) return;
+    handleBans(client);
+  }, 20_000);
 });
 
 client.on('interactionCreate', async (interaction): Promise<void> => {
