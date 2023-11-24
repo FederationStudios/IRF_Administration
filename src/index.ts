@@ -55,6 +55,9 @@ client.on('ready', async () => {
     console.error(e);
     return false;
   });
+  // Call on startup
+  if (ready) handleBans(client);
+  // Setup interval
   setInterval(() => {
     if (!ready) return;
     handleBans(client);

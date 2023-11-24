@@ -52,7 +52,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
   const parseBans: bans[] = await bans.findAll({ where: { reason: { [Op.endsWith]: '~~~irf' } } });
   for (const ban of parseBans) {
     // Extract data from ban
-    let rblxId: string = ban.mod.discord;
+    let rblxId: string = String(ban.mod.roblox);
     // Fetch the victim's data from Roblox
     const victim: { id: number; name: string; displayName: string } = await fetch(
       `https://users.roblox.com/v1/users/${ban.user}`
