@@ -29,7 +29,7 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
   // Create collector filter for use later
   const filter = (i) => i.user.id === interaction.user.id;
   // Get division
-  const division: string | divisions = await getDivision({ interaction, client: null, ticket: null }).catch((e) => e);
+  const division: string | divisions = await getDivision(interaction).catch((e) => e);
   if (division === 'Cancelled') return;
   else if (typeof division !== 'object' || division instanceof Error) throw division;
   // Return data
