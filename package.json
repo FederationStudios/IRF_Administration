@@ -30,7 +30,7 @@
     "discord.js": "14.14.1",
     "mysql2": "3.6.5",
     "sequelize": "6.35.1",
-    "typescript": "5.3.2"
+    "typescript": "5.3.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "6.13.2",
