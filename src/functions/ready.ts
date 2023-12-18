@@ -99,15 +99,11 @@ export async function handleBans(client: CustomClient): Promise<void> {
         }
       }
     }
-    // Can't find them, use Roblox data and hope for the best
-    if (!discord)
-      discord = {
-        user: {
-          id: '0',
-          username: moderator.name
-        },
-        nickname: moderator.displayName
-      };
+    // Can't find them, skip and log for later
+    if (!discord) {
+      console.log(`[BAN] Failed to find Discord user for ${moderator.name} (${moderator.id})`);
+      return;
+    }
 
     // Get the game name
     const gameName = IRFGameId[ban.game] || ban.game;
