@@ -91,11 +91,18 @@ async function transferTicket({ interaction, ticket, client }: ticketFunctionArg
         }) as ActionRowBuilder<ButtonBuilder>
       ]
     });
-    client.users.fetch(ticket.author).then((u) =>
-      u.send({
-        content: `[\`#${ticket.ticketId}\`] Your ticket has been transferred to ${division.name} division. You can expect a response soon`
-      })
-    );
+    client.users
+      .fetch(ticket.author)
+      .then((u) =>
+        u.send({
+          content: `[\`#${ticket.ticketId}\`] Your ticket has been transferred to ${division.name} division. You can expect a response soon`
+        })
+      )
+      .catch(() => {
+        cCheck.send({
+          content: `[\`#${ticket.ticketId}\`] Transferred ticket. User was not notified (DMs closed)`
+        });
+      });
   }
   // Return (un)modified ticket
   return ticket;
@@ -143,11 +150,18 @@ async function closeTicket({ interaction, ticket, client }: ticketFunctionArgs):
   await Promise.all(ep);
   // Inform the user
   await interaction.editReply({ content: 'This ticket has been closed' });
-  await client.users.fetch(ticket.author).then((u) =>
-    u.send({
-      content: `[\`#${ticket.ticketId}\`] Your ticket has been closed. If you have any further issues, please open a new ticket.`
-    })
-  );
+  await client.users
+    .fetch(ticket.author)
+    .then((u) =>
+      u.send({
+        content: `[\`#${ticket.ticketId}\`] Your ticket has been closed. If you have any further issues, please open a new ticket.`
+      })
+    )
+    .catch(() => {
+      interaction.channel.send({
+        content: `[\`#${ticket.ticketId}\`] Ticket closed. User was not notified (DMs closed)`
+      });
+    });
 }
 async function replyTicket({ interaction, ticket, client }: ticketFunctionArgs): Promise<tickets> {
   const tId = (interaction as ButtonInteraction).customId.split('-').slice(1).join('-');
@@ -216,49 +230,54 @@ async function replyTicket({ interaction, ticket, client }: ticketFunctionArgs):
   // Send the message
   let m: Message;
   if (!interaction.inGuild()) {
-    m = await contactChannel.send({
+    const c = new ActionRowBuilder({
+      components: [
+        new ButtonBuilder({ customId: `reply-${ticket.ticketId}`, label: 'Reply', style: ButtonStyle.Primary }),
+        new ButtonBuilder({
+          customId: `transfer-${ticket.ticketId}`,
+          label: 'Transfer',
+          style: ButtonStyle.Secondary
+        }),
+        new ButtonBuilder({ customId: `close-${ticket.ticketId}`, label: 'Close', style: ButtonStyle.Danger }),
+        new ButtonBuilder({ customId: `unclaim-${ticket.ticketId}`, label: 'Unclaim', style: ButtonStyle.Danger })
+      ]
+    }) as ActionRowBuilder<ButtonBuilder>;
+    const msgData = {
       content: `A reply has been received! Ticket is claimed by <@${ticket.claimer}>`,
       embeds: [{ description: content + `\n> ${(interaction as ButtonInteraction).user.toString()}`, color: 0xaae66e }],
-      components: [
-        new ActionRowBuilder({
-          components: [
-            new ButtonBuilder({ customId: `reply-${ticket.ticketId}`, label: 'Reply', style: ButtonStyle.Primary }),
-            new ButtonBuilder({
-              customId: `transfer-${ticket.ticketId}`,
-              label: 'Transfer',
-              style: ButtonStyle.Secondary
-            }),
-            new ButtonBuilder({ customId: `close-${ticket.ticketId}`, label: 'Close', style: ButtonStyle.Danger }),
-            new ButtonBuilder({ customId: `unclaim-${ticket.ticketId}`, label: 'Unclaim', style: ButtonStyle.Danger })
-          ]
-        }) as ActionRowBuilder<ButtonBuilder>
-      ],
+      components: [c],
       target: (interaction as ButtonInteraction).message
-    });
+    };
+    m = await contactChannel.send(msgData);
   } else {
-    m = await client.users.fetch(ticket.author).then((u) =>
-      u.send({
-        content: `[\`#${ticket.ticketId}\`] Your ticket has been replied to. You can view the reply by clicking below`,
-        embeds: [{ description: content + `\n> ${interaction.user.toString()}`, color: 0xaae66e }],
-        components: [
-          new ActionRowBuilder({
-            components: [
-              new ButtonBuilder({
-                customId: `reply-${ticket.ticketId}`,
-                label: 'Reply',
-                style: ButtonStyle.Success
-              })
-            ]
-          }) as ActionRowBuilder<ButtonBuilder>
-        ],
-        target: (interaction as ButtonInteraction).message
-      })
-    );
+    const c = new ActionRowBuilder({
+      components: [
+        new ButtonBuilder({
+          customId: `reply-${ticket.ticketId}`,
+          label: 'Reply',
+          style: ButtonStyle.Success
+        })
+      ]
+    }) as ActionRowBuilder<ButtonBuilder>;
+    const msgData = {
+      content: `[\`#${ticket.ticketId}\`] Your ticket has been replied to. You can view the reply by clicking below`,
+      embeds: [{ description: content + `\n> ${interaction.user.toString()}`, color: 0xaae66e }],
+      components: [c],
+      target: (interaction as ButtonInteraction).message
+    };
+    m = await client.users
+      .fetch(ticket.author)
+      .then((u) => u.send(msgData))
+      .catch(() => null);
   }
   // Insert message into the database
   await msgs
     .create({ tick: ticket.ticketId, content, author: interaction.user.id, link: m.url })
-    .then((m) => ticket.addMsg(m));
+    .then((m) => ticket.addMsg(m))
+    .catch(() => {
+      i.editReply({ content: 'There was an error replicating the message to the database' });
+      return Promise.reject('Database error');
+    });
   await i.editReply({ content: 'Your reply has been sent' });
   // Return the ticket
   return ticket;
@@ -285,13 +304,17 @@ async function claimTicket({ interaction, ticket, client }: ticketFunctionArgs):
   await ticket.save();
   // Inform the user
   await interaction.editReply({ content: `Ticket claimed successfully!` });
-  await client.users.fetch(ticket.author).then((u) =>
-    u.send({
-      content: `[\`#${ticket.ticketId}\`] Your ticket has been claimed by ${
-        (interaction.member as GuildMember).nickname || interaction.user.username
-      } (${interaction.user.toString()}). You can expect a response shortly!`
-    })
-  );
+  await client.users
+    .fetch(ticket.author)
+    .then((u) =>
+      u.send({
+        content: `[\`#${ticket.ticketId}\`] Your ticket has been claimed by ${
+          (interaction.member as GuildMember).nickname || interaction.user.username
+        } (${interaction.user.toString()}). You can expect a response shortly!`
+      })
+    )
+    // This message isn't mission critical
+    .catch(() => null);
   await (interaction as ButtonInteraction).message.edit({
     content: `Ticket claimed by ${interaction.user.toString()}`,
     components: [
@@ -340,11 +363,18 @@ async function unclaimTicket({ interaction, ticket, client }: ticketFunctionArgs
   await ticket.save();
   // Inform the user
   await interaction.editReply({ content: 'You have unclaimed this ticket' });
-  await client.users.fetch(ticket.author).then((u) =>
-    u.send({
-      content: `[\`#${ticket.ticketId}\`] Your ticket has been released. A new member will be assisting you soon!`
-    })
-  );
+  await client.users
+    .fetch(ticket.author)
+    .then((u) =>
+      u.send({
+        content: `[\`#${ticket.ticketId}\`] Your ticket has been released. A new member will be assisting you soon!`
+      })
+    )
+    .catch(() => {
+      interaction.channel.send({
+        content: `[\`#${ticket.ticketId}\`] Ticket released. User was not notified (DMs closed)`
+      });
+    });
   // Return the ticket
   return ticket;
 }

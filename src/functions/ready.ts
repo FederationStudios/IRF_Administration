@@ -56,7 +56,9 @@ export async function handleBans(client: CustomClient): Promise<void> {
     // Fetch the victim's data from Roblox
     const victim: { id: number; name: string; displayName: string } = await fetch(
       `https://users.roblox.com/v1/users/${ban.user}`
-    ).then((r) => r.json());
+    )
+      .then((r) => r.json())
+      .catch(() => {});
     // Add moderator placeholder data
     let moderator: { id: number; name: string; displayName: string } = {
       id: 0,
@@ -101,7 +103,9 @@ export async function handleBans(client: CustomClient): Promise<void> {
     }
     // Can't find them, skip and log for later
     if (!discord) {
-      console.log(`[BAN] Failed to find Discord user for ${moderator.name} (${moderator.id})`);
+      console.log(`[BAN] Failed to find Discord user. Dumping data:`);
+      console.log(`[BAN] M: ${moderator.name}/${moderator.id} V: ${victim.name}/${victim.id}`);
+      console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${ban.mod}`);
       return;
     }
 

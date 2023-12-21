@@ -11,7 +11,7 @@ export const data = new SlashCommandBuilder()
     return option.setName('username').setDescription('Roblox username').setRequired(true);
   });
 export async function run(
-  client: CustomClient,
+  _client: CustomClient,
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ) {
@@ -24,7 +24,8 @@ export async function run(
     `https://thumbnails.roblox.com/v1/users/avatar?userIds=${roblox.user.id}&size=720x720&format=Png&isCircular=false`
   )
     .then((r) => r.json())
-    .then((r) => r.data[0].imageUrl);
+    .then((r) => r.data[0].imageUrl)
+    .catch(() => 'https://cdn.discordapp.com/embed/avatars/5.png?size=1024');
   // Reply to interaction
   return interaction.editReply({
     embeds: [

@@ -193,12 +193,18 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
       link: m.url
     })
     // Then add the message to the ticket
-    .then((m) => ticket.addMsg(m));
-  // Edit the original interaction
-  mi.editReply({
-    content: 'Report submitted. Here is a copy. A copy as also been sent to your DMs if I can DM you.',
-    embeds: [reportEmbed]
-  });
+    .then((m) => {
+      ticket.addMsg(m);
+      // Edit the original interaction
+      mi.editReply({
+        content: 'Report submitted. Here is a copy. A copy as also been sent to your DMs if I can DM you.',
+        embeds: [reportEmbed]
+      });
+    })
+    .catch(() => {
+      ticket.destroy({ force: true });
+      mi.editReply({ content: 'Failed to create the report. Please re-run the command' });
+    });
   // Return
   return;
 }
