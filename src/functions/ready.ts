@@ -66,7 +66,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
       displayName: 'Unknown'
     };
     // Rewrite if FairPlay
-    if (String(ban.mod.discord).includes('FairPlay')) rblxId = '4610463663';
+    if (ban.mod.discord === 'FairPlay Anti-Cheat') rblxId = '4610463663';
     // Fetch from Roblox
     moderator = await fetch(`https://users.roblox.com/v1/users/${rblxId}`, {
       method: 'GET',
@@ -103,7 +103,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
     }
     // Can't find them, skip and log for later
     if (!discord) {
-      console.log(`[BAN] Failed to find Discord user. Dumping data:`);
+      console.log(`[BAN] Failed to find Discord user. Dumping data at ${new Date().toLocaleTimeString()}:`);
       console.log(`[BAN] M: ${moderator.name}/${moderator.id} V: ${victim.name}/${victim.id}`);
       console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${ban.mod}`);
       return;
