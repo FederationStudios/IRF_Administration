@@ -176,10 +176,10 @@ function parseTime(time: string): number {
       unit === 'd'
         ? Number(amount) * 24 * 60 * 60
         : unit === 'h'
-        ? Number(amount) * 60 * 60
-        : unit === 'm'
-        ? Number(amount) * 60
-        : Number(amount);
+          ? Number(amount) * 60 * 60
+          : unit === 'm'
+            ? Number(amount) * 60
+            : Number(amount);
   }
 
   return duration;

@@ -302,10 +302,10 @@ export async function run(
             data.presence.userPresenceType === 0
               ? '💤 Offline'
               : data.presence.userPresenceType === 1
-              ? '🌐 Online'
-              : data.presence.userPresenceType === 2
-              ? '🟢 In Game'
-              : '❔ Unknown',
+                ? '🌐 Online'
+                : data.presence.userPresenceType === 2
+                  ? '🟢 In Game'
+                  : '❔ Unknown',
           inline: true
         },
         {
