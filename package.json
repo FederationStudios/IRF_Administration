@@ -29,7 +29,7 @@
   "dependencies": {
     "discord.js": "14.14.1",
     "mysql2": "3.9.1",
-    "sequelize": "6.35.2",
+    "sequelize": "6.36.0",
     "typescript": "5.3.3"
   },
   "devDependencies": {
