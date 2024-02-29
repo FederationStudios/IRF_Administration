@@ -1,12 +1,11 @@
-import { ButtonInteraction, Client, Collection, IntentsBitField, InteractionType, Message } from 'discord.js';
+import { Client, Collection, IntentsBitField, InteractionType, Message } from 'discord.js';
 import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
 import { default as config } from './config.json' assert { type: 'json' };
 import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
-import { default as readyHandler, handleBans } from './functions/ready.js';
-import { claimTicket, closeTicket, replyTicket, transferTicket, unclaimTicket } from './functions/tickets.js';
-import { initModels, tickets } from './models/init-models.js';
+import { handleBans, default as readyHandler } from './functions/ready.js';
+import { initModels } from './models/init-models.js';
 import { CustomClient, ServerList } from './typings/Extensions.js';
 const wait = promisify(setTimeout);
 let ready = false;
@@ -209,63 +208,6 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         return interaction.respond([]); // Invalid commandName
       }
     }
-  } else if (interaction.type === InteractionType.MessageComponent) {
-    // If not a button or a ticket handler, return
-    if (!interaction.isButton()) return;
-    // eslint-disable-next-line no-useless-escape
-    if (!/(?:reply|transfer|close|claim)\-[\w\-]{36}/.test(interaction.customId)) return;
-    // Get the ticket
-    let ticket: tickets = null;
-    if (interaction.customId.split('-')[0] !== 'reply') {
-      // If not a reply, defer reply and fetch ticket
-      await interaction.deferReply({ ephemeral: true });
-      ticket = await client.models!.tickets.findByPk(interaction.customId.split('-').slice(1).join('-'));
-      if (!ticket) {
-        // Run both edits at the same time
-        await Promise.all([
-          interaction.editReply({ content: 'This ticket does not exist' }),
-          (interaction as ButtonInteraction).message.edit({
-            content: 'This ticket does not exist. It may have been manually removed by a developer!',
-            components: []
-          })
-        ]);
-        return;
-      }
-    }
-    // Send to handler
-    switch (interaction.customId.split('-')[0]) {
-      case 'close': {
-        await closeTicket({ interaction, client, ticket });
-        break;
-      }
-      case 'claim': {
-        await claimTicket({ interaction, client, ticket });
-        break;
-      }
-      case 'unclaim': {
-        await unclaimTicket({ interaction, client, ticket });
-        break;
-      }
-      case 'transfer': {
-        await transferTicket({ interaction, client, ticket });
-        break;
-      }
-      case 'reply': {
-        await replyTicket({ interaction, client, ticket });
-        break;
-      }
-      default: {
-        if (!interaction.replied)
-          interaction.reply({
-            content: `You shouldn't see this! Contact an Engineer with this: ${interaction.customId.split('-')[0]}`
-          });
-        else
-          interaction.editReply({
-            content: `You shouldn't see this! Contact an Engineer with this: ${interaction.customId.split('-')[0]}`
-          });
-      }
-    }
-    return;
   }
 });
 
