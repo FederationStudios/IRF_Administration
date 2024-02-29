@@ -15,7 +15,7 @@ export async function run(client: CustomClient, interaction: ChatInputCommandInt
     return;
   }
   // Report form has been moved. Provide the new link
-  const invUrl = 'https://discord.gg/irf-military-451841329765548069';
+  const invUrl = 'https://discord.gg/zqSJpZSJ';
   interaction.editReply({
     content: `Looking for the report form? We've moved this to the Military server. [Click here](${invUrl}) or use this invite link: ${invUrl}`
   });
