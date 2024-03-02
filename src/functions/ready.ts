@@ -106,7 +106,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
       console.log(`[BAN] Failed to find Discord user. Dumping data at ${new Date().toLocaleTimeString()}:`);
       console.log(`[BAN] M: ${moderator.name}/${moderator.id} V: ${victim.name}/${victim.id}`);
       console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${ban.mod}`);
-      return;
+      continue;
     }
 
     // Get the game name
