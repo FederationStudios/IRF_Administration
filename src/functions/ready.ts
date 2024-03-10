@@ -116,6 +116,14 @@ export async function handleBans(client: CustomClient): Promise<void> {
     // Check logging channel exists
     const banLog = client.channels.cache.get(config.channels.ban);
     if (!banLog || !banLog.isTextBased()) break;
+    // Update moderator and reason data
+    await ban.update({
+      mod: {
+        discord: discord.user.id,
+        roblox: moderator.id
+      },
+      reason: ban.reason.replace('~~~irf', '')
+    });
     // Send embed
     banLog.send({
       embeds: [
@@ -143,14 +151,6 @@ export async function handleBans(client: CustomClient): Promise<void> {
           timestamp: ban.createdAt.toISOString()
         }
       ]
-    });
-    // Update moderator and reason data
-    await ban.update({
-      mod: {
-        discord: discord.user.id,
-        roblox: moderator.id
-      },
-      reason: ban.reason.replace('~~~irf', '')
     });
   }
 }

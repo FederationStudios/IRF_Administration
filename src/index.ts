@@ -55,12 +55,12 @@ client.on('ready', async () => {
     return false;
   });
   // Call on startup
-  if (ready) handleBans(client);
+  if (ready && process.env.environment === 'development') handleBans(client);
   // Setup interval
   setInterval(() => {
     if (!ready) return;
     handleBans(client);
-  }, 20_000);
+  }, 120_000);
 });
 
 client.on('interactionCreate', async (interaction): Promise<void> => {
@@ -140,9 +140,9 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         const value = interaction.options.getString('reason');
         const reasons = [
           // DIVISIONS //
-          { name: 'GA - Random killing', value: 'User is mass random killing' },
+          { name: 'MoGA - Random killing', value: 'User is mass random killing' },
           { name: 'MP - Military Law', value: 'User is violating Military Law' },
-          { name: 'FSS - Bolshevik Law', value: 'User is violating Bolshevik Law' },
+          { name: 'MoSS - Bolshevik Law', value: 'User is violating Bolshevik Law' },
           { name: 'MoA - No admissions', value: 'There is no Admissions in the server' },
           { name: 'MoA - Gamepass Admissions abuse', value: 'Admissions is abusing their powers (Gamepass)' },
           // RAIDS //
@@ -161,8 +161,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
           { name: 'Higher authority needed (Server Ban)', value: 'Need someone to server ban a user' },
           { name: 'Higher authority needed (Temp/Perm Ban)', value: 'Need someone to temp/perm ban a user' },
           // BACKUP //
-          { name: 'General backup', value: 'Control has been lost, general backup is needed' },
-          { name: 'DDoS Attack', value: 'There is a DDoS attack on the server' }
+          { name: 'General backup', value: 'Control has been lost, general backup is needed' }
         ];
         // If no value, return the list of common reasons
         if (!value) return interaction.respond(reasons);
