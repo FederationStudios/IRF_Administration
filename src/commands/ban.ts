@@ -118,13 +118,8 @@ export async function run(
     return interactionEmbed(3, 'One or more channels could not be fetched. Please try again later', interaction);
   // Validate the evidence
   let rawEvidence: Attachment = options.getAttachment('evidence');
-  // If no evidence was provided, fetch the default proof
-  if (!rawEvidence) {
-    rawEvidence = await image_host.messages
-      .fetch(discord.defaultProofURL.split('/')[6])
-      .then((m) => m.attachments.first());
-  }
   if (
+    rawEvidence && // rawEvidence can be null, so we check that here
     rawEvidence.contentType.split('/')[0] !== 'image' &&
     rawEvidence.contentType.split('/')[1] === 'gif' &&
     rawEvidence.contentType.split('/')[0] === 'video'
@@ -136,12 +131,12 @@ export async function run(
   // Add variable for checking for errors
   let error = false;
   // If attachments are present, send to image_host
-  if (options.getAttachment('evidence')) {
+  if (typeof rawEvidence !== "undefined") {
     const image_host = client.channels.cache.get(channels.image_host) as TextChannel;
     evidence = await image_host
       .send({
         content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
-        files: [rawEvidence.proxyURL.split('?')[0]]
+        files: [rawEvidence.proxyURL]
       })
       .catch((err) => {
         // Throw error and safely exit
@@ -242,7 +237,7 @@ export async function run(
             name: 'Reason',
             // Attachment will always be present, checks are above
             value: `${options.getString('reason')}\n\n**Evidence:** ${
-              evidence.attachments.first()!.proxyURL.split('?')[0]
+              evidence.attachments.first()!.proxyURL
             }`,
             inline: true
           }
@@ -272,7 +267,7 @@ export async function run(
             name: 'Reason',
             // Attachment will always be present, checks are above
             value: `${options.getString('reason')}\n\n**Evidence:** ${
-              evidence.attachments.first()!.proxyURL.split('?')[0]
+              evidence.attachments.first()!.proxyURL
             }`,
             inline: false
           }
