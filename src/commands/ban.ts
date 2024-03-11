@@ -141,14 +141,7 @@ export async function run(
     evidence = await image_host
       .send({
         content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
-        files: [
-          {
-            attachment: rawEvidence.proxyURL.split('?')[0],
-            name: `EvidenceFrom_${rowifi.username}+${rowifi.roblox}.${
-              rawEvidence.proxyURL.split('.').splice(-1)[0].split('?')[0]
-            }`
-          }
-        ]
+        files: [rawEvidence.proxyURL.split('?')[0]]
       })
       .catch((err) => {
         // Throw error and safely exit
