@@ -67,7 +67,8 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
   if (!ready && interaction.isRepliable())
     return interaction
       .reply({ content: 'Please wait for the bot to finish loading', ephemeral: true })
-      .then(() => void Promise); // Hacky method to return void promise
+      .then(() => void Promise)
+      .catch(() => Promise.reject()); // Hacky method to return void promise
 
   if (interaction.type === InteractionType.ApplicationCommand) {
     const command = client.commands!.get(interaction.commandName);
@@ -89,11 +90,14 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       // Wait for 10 seconds, if the command hasn't been executed, send a timeout message
       await wait(10_000);
       if (ack != null) return; // Already executed
-      interaction.fetchReply().then((m) => {
-        // If the message is empty and there are no embeds, it's a timeout
-        if (m.content === '' && m.embeds.length === 0)
-          interactionEmbed(3, 'The command timed out. Please contact an Engineer', interaction);
-      });
+      interaction
+        .fetchReply()
+        .then((m) => {
+          // If the message is empty and there are no embeds, it's a timeout
+          if (m.content === '' && m.embeds.length === 0)
+            interactionEmbed(3, 'The command timed out. Please contact an Engineer', interaction);
+        })
+        .catch(() => toConsole('Failed to fetch reply', new Error().stack!, client));
     }
   } else if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
     switch (interaction.commandName) {
@@ -177,9 +181,9 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         // If the command is shutdown, offer the list of active servers
         const { name, value = 'Papers' } = interaction.options.getFocused(true);
         if (name !== 'target') return; // Not focused on the server list
-        const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers).then(
-          (r: Response) => r.json()
-        );
+        const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers)
+          .then((r: Response) => r.json())
+          .catch(() => ({ success: false, servers: {} }));
         if (!servers.success) return interaction.respond([]);
         const matches: { name: string; value: string }[] = [];
         const idMap = new Map();

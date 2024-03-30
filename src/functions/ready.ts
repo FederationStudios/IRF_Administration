@@ -78,7 +78,8 @@ export async function handleBans(client: CustomClient): Promise<void> {
         if (!r.id) return moderator;
         // Else return the data fetched
         else return r;
-      });
+      })
+      .catch(() => moderator);
     // Fetch Discord information
     let discord: GuildMember | { user: { username: string; id: string }; nickname: string } | undefined;
     if (moderator.id !== 0) {

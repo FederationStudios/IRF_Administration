@@ -11,7 +11,7 @@ import {
   TextChannel
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-import { IRFGameId, getRoblox, interactionEmbed } from '../functions.js';
+import { IRFGameId, getRoblox, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 const { discord } = config;
 
@@ -42,7 +42,8 @@ export async function run(
     `https://thumbnails.roblox.com/v1/users/avatar?userIds=${roblox.user.id}&size=720x720&format=Png&isCircular=false`
   )
     .then((r: Response) => r.json())
-    .then((r) => r.data[0].imageUrl);
+    .then((r) => r.data[0].imageUrl)
+    .catch(() => null);
   // Create array holder for bans
   const embeds: EmbedBuilder[] = [];
   for (const ban of bans) {
@@ -64,7 +65,17 @@ export async function run(
         (c as TextChannel).messages.fetch(
           /.+\/([0-9]{0,20})\/([0-9]{0,20})$/g.exec(ban.data.proof || discord.defaultProofURL)![2]
         )
+      )
+      .catch(() => toConsole(`Failed to fetch message for ban ${ban.banId}`, new Error().stack!, client));
+    if (!evid) {
+      embeds.push(
+        new EmbedBuilder({
+          title: 'Error Parsing Proof',
+          description: `Proof given was invalid and could not be parsed. Report this to a developer.\n\nMessage failed on \`${ban.data.proof}\` (ID: ${ban.banId})`
+        })
       );
+      continue;
+    }
     // First attachment
     const fa = evid.attachments.first();
     // If the evidence message is not found, add an embed with an error message
@@ -135,7 +146,14 @@ export async function run(
   if (embeds.length < 2) data.components = [];
   const coll = await interaction
     .editReply(data)
-    .then((r) => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }));
+    .then((r) => r.createMessageComponentCollector({ filter, componentType: ComponentType.Button, time: 120_000 }))
+    .catch(() => null);
+
+  if (!coll) {
+    toConsole('Failed to make collector', new Error().stack!, client);
+    interaction.editReply({ content: 'Failed to make collector', components: [] });
+    return;
+  }
 
   coll.on('collect', (i) => {
     if (i.customId === 'next') {

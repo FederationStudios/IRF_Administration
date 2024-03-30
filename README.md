@@ -90,11 +90,13 @@ IRF Administration would not be possible without contributions from the followin
 ```
 
 ## Contributing
+If you contribute, please follow the guidelines below. If a change comes from you, feel free to add yourself to the `pets.json`
+
 ### Bug Report
 Any feature that is not working as intended or you believe to have a bug should be reported as an issue. Please be as descriptive as possible, and include any screenshots or other information that may be helpful. Open an issue on the [Issues](https://github.com/FederationStudios/IRF_Administration/issues) page. If you are able to fix the bug, please submit a pull request and link the issue in the pull request.
 
 ### Feature Request
-If you have an idea for this bot and it involves a division/ministry, please reach out to the corresponding High Command. They may have a divisional bot that serves this need already. However, if your idea is completely new, you are more than welcome to submit it as an issue. Please be as descriptive as possible, and include any mockups or other information that may be helpful.
+If you have an idea for this bot and it involves a division/ministry, please reach out to the corresponding High Command. They may have a divisional bot that serves this need already. However, if your idea is completely new and is NOT a ministry/division idea, you are more than welcome to submit it as an issue. Please be as descriptive as possible, and include any mockups or other information that may be helpful.
 
 ### Security Concern
 All security concerns will be handled properly, given proper information such as the severity of the concern and its potential for exploit. Please reach out to any member (With as many details as possible) ranked `Engineer` in the [Discord server](https://discord.gg/irf) and we will handle it immediately. By default, we will credit you here. If you do not wish to be credited, please let us know.

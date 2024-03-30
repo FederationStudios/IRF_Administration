@@ -30,7 +30,9 @@ export async function run(
   if (robloxData.success === false) return interactionEmbed(3, robloxData.error, interaction);
   if (robloxData.data.role.rank <= 200)
     return interactionEmbed(3, 'You do not have permission to use this command (Engineer+)', interaction);
-  const servers: { success: boolean; servers: ServerList } = await fetch(urls.servers).then((r: Response) => r.json());
+  const servers: { success: boolean; servers: ServerList } = await fetch(urls.servers)
+    .then((r: Response) => r.json())
+    .catch(() => ({}));
   if (!servers.success)
     return interactionEmbed(
       3,
@@ -38,7 +40,7 @@ export async function run(
       interaction
     );
   const target = Number(options.getString('target', true));
-  if (isNaN(target)) return interactionEmbed(3, 'Invalid target (Must be a user ID)', interaction);
+  if (Number.isNaN(target)) return interactionEmbed(3, 'Invalid target (Must be a user ID)', interaction);
   const reason = options.getString('reason');
   // For each server in each game, check if the target is in the server
   let playerFound = false;
@@ -51,7 +53,8 @@ export async function run(
       // Get the universe ID of the game
       const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${gameId}/universe`)
         .then((r) => r.json())
-        .then((r) => r.universeId);
+        .then((r) => r.universeId)
+        .catch(() => 0);
       // Send the kick request
       const req = await fetch(
         `https://apis.roblox.com/messaging-service/v1/universes/${universeId}/topics/remoteAdminCommands`,

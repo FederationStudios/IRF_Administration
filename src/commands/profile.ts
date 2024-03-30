@@ -11,7 +11,7 @@ import {
   StringSelectMenuInteraction
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
-import { RobloxGroupUserData, getRoblox, interactionEmbed, type RobloxUserData } from '../functions.js';
+import { RobloxGroupUserData, getRoblox, interactionEmbed, toConsole, type RobloxUserData } from '../functions.js';
 import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
 const { roblox } = config;
 
@@ -35,7 +35,8 @@ export async function run(
     `https://thumbnails.roblox.com/v1/users/avatar?userIds=${robloxData.user.id}&size=720x720&format=Png&isCircular=false`
   )
     .then((r) => r.json())
-    .then((r) => r.data[0].imageUrl);
+    .then((r) => r.data[0].imageUrl)
+    .catch(() => null);
   const bans = await client.models.bans.findAll({ where: { user: robloxData.user.id } });
 
   //#region Fetching data
@@ -83,23 +84,19 @@ export async function run(
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}`)
       .then((r) => r.json())
       .then((r: RobloxUserData) => (data.user = r))
-  );
-  promises.push(
+      .catch(() => Promise.resolve()),
     fetch(`https://friends.roblox.com/v1/users/${robloxData.user.id}/friends`)
       .then((r) => r.json())
       .then((r) => (data.friends = r.data))
-  );
-  promises.push(
+      .catch(() => Promise.resolve()),
     fetch(`https://groups.roblox.com/v1/users/${robloxData.user.id}/groups/roles`)
       .then((r) => r.json())
       .then((r) => (data.groups = r.data))
-  );
-  promises.push(
+      .catch(() => Promise.resolve()),
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}/username-history?limit=50`)
       .then((r) => r.json())
       .then((r) => (data.history = r.data.map((u) => u.name)))
-  );
-  promises.push(
+      .catch(() => Promise.resolve()),
     fetch('https://presence.roblox.com/v1/presence/users', {
       method: 'POST',
       body: JSON.stringify({ userIds: [robloxData.user.id] }),
@@ -110,6 +107,7 @@ export async function run(
     })
       .then((r) => r.json())
       .then((r) => (data.presence = r.userPresences[0]))
+      .catch(() => Promise.resolve())
   );
   await Promise.allSettled(promises);
   data.user.createdAt = new Date(data.user.created).toUTCString();
@@ -398,9 +396,14 @@ export async function run(
   //#region Pagination
   const coll = await interaction
     .editReply({ embeds: [categories.overview[0]], components: [selectorRow] })
-    .then((m) =>
-      m.createMessageComponentCollector({ filter: (i) => i.user.id === interaction.user.id, time: 180_000 })
-    );
+    .then((m) => m.createMessageComponentCollector({ filter: (i) => i.user.id === interaction.user.id, time: 180_000 }))
+    .catch(() => null);
+
+  if (!coll) {
+    toConsole('Failed to make collector', new Error().stack!, client);
+    interactionEmbed(3, 'Failed to make collector', interaction);
+    return;
+  }
 
   coll.on('collect', (i: ButtonInteraction | StringSelectMenuInteraction) => {
     const selectors: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] = [selectorRow];

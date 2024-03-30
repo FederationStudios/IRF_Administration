@@ -196,9 +196,9 @@ async function getGroup(
   if (roblox.success === false) return { success: false, error: roblox.error };
   username = roblox.user.id; // Set username to the ID of the user
   // Fetch the group data from Roblox API
-  const group = await fetch(`https://groups.roblox.com/v2/users/${username}/groups/roles`).then((r: Response) =>
-    r.json()
-  );
+  const group = await fetch(`https://groups.roblox.com/v2/users/${username}/groups/roles`)
+    .then((r: Response) => r.json())
+    .catch(() => ({ errorMessage: 'Failed to fetch group data' }));
   // If the group is not found, return an error
   if (group.errorMessage) return { success: false, error: `No group found with ID \`${groupId}\`` };
   // Find the group specified
@@ -215,35 +215,45 @@ async function getGroup(
 async function getRowifi(
   user: string,
   client: CustomClient
-): Promise<{ success: false; error: string } | { success: true; roblox: number; username: string }> {
+): Promise<{ success: true; roblox: number; username: string } | { success: false; error: string }> {
   const discord = await client.users.fetch(user).catch(() => false);
   if (typeof discord === 'boolean') return { success: false, error: 'Invalid Discord user ID' };
   // Check if user is in the Commissariat group
   const commGroup = await getGroup(discord.username, config.roblox.commissariatGroup);
   if (commGroup.success === true) {
     // Fetch their roblox ID
-    return await fetch(`https://users.roblox.com/v1/usernames/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usernames: [discord.username] })
-    })
-      .then((r: Response) => r.json())
-      // Typings are slightly incorrect, but the property we want is there
-      .then((r: { data: { id: number }[] }) => r.data[0])
-      .then((r: { id: number }) => {
-        // Return their roblox ID and username
-        return { success: true, roblox: r.id, username: discord.username };
-      });
+    return (
+      fetch(`https://users.roblox.com/v1/usernames/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usernames: [discord.username] })
+      })
+        .then((r: Response) => r.json())
+        // Typings are slightly incorrect, but the property we want is there
+        .then((r: { data: { id: number }[] }) => r.data[0])
+        .then((r: { id: number }) => {
+          // Return their roblox ID and username
+          return { success: true, roblox: r.id, username: discord.username } as {
+            // v TS interprets "true" as a boolean for some odd reason!
+            success: true;
+            roblox: number;
+            username: string;
+          };
+        })
+        .catch(() => ({ success: false, error: 'Failed to fetch Roblox ID' }))
+    );
   }
   // Fetch their Roblox ID from Rowifi
   const userData = await fetch(`https://api.rowifi.xyz/v2/guilds/${config.discord.mainServer}/members/${user}`, {
     headers: { Authorization: `Bot ${config.bot.rowifiApiKey}` }
-  }).then((r: Response) => {
-    // If response is not OK, return the error
-    if (!r.ok) return { success: false, error: `Rowifi returned status code \`${r.status}\`` };
-    // Return the JSON
-    return r.json();
-  });
+  })
+    .then((r: Response) => {
+      // If response is not OK, return the error
+      if (!r.ok) return { success: false, error: `Rowifi returned status code \`${r.status}\`` };
+      // Return the JSON
+      return r.json();
+    })
+    .catch(() => ({ success: false, error: 'Failed to fetch Rowifi data' }));
   // If success is present, return an error
   if (userData.success !== undefined)
     return {
@@ -252,7 +262,9 @@ async function getRowifi(
     };
 
   // Fetch their Roblox username from the Roblox API
-  const roblox = await fetch(`https://users.roblox.com/v1/users/${userData.roblox_id}`).then((r: Response) => r.json());
+  const roblox = await fetch(`https://users.roblox.com/v1/users/${userData.roblox_id}`)
+    .then((r: Response) => r.json())
+    .catch(() => ({ errors: [{ message: 'Failed to fetch Roblox data' }] }));
 
   // If the Roblox API returns an error, return the error
   if (roblox.errors) return { success: false, error: `\`${roblox.errors[0].message}\`` };
@@ -269,9 +281,11 @@ async function getRowifi(
 async function getRoblox(
   input: string | number
 ): Promise<{ success: false; error: string } | { success: true; user: RobloxUserData }> {
-  if (!isNaN(input as number)) {
+  if (!Number.isNaN(Number(input))) {
     // If input is a number, fetch the user from Roblox API
-    const user = await fetch(`https://users.roblox.com/v1/users/${input}`).then((r: Response) => r.json());
+    const user = await fetch(`https://users.roblox.com/v1/users/${input}`)
+      .then((r: Response) => r.json())
+      .catch(() => ({ errors: ['Failed to fetch'] }));
 
     // If the user is not found, return an error
     if (user.errors) return { success: false, error: `Interpreted ${input} as user ID but found no user` };
@@ -284,7 +298,8 @@ async function getRoblox(
       body: JSON.stringify({ usernames: [input] })
     })
       .then((r: Response) => r.json())
-      .then((r: { data: RobloxUserData[] }) => r.data[0]);
+      .then((r: { data: RobloxUserData[] }) => r.data[0])
+      .catch(() => null);
 
     // If the user is not found, return an error
     if (!user) return { success: false, error: `Interpreted ${input} as username but found no user` };

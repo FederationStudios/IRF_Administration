@@ -73,8 +73,9 @@ export async function run(
     }
   )
     .then((r) => r.json())
-    .then((r) => r.errors || r.userPresences[0]);
-  if (Array.isArray(presenceCheck)) {
+    .then((r) => r.errors || r.userPresences[0])
+    .catch(() => null);
+  if (Array.isArray(presenceCheck) || !presenceCheck) {
     toConsole(
       `Presence check failed for ${interaction.user.tag} (${interaction.user.id})\n\`\`\`json\n${JSON.stringify(
         presenceCheck,

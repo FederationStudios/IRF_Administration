@@ -41,7 +41,9 @@ export async function run(
     return;
   }
   // Fetch servers
-  const servers: { success: boolean; servers: ServerList } = await fetch(urls.servers).then((r: Response) => r.json());
+  const servers: { success: boolean; servers: ServerList } = await fetch(urls.servers)
+    .then((r: Response) => r.json())
+    .catch(() => ({ success: false }));
   if (!servers.success) {
     interactionEmbed(
       3,
@@ -72,7 +74,8 @@ export async function run(
         // Fetch universeId
         const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${PlaceId}/universe`)
           .then((r) => r.json())
-          .then((r) => r.universeId);
+          .then((r) => r.universeId)
+          .catch(() => 0);
         // Send primary request to shutdown server
         const resp = await fetch(
           `https://apis.roblox.com/messaging-service/v1/universes/${universeId}/topics/remoteAdminCommands`,
@@ -120,7 +123,8 @@ export async function run(
       // Fetch universeId
       const universeId = await fetch(`https://apis.roblox.com/universes/v1/places/${id}/universe`)
         .then((r) => r.json())
-        .then((r) => r.universeId);
+        .then((r) => r.universeId)
+        .catch(() => 0);
       // Restore primary OpenCloud token
       params.headers['x-api-key'] = roblox.mainOCtoken;
       // Send primary request to shutdown server

@@ -1,10 +1,7 @@
 import {
-  Attachment,
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
-  GuildMember,
   GuildMemberRoleManager,
-  Message,
   SlashCommandBuilder,
   TextChannel
 } from 'discord.js';
@@ -17,11 +14,12 @@ import {
   getEnumKey,
   getRoblox,
   getRowifi,
-  interactionEmbed,
-  toConsole
+  interactionEmbed
 } from '../functions.js';
+import { execute as logBan } from '../functions/logBan.js';
+import { execute as parseEvidence } from '../functions/parseEvidence.js';
 import { CustomClient } from '../typings/Extensions.js';
-const { channels, discord } = config;
+const { channels } = config;
 const wait = promisify(setTimeout);
 
 export const name = 'ban';
@@ -85,14 +83,14 @@ export async function run(
     );
 
   // Check if the user is already banned
-  const bans = await client.models.bans.findAll({
+  const banCheck = await client.models.bans.findOne({
     where: {
       user: id.id,
       game: options.getString('game_id', true)
     }
   });
   // If the user is already banned, show a warning
-  if (bans.length > 0) {
+  if (typeof banCheck !== 'undefined') {
     interactionEmbed(
       2,
       `A ban already exists for ${id.name} (${id.id}) on ${getEnumKey(
@@ -109,171 +107,40 @@ export async function run(
     interactionEmbed(3, rowifi.error ?? 'Unknown error (Report this to a developer)', interaction);
     return;
   }
-
   // Fetch the channels that will be used
   const image_host = (await client.channels.fetch(channels.image_host, { cache: true })) as TextChannel;
-  const nsc_report = (await client.channels.fetch(channels.nsc_report, { cache: true })) as TextChannel;
-  const ban = (await client.channels.fetch(channels.ban, { cache: true })) as TextChannel;
-  if (!image_host || !nsc_report || !ban)
+  const ban_logs = (await client.channels.fetch(channels.ban, { cache: true })) as TextChannel;
+  if (!image_host || !ban_logs)
     return interactionEmbed(3, 'One or more channels could not be fetched. Please try again later', interaction);
-  // Validate the evidence
-  let rawEvidence: Attachment = options.getAttachment('evidence');
-  if (
-    rawEvidence && // rawEvidence can be null, so we check that here
-    rawEvidence.contentType.split('/')[0] !== 'image' &&
-    rawEvidence.contentType.split('/')[1] === 'gif' &&
-    rawEvidence.contentType.split('/')[0] === 'video'
-  ) {
-    interactionEmbed(3, 'Evidence must be an image (PNG, JPG, JPEG, or MP4)', interaction);
-    return;
-  }
-  let evidence: Message | undefined | void;
-  // Add variable for checking for errors
-  let error = false;
-  // If attachments are present, send to image_host
-  if (typeof rawEvidence !== "undefined") {
-    const image_host = client.channels.cache.get(channels.image_host) as TextChannel;
-    evidence = await image_host
-      .send({
-        content: `Evidence from ${interaction.user.toString()} (${interaction.user.tag} - ${interaction.user.id})`,
-        files: [rawEvidence.proxyURL]
-      })
-      .catch((err) => {
-        // Throw error and safely exit
-        error = true;
-        // Detect too large files
-        if (String(err).includes('Request entity too large')) {
-          return interactionEmbed(
-            3,
-            'Discord rejected the evidence (File too large). Try compressing the file first!',
-            interaction
-          );
-        }
-        return interactionEmbed(3, 'Failed to upload evidence to image host', interaction);
-      });
-    // Drop further handling - we've already responded
-    if (error) return;
-  } else {
-    // Extract the message ID and channel ID from the URL
-    const pChnlId = discord.defaultProofURL.split('/')[5];
-    const pMsgId = discord.defaultProofURL.split('/')[6];
-    // Fetch evidence
-    evidence = await (client.channels.cache.get(pChnlId) as TextChannel).messages.fetch(pMsgId);
-  }
-  // If the evidence failed to upload, return an error
-  if (!evidence || !evidence.attachments.first()) {
-    interactionEmbed(3, 'Failed to upload evidence to image host', interaction);
-    return;
-  }
-  try {
-    // If the user is already banned, update the ban
-    if (bans.length > 0) {
-      await client.models.bans.update(
-        {
-          user: id.id,
-          game: Number(options.getString('game_id', true)),
-          reason: options.getString('reason', true),
-          data: {
-            proof: evidence.url,
-            privacy: 'Public'
-          },
-          mod: {
-            discord: interaction.user.id,
-            roblox: rowifi.roblox
-          }
-        },
-        {
-          where: {
-            user: id.id,
-            game: Number(options.getString('game_id', true))
-          }
-        }
-      );
-    } else {
-      await client.models.bans.create({
+  // Send to evidence parser
+  const evidence = await parseEvidence(client, interaction);
+  if (!evidence) return interactionEmbed(3, 'Failed to parse evidence', interaction);
+  // Log the ban, creating one or updating an existing ban
+  const ban = !banCheck
+    ? await client.models.bans.create({
         user: id.id,
-        game: Number(options.getString('game_id')),
-        reason: options.getString('reason'),
+        game: Number(options.getString('game_id', true)),
+        mod: {
+          roblox: rowifi.roblox,
+          discord: interaction.user.id
+        },
         data: {
-          privacy: 'Public',
-          proof: evidence.url
+          proof: evidence.proxyURL,
+          privacy: 'Public'
+        },
+        reason: options.getString('reason', true)
+      })
+    : await banCheck.update({
+        data: {
+          proof: evidence.proxyURL,
+          privacy: 'Public'
         },
         mod: {
-          discord: interaction.user.id,
-          roblox: rowifi.roblox
-        }
+          roblox: rowifi.roblox,
+          discord: interaction.user.id
+        },
+        reason: options.getString('reason', true)
       });
-    }
-  } catch (e) {
-    toConsole(
-      `An error occurred while adding a ban for ${id.name} (${id.id})\n> ${String(e)}`,
-      new Error().stack!,
-      client
-    );
-    error = true;
-  }
-  if (error) return interactionEmbed(3, ResultMessage.DatabaseError, interaction);
-
-  await ban.send({
-    embeds: [
-      {
-        title: `${(interaction.member as GuildMember).nickname || interaction.user.username} banned => ${id.name}`,
-        description: `**${interaction.user.id}** has added a ban for ${id.name} (${id.id}) on ${
-          IRFGameId[options.getString('game_id', true)]
-        } (${options.getString('game_id')})`,
-        color: 0x00ff00,
-        fields: [
-          {
-            name: 'Game',
-            value: `${IRFGameId[options.getString('game_id', true)]} (${options.getString('game_id')})`,
-            inline: true
-          },
-          {
-            name: 'User',
-            value: `${id.name} (${id.id})`,
-            inline: true
-          },
-          {
-            name: 'Reason',
-            // Attachment will always be present, checks are above
-            value: `${options.getString('reason')}\n\n**Evidence:** ${
-              evidence.attachments.first()!.proxyURL
-            }`,
-            inline: true
-          }
-        ],
-        timestamp: new Date().toISOString()
-      }
-    ]
-  });
-  await interaction.editReply({
-    content: 'Ban added successfully!',
-    embeds: [
-      {
-        title: 'Ban Details',
-        color: 0xde2821,
-        fields: [
-          {
-            name: 'User',
-            value: `${id.name} (${id.id})`,
-            inline: true
-          },
-          {
-            name: 'Game',
-            value: getEnumKey(IRFGameId, Number(options.getString('game_id', true)))!,
-            inline: true
-          },
-          {
-            name: 'Reason',
-            // Attachment will always be present, checks are above
-            value: `${options.getString('reason')}\n\n**Evidence:** ${
-              evidence.attachments.first()!.proxyURL
-            }`,
-            inline: false
-          }
-        ]
-      }
-    ]
-  });
+  await logBan(client, ban, id, interaction);
   return;
 }
