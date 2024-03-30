@@ -28,7 +28,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "14.11",
-    "mysql2": "3.9.2",
+    "mysql2": "3.9.3",
     "sequelize": "6.37.1",
     "typescript": "5.4.2"
   },
