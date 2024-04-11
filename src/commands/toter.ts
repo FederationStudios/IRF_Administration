@@ -6,7 +6,8 @@ import {
 } from 'discord.js';
 import { CustomClient } from '../typings/Extensions.js';
 import { getGroup, getRoblox, getRowifi, parseTime } from '../functions.js';
-import { roblox } from '../config.json' assert { 'type': 'json' };
+import { default as config } from '../config.json' assert { 'type': 'json' };
+const { roblox } = config;
 
 export const name = 'toter';
 export const data = new SlashCommandBuilder()
