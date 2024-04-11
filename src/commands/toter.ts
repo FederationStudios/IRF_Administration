@@ -5,7 +5,7 @@ import {
   SlashCommandBuilder
 } from 'discord.js';
 import { CustomClient } from '../typings/Extensions.js';
-import { getGroup, getRoblox, getRowifi } from '../functions.js';
+import { getGroup, getRoblox, getRowifi, parseTime } from '../functions.js';
 import { roblox } from '../config.json' assert { 'type': 'json' };
 
 export const name = 'toter';
@@ -56,7 +56,7 @@ export async function run(
     return;
   }
   // Compare as needed
-  if (targetToter.data.role.rank >= modToter.data.role.rank) {
+  if (targetToter.data.role.rank >= modToter.data.role.rank || roblox.toterRank > modToter.data.role.rank) {
     interaction.editReply({ content: 'You cannot manage this user (Insufficient permissions)' });
     return;
   }
@@ -76,7 +76,7 @@ export async function run(
       }
       // Create the entry
       const targetDiscord = options.getUser('discord');
-      const end = new Date(Date.now() + Number(options.getString('end')) * 1000);
+      const end = new Date(Date.now() + parseTime(options.getString('end')) * 1000);
       await client.models.toter_block.create({
         targetRoblox: target.user.id,
         targetDiscord: targetDiscord ? targetDiscord.id : null,
@@ -86,11 +86,13 @@ export async function run(
       });
       interaction.editReply({ content: 'User successfully blocked' });
       if (targetDiscord) {
-        targetDiscord.send({
-          content: `Greetings. You are temporarily blocked from accessing Toter perks.\n\n> Reason: ${options.getString(
-            'reason'
-          )}\n> End: <t:${end}:F> (<t:${end}:R>)`
-        });
+        targetDiscord
+          .send({
+            content: `Greetings. You are temporarily blocked from accessing Toter perks.\n\n> Reason: ${options.getString(
+              'reason'
+            )}\n> End: <t:${end}:F> (<t:${end}:R>)`
+          })
+          .catch(null);
       }
       break;
     }
