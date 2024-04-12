@@ -283,29 +283,35 @@ async function getRoblox(
 ): Promise<{ success: false; error: string } | { success: true; user: RobloxUserData }> {
   if (!Number.isNaN(Number(input))) {
     // If input is a number, fetch the user from Roblox API
-    const user = await fetch(`https://users.roblox.com/v1/users/${input}`)
-      .then((r: Response) => r.json())
-      .catch(() => ({ errors: ['Failed to fetch'] }));
+    const resp: Response = await fetch(`https://users.roblox.com/v1/users/${input}`);
+    const user = await resp.json()
+      .catch(() => ({ errors: [] }));
 
     // If the user is not found, return an error
-    if (user.errors && user.errors[0] && user.errors[0].message && user.errors[0].message === "Too many requests")
-      return { success: false, error: 'Roblox is ratelimiting us. Please try again later, or visit the user\'s profile yourself' };
+    if (resp.statusCode === 429)
+      return {
+        success: false,
+        error: 'Ratelimited by Roblox. Try again later or visit the user\'s profile manually for their user ID'
+      };
     if (user.errors) return { success: false, error: `Interpreted ${input} as user ID but found no user` };
     // Return the user
     return { success: true, user };
   } else {
-    const user = await fetch('https://users.roblox.com/v1/usernames/users', {
+    const resp: Response = await fetch('https://users.roblox.com/v1/usernames/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',  },
       body: JSON.stringify({ usernames: [input] })
-    })
-      .then((r: Response) => r.json())
+    });
+    const user = await resp.json()
       .then((r: { data: RobloxUserData[] }) => r.data[0])
-      .catch(() => null);
+      .catch(() => ({ errors: [] }));
 
     // If the user is not found, return an error
-    if (user.errors && user.errors[0] && user.errors[0].message && user.errors[0].message === "Too many requests")
-      return { success: false, error: 'Roblox is ratelimiting us. Please try again later, or visit the user\'s profile yourself' };
+    if (resp.statusCode === 429)
+      return {
+        success: false,
+        error: 'Ratelimited by Roblox. Try again later or visit the user\'s profile manually for their user ID'
+      };
     if (!user) return { success: false, error: `Interpreted ${input} as username but found no user` };
     // Return the user
     return { success: true, user };
