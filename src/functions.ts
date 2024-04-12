@@ -288,6 +288,8 @@ async function getRoblox(
       .catch(() => ({ errors: ['Failed to fetch'] }));
 
     // If the user is not found, return an error
+    if (user.errors && user.errors[0] && user.errors[0].message && user.errors[0].message === "Too many requests")
+      return { success: false, error: 'Roblox is ratelimiting us. Please try again later, or visit the user\'s profile yourself' };
     if (user.errors) return { success: false, error: `Interpreted ${input} as user ID but found no user` };
     // Return the user
     return { success: true, user };
@@ -302,6 +304,8 @@ async function getRoblox(
       .catch(() => null);
 
     // If the user is not found, return an error
+    if (user.errors && user.errors[0] && user.errors[0].message && user.errors[0].message === "Too many requests")
+      return { success: false, error: 'Roblox is ratelimiting us. Please try again later, or visit the user\'s profile yourself' };
     if (!user) return { success: false, error: `Interpreted ${input} as username but found no user` };
     // Return the user
     return { success: true, user };
