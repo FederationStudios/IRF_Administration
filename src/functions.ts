@@ -284,14 +284,13 @@ async function getRoblox(
   if (!Number.isNaN(Number(input))) {
     // If input is a number, fetch the user from Roblox API
     const resp: Response = await fetch(`https://users.roblox.com/v1/users/${input}`);
-    const user = await resp.json()
-      .catch(() => ({ errors: [] }));
+    const user = await resp.json().catch(() => ({ errors: [] }));
 
     // If the user is not found, return an error
-    if (resp.statusCode === 429)
+    if (resp.status === 429)
       return {
         success: false,
-        error: 'Ratelimited by Roblox. Try again later or visit the user\'s profile manually for their user ID'
+        error: "Ratelimited by Roblox. Try again later or visit the user's profile manually for their user ID"
       };
     if (user.errors) return { success: false, error: `Interpreted ${input} as user ID but found no user` };
     // Return the user
@@ -299,18 +298,19 @@ async function getRoblox(
   } else {
     const resp: Response = await fetch('https://users.roblox.com/v1/usernames/users', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json',  },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ usernames: [input] })
     });
-    const user = await resp.json()
+    const user = await resp
+      .json()
       .then((r: { data: RobloxUserData[] }) => r.data[0])
-      .catch(() => ({ errors: [] }));
+      .catch(() => null);
 
     // If the user is not found, return an error
-    if (resp.statusCode === 429)
+    if (resp.status === 429)
       return {
         success: false,
-        error: 'Ratelimited by Roblox. Try again later or visit the user\'s profile manually for their user ID'
+        error: "Ratelimited by Roblox. Try again later or visit the user's profile manually for their user ID"
       };
     if (!user) return { success: false, error: `Interpreted ${input} as username but found no user` };
     // Return the user
