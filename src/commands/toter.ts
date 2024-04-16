@@ -17,8 +17,12 @@ export const data = new SlashCommandBuilder()
     return sc
       .setName('block')
       .setDescription('Blocks a user from accessing Toter perks')
-      .addIntegerOption((opt) => opt.setName('roblox').setDescription('Roblox ID of the user to block'))
-      .addStringOption((opt) => opt.setName('end').setDescription('Time for block to last (format: 1d2h3m4s'))
+      .addIntegerOption((opt) =>
+        opt.setName('roblox').setDescription('Roblox ID of the user to block').setRequired(true)
+      )
+      .addStringOption((opt) =>
+        opt.setName('end').setDescription('Time for block to last (format: 1d2h3m4s').setRequired(true)
+      )
       .addStringOption((opt) => opt.setName('reason').setDescription('Reason for blocking').setRequired(true))
       .addUserOption((opt) => opt.setName('discord').setDescription('Discord user to block').setRequired(false));
   })
