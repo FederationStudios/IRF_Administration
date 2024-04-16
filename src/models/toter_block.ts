@@ -30,8 +30,9 @@ export class toter_block
     return toter_block.init(
       {
         pId: {
-          type: DataTypes.CHAR(36),
-          allowNull: false
+          type: DataTypes.UUID,
+          allowNull: false,
+          defaultValue: DataTypes.UUIDV4
         },
         targetRoblox: {
           type: DataTypes.INTEGER,

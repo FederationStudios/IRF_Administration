@@ -53,7 +53,7 @@ export async function run(
   }
   // Get their ranks
   const targetToter = await getGroup(target.user.name, roblox.toterGroup);
-  const modToter = await getGroup(interaction.user.id, roblox.toterGroup);
+  const modToter = await getGroup(rowifi.roblox, roblox.toterGroup);
   if (targetToter.success === false || modToter.success === false) {
     interaction.editReply({
       content: `Failed to fetch Toter group ranks for ${targetToter.success ? 'target' : 'mod'}`
