@@ -25,7 +25,10 @@ export const data = new SlashCommandBuilder()
         { name: 'Game Administration', value: 'Game Administrator' },
         { name: 'National Defense', value: 'National Defense' },
         { name: 'Military Police', value: 'Military Police' },
-        { name: 'State Security (NKVD)', value: 'State Security' }
+        { name: 'State Security', value: 'State Security' },
+        { name: '98th Airborne', value: '98th Airborne' },
+        { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
+        { name: '1st Shock Infantry', value: '1st Shock Infantry' }
       )
       .setRequired(true);
   })
