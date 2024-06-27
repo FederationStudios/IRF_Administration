@@ -48,13 +48,13 @@ export async function run(
     );
     return;
   }
-  if (interaction.guild!.id != discord.mainServer) {
+  if (interaction.guild.id != discord.mainServer) {
     interactionEmbed(3, 'This command can only be used in the main server', interaction);
     return;
   }
   const division = options.getString('division');
-  await interaction.guild!.roles.fetch();
-  const role = interaction.guild!.roles.cache!.find((r) => r.name === options.getString('division', true))!.toString();
+  await interaction.guild.roles.fetch();
+  const role = interaction.guild.roles.cache.find((r) => r.name === options.getString('division', true)).toString();
   const reason = options.getString('reason');
   const rowifi = await getRowifi(interaction.user.id, client);
   if (!rowifi.success) {
@@ -120,7 +120,7 @@ export async function run(
         {
           title: `${rowifi.username} is requesting ${division}`,
           color: 0xde2821,
-          description: `${interaction.member!.toString()} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${
+          description: `${interaction.member.toString()} is requesting ${role} due to: __${reason}__\n\n**Profile Link:** https://www.roblox.com/users/${
             rowifi.roblox
           }/profile\n\n**React if you are handling this request**`
         }

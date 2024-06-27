@@ -171,7 +171,7 @@ function parseTime(time: string): number {
   if (!time.match(/[1-9]{1,3}[dhms]/g)) return NaN;
 
   for (const period of time.match(/[1-9]{1,3}[dhms]/g)!) {
-    const [amount, unit] = period.match(/^(\d+)([dhms])$/)!.slice(1);
+    const [amount, unit] = period.match(/^(\d+)([dhms])$/).slice(1);
     duration +=
       unit === 'd'
         ? Number(amount) * 24 * 60 * 60

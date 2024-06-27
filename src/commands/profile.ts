@@ -123,7 +123,7 @@ export async function run(
       title: 'Overview',
       color: 0xde2821,
       thumbnail: {
-        url: client.user!.avatarURL()!
+        url: client.user.avatarURL()!
       },
       description:
         data.user.description + '\n\n[Visit Profile](https://www.roblox.com/users/' + robloxData.user.id + '/profile)',
@@ -188,7 +188,7 @@ export async function run(
         title: `${robloxData.user.name}'s Friends`,
         color: 0xde2821,
         thumbnail: {
-          url: client.user!.avatarURL()!
+          url: client.user.avatarURL()!
         },
         description: `https://roblox.com/users/${robloxData.user.id}/profile`,
         image: {
@@ -207,7 +207,7 @@ export async function run(
         title: `${robloxData.user.name}'s Friends`,
         color: 0xde2821,
         thumbnail: {
-          url: client.user!.avatarURL()!
+          url: client.user.avatarURL()!
         },
         description: `https://roblox.com/users/${robloxData.user.id}/profile`,
         image: {
@@ -229,7 +229,7 @@ export async function run(
         title: `${group.group.name} (${group.group.id})`,
         color: 0xde2821,
         thumbnail: {
-          url: client.user!.avatarURL()!
+          url: client.user.avatarURL()!
         },
         description:
           group.group.description.length > 2048
@@ -267,7 +267,7 @@ export async function run(
         title: `${robloxData.user.name}'s Groups`,
         color: 0xde2821,
         thumbnail: {
-          url: client.user!.avatarURL()!
+          url: client.user.avatarURL()!
         },
         description: `https://roblox.com/users/${robloxData.user.id}/profile`,
         image: {
@@ -287,7 +287,7 @@ export async function run(
       title: `${robloxData.user.name}'s Activity`,
       color: 0xde2821,
       thumbnail: {
-        url: client.user!.avatarURL()!
+        url: client.user.avatarURL()!
       },
       description: `https://roblox.com/users/${robloxData.user.id}/profile`,
       image: {

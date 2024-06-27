@@ -6,7 +6,7 @@ const { channels, discord } = config;
 
 export async function execute(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<Attachment> {
   // Get the evidence attachment
-  let trueEvidence: Attachment = interaction.options.getAttachment('evidence') || undefined;
+  const trueEvidence: Attachment = interaction.options.getAttachment('evidence') || undefined;
   // Validate trueEvidence if it is present
   // It can only be an image, GIF, or video
   if (
@@ -20,11 +20,7 @@ export async function execute(client: CustomClient, interaction: ChatInputComman
   }
   // Grab the default proof URL if evidence is blank
   if (!trueEvidence) {
-    trueEvidence = await client.channels
-      .fetch(discord.defaultProofURL.split('/')[5])
-      .then((c) => (c as TextChannel).messages.fetch(discord.defaultProofURL.split('/')[6]))
-      .then((m) => m.attachments.first())
-      .catch(() => null);
+    return { url: discord.defaultProofURL } as unknown as Attachment;
   }
   // Repost and return
   return client.channels

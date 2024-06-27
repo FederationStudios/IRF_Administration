@@ -71,7 +71,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       .catch(() => Promise.reject()); // Hacky method to return void promise
 
   if (interaction.type === InteractionType.ApplicationCommand) {
-    const command = client.commands!.get(interaction.commandName);
+    const command = client.commands.get(interaction.commandName);
     if (command) {
       // If the command is not a modal, defer reply and fetch user
       if (!command.modal) {
@@ -215,7 +215,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
 });
 
 client.on('messageCreate', async (message): Promise<void> => {
-  if (message.guild!.id != config.discord.mainServer || message.channel.isDMBased()) return;
+  if (message.guild.id != config.discord.mainServer || message.channel.isDMBased()) return;
   if (message.author.bot) return;
   if (!message.channel.name.includes('reports')) return;
   // Message handler

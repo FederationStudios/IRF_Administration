@@ -64,7 +64,7 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
-  if (!(interaction.member!.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
+  if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
     return interactionEmbed(ResultType.Error, ResultMessage.UserPermission, interaction);
   const user_id = options.getString('user_id', true);
   // Check if the user ID is a valid ID
@@ -90,7 +90,7 @@ export async function run(
     }
   });
   // If the user is already banned, show a warning
-  if (typeof banCheck !== 'undefined') {
+  if (typeof banCheck !== 'undefined' && banCheck !== null) {
     interactionEmbed(
       2,
       `A ban already exists for ${id.name} (${id.id}) on ${getEnumKey(
@@ -125,14 +125,14 @@ export async function run(
           discord: interaction.user.id
         },
         data: {
-          proof: evidence.proxyURL,
+          proof: evidence.url,
           privacy: 'Public'
         },
         reason: options.getString('reason', true)
       })
     : await banCheck.update({
         data: {
-          proof: evidence.proxyURL,
+          proof: evidence.url,
           privacy: 'Public'
         },
         mod: {
