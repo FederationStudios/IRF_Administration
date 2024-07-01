@@ -1,0 +1,23 @@
+name: Docker CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: mainserver-pez
+    env:
+      configfile: ${{ secrets.CONFIGFILE }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update containers
+        run: docker compose pull
+
+      - name: Build application
+        run: docker compose build
+
+      - name: Spin up containers
+        run: docker compose up -d
