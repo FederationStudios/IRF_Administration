@@ -98,7 +98,7 @@ export async function run(
     ];
     // If the proof isn't an image, it's a video, so add a field for it
     if (typeof image === 'undefined') {
-      f.push({ name: 'Evidence', value: `[Video provided by moderator](${evid.url})`, inline: true });
+      f.push({ name: 'Evidence', value: `[Video provided by moderator](${fa.url})`, inline: true });
     }
     // Add the embed to the array
     embeds.push(

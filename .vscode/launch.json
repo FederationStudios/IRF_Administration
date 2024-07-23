@@ -12,7 +12,7 @@
       "cwd": "${workspaceFolder}\\dist",
       "program": "index.js",
       "env": {
-        "environment": "development"
+        "NODE_ENV": "development"
       }
     },
     {
@@ -23,7 +23,10 @@
         "<node_internals>/**"
       ],
       "cwd": "${workspaceFolder}\\dist",
-      "program": "index.js"
+      "program": "index.js",
+      "env": {
+        "NODE_ENV": "development"
+      }
     }
   ]
 }

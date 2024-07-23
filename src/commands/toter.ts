@@ -4,9 +4,9 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder
 } from 'discord.js';
-import { CustomClient } from '../typings/Extensions.js';
+import { default as config } from '../config.json' assert { type: 'json' };
 import { getGroup, getRoblox, getRowifi, parseTime } from '../functions.js';
-import { default as config } from '../config.json' assert { 'type': 'json' };
+import { CustomClient } from '../typings/Extensions.js';
 const { roblox } = config;
 
 export const name = 'toter';

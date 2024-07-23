@@ -327,12 +327,28 @@ function getEnumKey(enumObj: object, value: number): string | undefined {
   return undefined;
 }
 
+/**
+ * @async
+ * Creates a pagination row. This function should be used when you have a list
+ * of buttons or buttons & embeds that you wish to present to the user in a
+ * paginated format. Do not use this when you have multiple categories of data.
+ * Consider using a different or custom solution for that.
+ *
+ * The length of `buttonRows` must match the length of `embeds`, even if there
+ * are no buttons for the embeds.
+ * @param {Exclude<Interaction, { type: InteractionType.ApplicationCommandAutocomplete }>} interaction Interaction
+ * @param {ButtonBuilder[][]} buttonRows Buttons
+ * @param {InteractionEditReplyOptions} args Options for the pagination row's editReply()
+ * @param {EmbedBuilder[]} embeds List of embeds
+ * @returns {Promise<ButtonInteraction>} Button user selected to end the collector
+ */
 async function paginationRow(
   interaction: Exclude<Interaction, { type: InteractionType.ApplicationCommandAutocomplete }>,
   buttonRows: ButtonBuilder[][],
   args: InteractionEditReplyOptions,
-  embeds?: EmbedBuilder[]
+  embeds: EmbedBuilder[]
 ): Promise<ButtonInteraction> {
+  if (embeds.length !== buttonRows.length) return Promise.reject('Embeds and button rows must be the same length');
   // Create the row
   const paginationRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({
     components: [
@@ -341,30 +357,26 @@ async function paginationRow(
       new ButtonBuilder({ customId: 'next', style: ButtonStyle.Primary, emoji: '➡️' })
     ]
   });
-  // Pair the embed with the buttons
+  // Pair the embed with the buttons. If the entry has no buttons, set it to null
   const rows: [ActionRowBuilder<ButtonBuilder>, EmbedBuilder?][] = buttonRows.map((r, i) => {
-    // Create the row
     const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({ components: r });
-    // If no embeds exist, just return the row
-    if (!embeds) return [row];
-    // Else, return the row and the embed
-    else return [row, embeds[i]];
+    return [r.length === 0 ? null : row, embeds[i]];
   });
-  // Configure message
-  if (rows.length === 0 || (embeds && embeds.length !== rows.length)) return Promise.reject('No rows were provided');
+
+  // Variable declarations
   let index = 0,
-    returnedInteraction;
+    returnedInteraction: ButtonInteraction;
   if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+
   while (typeof returnedInteraction === 'undefined') {
-    // Create message
+    // Send the paginated response, taking in account embeds without buttons
+    const components = rows[index][0] !== null ? [rows[index][0], paginationRow] : [paginationRow];
     const coll = await interaction
-      // Edit the reply
       .editReply({
         content: args.content || 'Please select an option below',
         embeds: args.embeds || undefined,
-        components: [rows[index][0], paginationRow]
+        components: components
       })
-      // Add listener
       .then((m) =>
         m.awaitMessageComponent({
           time: 15_000,
@@ -372,21 +384,20 @@ async function paginationRow(
           componentType: ComponentType.Button
         })
       )
-      // Handle no response
       .catch((e) => e);
-    // Check the custom id
+
+    // Errors are emitted from the collector from time or other reasons
     if (coll instanceof Error && coll.name === 'Error [InteractionCollectorError]') {
       returnedInteraction = null; // Timeout
       break;
     } else if (coll instanceof Error) {
       throw coll; // Not an error we can handle
     }
+
     // Drop the update
     await coll.update({});
-    // If it's anything other than
-    // next or prev, return it
+    // Handle the next/prev buttons, or cancel if it's neither
     if (!/next|prev/.test(coll.customId)) {
-      // Return the interaction
       returnedInteraction = coll;
       break;
     }
@@ -405,7 +416,7 @@ async function paginationRow(
     // And the loop continues...
   }
   // Remove embeds and components
-  await interaction.editReply({ content: args.content || 'Please select an option below', embeds: [], components: [] });
+  await interaction.editReply({ content: args.content || 'Please select an option below', components: [] });
   return Promise.resolve(returnedInteraction);
 }
 //#endregion

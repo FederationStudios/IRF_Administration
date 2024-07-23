@@ -15,7 +15,7 @@ let ready = false;
 const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config.mysql.password, {
   host: config.mysql.host,
   dialect: 'mysql',
-  logging: process.env.environment === 'development' ? console.log : false,
+  logging: process.env.NODE_ENV === 'development' ? console.log : false,
   port: config.mysql.port
 });
 // Check for existing models folder
@@ -27,7 +27,7 @@ if (!fs.existsSync('./models')) {
   try {
     file.initModels(sequelize);
     sequelize.authenticate();
-    sequelize.sync({ alter: process.env.environment === 'development' });
+    sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
   } catch (e) {
     console.error(`[SQL] ${e}`);
   }
@@ -43,7 +43,7 @@ const client: CustomClient = new Client({
   ]
 });
 client.sequelize = sequelize;
-client.models = initModels(sequelize);
+client.models = sequelize.models as ReturnType<typeof initModels>;
 client.commands = new Collection();
 //#endregion
 //#endregion
@@ -55,7 +55,7 @@ client.on('ready', async () => {
     return false;
   });
   // Call on startup
-  if (ready && process.env.environment === 'development') handleBans(client);
+  if (ready && process.env.NODE_ENV === 'development') handleBans(client);
   // Setup interval
   setInterval(() => {
     if (!ready) return;
@@ -293,11 +293,12 @@ process.on('unhandledRejection', async (reason, promise) => {
   } else {
     recentErrors.push({ promise, reason: String(reason), time: new Date() });
   }
-  // If all three errors are the same, exit
+  // If all three errors are the same and occurred within 5, exit
   if (
     recentErrors.length === 3 &&
     recentErrors[0].reason === recentErrors[1].reason &&
-    recentErrors[1].reason === recentErrors[2].reason
+    recentErrors[1].reason === recentErrors[2].reason &&
+    recentErrors[0].time.getTime() - recentErrors[2].time.getTime() < 5_000
   ) {
     // Write the error to a file
     fs.writeFileSync(
@@ -318,7 +319,11 @@ process.on('unhandledRejection', async (reason, promise) => {
     return process.exit(17);
   }
 
-  toConsole('An [unhandledRejection] has occurred.\n\n> ' + reason, new Error().stack!, client);
+  toConsole(
+    'An [unhandledRejection] has occurred.\n\n>>> ' + ((reason as Error).stack || String(reason)),
+    new Error().stack!,
+    client
+  );
 });
 process.on('warning', async (warning) => {
   if (!ready) {

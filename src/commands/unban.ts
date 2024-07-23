@@ -10,6 +10,12 @@ import { IRFGameId, ResultMessage, getGroup, getRoblox, getRowifi, interactionEm
 import { CustomClient } from '../typings/Extensions.js';
 const { channels, roblox } = config;
 
+const options = Object.entries(IRFGameId)
+  .map(([k, v]) => {
+    return { name: k, value: Number(v) };
+  })
+  .filter((v) => !isNaN(v.value));
+
 export const name = 'unban';
 export const ephemeral = false;
 export const data = new SlashCommandBuilder()
@@ -19,20 +25,12 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) => {
     return option.setName('user_id').setDescription('Roblox username or ID').setRequired(true);
   })
-  .addStringOption((option) => {
+  .addNumberOption((option) => {
     return option
       .setName('game_id')
       .setDescription('Roblox game ID')
       .setRequired(true)
-      .addChoices(
-        { name: 'Global', value: '0' },
-        { name: 'Papers, Please!', value: '583507031' },
-        { name: 'Sevastopol Military Academy', value: '603943201' },
-        { name: 'Triumphal Arch of Moscow', value: '2506054725' },
-        { name: 'Tank Training Grounds', value: '2451182763' },
-        { name: 'Ryazan Airbase', value: '4424975098' },
-        { name: 'Prada Offensive', value: '4683162920' }
-      );
+      .addChoices(...options);
   })
   .addStringOption((option) => {
     return option.setName('reason').setDescription('Reason for unban').setRequired(true);
@@ -42,6 +40,7 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ) {
+  const [gameName, gameId] = [IRFGameId[options.getNumber('game_id', true)], options.getNumber('game_id', true)];
   // Check roles
   if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
     return interactionEmbed(3, ResultMessage.UserPermission, interaction);
@@ -56,16 +55,12 @@ export async function run(
   const bans = await client.models.bans.findAll({
     where: {
       user: id.user.id,
-      game: options.getString('game_id')
+      game: options.getNumber('game_id', true)
     }
   });
   // If no bans exists, return
   if (bans.length === 0) {
-    return interactionEmbed(
-      3,
-      `No bans exist for \`${id.user.name}\` (${id.user.id}) on ${IRFGameId[options.getString('game_id', true)]}`,
-      interaction
-    );
+    return interactionEmbed(3, `No bans exist for \`${id.user.name}\` (${id.user.id}) on ${gameName}`, interaction);
   }
   // If FairPlay ban...
   if (bans[0].reason.includes('FairPlay')) {
@@ -111,14 +106,12 @@ export async function run(
         title: `${(interaction.member as GuildMember).nickname || interaction.user.username} unbanned => ${
           id.user.name
         }`,
-        description: `**${interaction.user.id}** has removed a ban for ${id.user.name} (${id.user.id}) on ${
-          IRFGameId[options.getString('game_id', true)]
-        } (${options.getString('game_id')})`,
+        description: `**${interaction.user.id}** has removed a ban for ${id.user.name} (${id.user.id}) on ${gameName} (${gameId})`,
         color: 0x00ff00,
         fields: [
           {
             name: 'Game',
-            value: `${IRFGameId[options.getString('game_id', true)]} (${options.getString('game_id')})`,
+            value: `${gameName} (${gameId})`,
             inline: true
           },
           {
@@ -145,9 +138,7 @@ export async function run(
   // Return a success message to the user
   return interactionEmbed(
     1,
-    `Removed ban for ${id.user.name} (${id.user.id}) on ${
-      IRFGameId[options.getString('game_id', true)]
-    } (${options.getString('game_id', true)})\n> Reason: ${options.getString('reason')}`,
+    `Removed ban for ${id.user.name} (${id.user.id}) on ${gameName} (${gameId})\n> Reason: ${options.getString('reason')}`,
     interaction
   );
 }

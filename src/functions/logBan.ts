@@ -11,9 +11,13 @@ export async function execute(
   target: RobloxUserData,
   interaction: ChatInputCommandInteraction
 ): Promise<void> {
+  const [gameName, gameId] = [
+    IRFGameId[interaction.options.getNumber('game_id', true)],
+    interaction.options.getNumber('game_id', true)
+  ];
+
   // Extract data
   const banLogs = (await client.channels.fetch(channels.ban)) as TextChannel;
-  const game = interaction.options.getString('game_id');
   const { reason, data } = ban;
   // Set the proof to the default proof URL if it is empty
   if (data.proof === '' || typeof data.proof === 'undefined') data.proof = discord.defaultProofURL;
@@ -26,12 +30,12 @@ export async function execute(
   // Send ban log
   const embed = {
     title: `${(interaction.member as GuildMember).nickname || interaction.user.username} banned => ${target.name}`,
-    description: `**${interaction.user.id}** has added a ban for ${target.name} (${target.id}) on ${IRFGameId[game]} (${game})`,
+    description: `**${interaction.user.id}** has added a ban for ${target.name} (${target.id}) on ${gameName} (${gameId})`,
     color: 0x00ff00,
     fields: [
       {
         name: 'Game',
-        value: `${IRFGameId[game]} (${game})`,
+        value: `${gameName} (${gameId})`,
         inline: true
       },
       {
