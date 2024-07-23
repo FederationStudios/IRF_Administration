@@ -2,6 +2,10 @@ services:
   app:
     build:
       context: ./
+      secrets:
+        - configFile
     restart: on-failure
-    volumes:
-      - ${configfile}:/src/config.json:ro
+
+secrets:
+  configFile:
+    file: ${configfile}
