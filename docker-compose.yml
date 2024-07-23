@@ -1,8 +1,7 @@
-version: '3.3'
 services:
   app:
     build:
       context: ./
     restart: on-failure
     volumes:
-      - ${configfile}:/usr/src/irf_administration/src/config.json
+      - ${configfile}:/src/config.json:ro
