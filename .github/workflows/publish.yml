@@ -2,11 +2,11 @@ name: Docker CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   deploy:
-    runs-on: mainserver-pez
+    runs-on: mainserver-8bit
     env:
       configfile: ${{ secrets.CONFIGFILE }}
 
