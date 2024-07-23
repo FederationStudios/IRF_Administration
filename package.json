@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "npx prettier --write ./src",
+    "build": "npx tsc -b",
     "prestart": "npx tsc -b",
     "start": "cd dist && node index.js"
   },
