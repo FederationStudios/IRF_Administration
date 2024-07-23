@@ -5,7 +5,7 @@ import { Sequelize } from 'sequelize';
 import { default as config } from './config.json' assert { type: 'json' };
 import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
 import { handleBans, default as readyHandler } from './functions/ready.js';
-import { initModels } from './models/init-models.js';
+import type { initModels } from './models/init-models.js';
 import { CustomClient, ServerList } from './typings/Extensions.js';
 const wait = promisify(setTimeout);
 let ready = false;

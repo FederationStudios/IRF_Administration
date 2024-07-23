@@ -47,8 +47,6 @@ export default async function (client: CustomClient, ready: boolean): Promise<bo
 }
 
 export async function handleBans(client: CustomClient): Promise<void> {
-  client.channels.cache.get(config.channels.ban) || (await client.channels.fetch(config.channels.ban));
-  client.guilds.cache.get(config.discord.mainServer) || (await client.guilds.fetch(config.discord.mainServer));
   const parseBans: bans[] = await bans.findAll({ where: { reason: { [Op.endsWith]: '~~~irf' } } });
   for (const ban of parseBans) {
     // Extract data from ban

@@ -1,5 +1,5 @@
 import { Client, CommandInteraction, ModalSubmitFields, ModalSubmitInteraction, SlashCommandBuilder } from 'discord.js';
-import { initModels } from '../models/init-models.js';
+import type { initModels } from '../models/init-models.js';
 import { Sequelize } from 'sequelize';
 
 interface CustomClient extends Client {
