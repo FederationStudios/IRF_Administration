@@ -1,13 +1,11 @@
 FROM node:20.10.0
-WORKDIR /usr/src/irf_administration
+WORKDIR /usr/src/IRF_Administration
+
 COPY package*.json ./
+RUN npm install --omit=dev
+
 COPY tsconfig.json ./
 COPY src ./src
-RUN npm install
+
 RUN npm run build
-FROM node:20.10.0
-WORKDIR /usr/src/irf_administration
-COPY package*.json ./
-RUN npm install --only=production
-COPY --from=0 /usr/src/irf_administration/dist .
 CMD [ "npm", "start" ]
