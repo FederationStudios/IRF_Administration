@@ -1,5 +1,5 @@
-FROM node:20.10.0
-WORKDIR /usr/src/IRF_Administration
+FROM node:20.15.1
+WORKDIR /usr/src/irf_administration
 
 COPY package*.json ./
 RUN npm install --omit=dev
