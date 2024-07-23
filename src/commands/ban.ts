@@ -7,20 +7,18 @@ import {
 } from 'discord.js';
 import { promisify } from 'node:util';
 import { default as config } from '../config.json' assert { type: 'json' };
-import {
-  IRFGameId,
-  ResultMessage,
-  ResultType,
-  getEnumKey,
-  getRoblox,
-  getRowifi,
-  interactionEmbed
-} from '../functions.js';
+import { IRFGameId, ResultMessage, ResultType, getRoblox, getRowifi, interactionEmbed } from '../functions.js';
 import { execute as logBan } from '../functions/logBan.js';
 import { execute as parseEvidence } from '../functions/parseEvidence.js';
 import { CustomClient } from '../typings/Extensions.js';
 const { channels } = config;
 const wait = promisify(setTimeout);
+
+const options = Object.entries(IRFGameId)
+  .map(([k, v]) => {
+    return { name: k, value: Number(v) };
+  })
+  .filter((v) => !isNaN(v.value));
 
 export const name = 'ban';
 export const ephemeral = false;
@@ -31,20 +29,12 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) => {
     return option.setName('user_id').setDescription('Roblox username or ID').setRequired(true);
   })
-  .addStringOption((option) => {
+  .addNumberOption((option) => {
     return option
       .setName('game_id')
       .setDescription('Roblox game ID')
       .setRequired(true)
-      .addChoices(
-        { name: 'Global', value: '0' },
-        { name: 'Papers, Please!', value: '583507031' },
-        { name: 'Sevastopol Military Academy', value: '603943201' },
-        { name: 'Triumphal Arch of Moscow', value: '2506054725' },
-        { name: 'Tank Training Grounds', value: '2451182763' },
-        { name: 'Ryazan Airbase', value: '4424975098' },
-        { name: 'Prada Offensive', value: '4683162920' }
-      );
+      .addChoices(...options);
   })
   .addStringOption((option) => {
     return option
@@ -64,6 +54,8 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  const [gameName, gameId] = [IRFGameId[options.getNumber('game_id', true)], options.getNumber('game_id', true)];
+
   if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
     return interactionEmbed(ResultType.Error, ResultMessage.UserPermission, interaction);
   const user_id = options.getString('user_id', true);
@@ -74,29 +66,19 @@ export async function run(
     return;
   }
   const id = roblox.user;
-  // Ensure the game ID is valid
-  if (!IRFGameId[options.getString('game_id', true)])
-    return interactionEmbed(
-      3,
-      'Arg `game_id` must be a registered game ID. Use `/ids` to see all recognised games',
-      interaction
-    );
 
   // Check if the user is already banned
   const banCheck = await client.models.bans.findOne({
     where: {
       user: id.id,
-      game: options.getString('game_id', true)
+      game: gameId
     }
   });
   // If the user is already banned, show a warning
   if (typeof banCheck !== 'undefined' && banCheck !== null) {
     interactionEmbed(
       2,
-      `A ban already exists for ${id.name} (${id.id}) on ${getEnumKey(
-        IRFGameId,
-        Number(options.getString('game_id', true))
-      )}. This will overwrite the ban!\n(Adding ban in 5 seconds)`,
+      `A ban already exists for ${id.name} (${id.id}) on ${gameName}. This will overwrite the ban!\n(Adding ban in 5 seconds)`,
       interaction
     );
     await wait(5000); // Show warning
@@ -119,7 +101,7 @@ export async function run(
   const ban = !banCheck
     ? await client.models.bans.create({
         user: id.id,
-        game: Number(options.getString('game_id', true)),
+        game: gameId,
         mod: {
           roblox: rowifi.roblox,
           discord: interaction.user.id
