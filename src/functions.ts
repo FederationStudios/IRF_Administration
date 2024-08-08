@@ -220,8 +220,7 @@ async function getRowifi(
   if (typeof discord === 'boolean') return { success: false, error: 'Invalid Discord user ID' };
   // Check if user is in the Commissariat group
   const commGroup = await getGroup(discord.username, config.roblox.commissariatGroup);
-  // Temporary always false statement due to a breach in the commissariatGroup
-  if (commGroup.success === true && "a" === true) {
+  if (commGroup.success === true) {
     // Fetch their roblox ID
     return (
       fetch(`https://users.roblox.com/v1/usernames/users`, {
