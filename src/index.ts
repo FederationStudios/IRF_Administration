@@ -63,6 +63,7 @@ client.on('ready', async () => {
   }, 120_000);
 });
 
+// TODO: Split this into separate files, especially autocomplete
 client.on('interactionCreate', async (interaction): Promise<void> => {
   if (!ready && interaction.isRepliable())
     return interaction
@@ -144,9 +145,9 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         const value = interaction.options.getString('reason');
         const reasons = [
           // DIVISIONS //
-          { name: 'MoGA - Random killing', value: 'User is mass random killing' },
+          { name: 'GA - Random killing', value: 'User is mass random killing' },
           { name: 'MP - Military Law', value: 'User is violating Military Law' },
-          { name: 'MoSS - Bolshevik Law', value: 'User is violating Bolshevik Law' },
+          { name: 'FP - Government Law', value: 'User is violating Government Law' },
           { name: 'MoA - No admissions', value: 'There is no Admissions in the server' },
           { name: 'MoA - Gamepass Admissions abuse', value: 'Admissions is abusing their powers (Gamepass)' },
           // RAIDS //
@@ -167,39 +168,40 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
           // BACKUP //
           { name: 'General backup', value: 'Control has been lost, general backup is needed' }
         ];
-        // If no value, return the list of common reasons
-        if (!value) return interaction.respond(reasons);
-        // If value, filter the list of common reasons
+        // Options exist for power users. We want to ensure that people use their own words
+        if (!value) return interaction.respond([]);
+
+        // Max length for name is 32. We aim to avoid it
         const matches = reasons.filter((r) => r.value.toLowerCase().includes(value.toLowerCase()));
-        // If no matches, return the value the user entered
-        if (matches.length === 0 && value.length <= 100)
+        if (matches.length === 0)
           return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + '...' : value, value: value }]);
-        if (value.length > 100) return; // Timeout, too long value
+  
         return interaction.respond(matches);
       }
       case 'shutdown': {
         // If the command is shutdown, offer the list of active servers
         const { name, value = 'Papers' } = interaction.options.getFocused(true);
-        if (name !== 'target') return; // Not focused on the server list
+        if (name !== 'target') return; 
         const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers)
           .then((r: Response) => r.json())
           .catch(() => ({ success: false, servers: {} }));
+        // The server may go down or not return servers
         if (!servers.success) return interaction.respond([]);
+        // Names need to be mapped to IDs
         const matches: { name: string; value: string }[] = [];
         const idMap = new Map();
         let matchedGame = 0;
-        // Loop through game IDs and find the ID from the name
         for (const name of Object.keys(IRFGameId)) {
-          // Push to map
           idMap.set(IRFGameId[name], name);
-          // If we have a partial match, set matchedGame to the ID
           if (name.toLowerCase().includes(value.toLowerCase())) matchedGame = Number(IRFGameId[name]);
         }
         // Push all servers with the game ID in matchedGame to matches
         for (const [placeId, jobs] of Object.entries(servers.servers)) {
           if (Number(placeId) == matchedGame) {
             for (const [jobId, [players]] of Object.entries(jobs)) {
-              // RTT if we don't know the name
+              // If we cannot determine the game, we insert a filler value for 
+              // the administrator to see. In reality, they should know the
+              // JobId they need to shutdown
               matches.push({ name: `${jobId} - ${idMap.get(placeId) || 'RTT'} (${players.length})`, value: jobId });
             }
           }
@@ -208,12 +210,13 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         return interaction.respond(matches);
       }
       default: {
-        return interaction.respond([]); // Invalid commandName
+        return interaction.respond([]);
       }
     }
   }
 });
 
+// TODO: This needs a separate file
 client.on('messageCreate', async (message): Promise<void> => {
   if (message.guild.id != config.discord.mainServer || message.channel.isDMBased()) return;
   if (message.author.bot) return;
