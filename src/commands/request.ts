@@ -1,6 +1,7 @@
 import {
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
+  type GuildTextBasedChannel,
   Message,
   SlashCommandBuilder
 } from 'discord.js';
@@ -113,7 +114,7 @@ export async function run(
     interactionEmbed(3, ResultMessage.Unknown, interaction);
     return;
   }
-  request
+  (request as GuildTextBasedChannel)
     .send({
       content: role,
       embeds: [
