@@ -1,4 +1,9 @@
-import { ActivityType, GuildMember, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
+import {
+  ActivityType,
+  GuildMember,
+  type GuildTextBasedChannel,
+  RESTPostAPIChatInputApplicationCommandsJSONBody
+} from 'discord.js';
 import fs from 'node:fs';
 import { Op } from 'sequelize';
 import { default as config } from '../config.json' assert { type: 'json' };
@@ -124,7 +129,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
       reason: ban.reason.replace('~~~irf', '')
     });
     // Send embed
-    banLog.send({
+    (banLog as GuildTextBasedChannel).send({
       embeds: [
         {
           title: `${moderator.name} banned => ${victim.name} (In Game)`,

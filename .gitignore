@@ -2,6 +2,7 @@
 /node_modules
 
 # TypeScript
+*.tsbuildinfo
 /dist
 
 # Custom Ignores

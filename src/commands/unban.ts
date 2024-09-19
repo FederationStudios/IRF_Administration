@@ -3,6 +3,7 @@ import {
   CommandInteractionOptionResolver,
   GuildMember,
   GuildMemberRoleManager,
+  type GuildTextBasedChannel,
   SlashCommandBuilder
 } from 'discord.js';
 import { default as config } from '../config.json' assert { type: 'json' };
@@ -100,7 +101,7 @@ export async function run(
   const unban = await client.channels.fetch(channels.unban);
   if (!unban || !unban.isTextBased()) return interactionEmbed(3, ResultMessage.Unknown, interaction);
   // Send a message to the unban channel
-  unban.send({
+  (unban as GuildTextBasedChannel).send({
     embeds: [
       {
         title: `${(interaction.member as GuildMember).nickname || interaction.user.username} unbanned => ${
@@ -138,7 +139,9 @@ export async function run(
   // Return a success message to the user
   return interactionEmbed(
     1,
-    `Removed ban for ${id.user.name} (${id.user.id}) on ${gameName} (${gameId})\n> Reason: ${options.getString('reason')}`,
+    `Removed ban for ${id.user.name} (${id.user.id}) on ${gameName} (${gameId})\n> Reason: ${options.getString(
+      'reason'
+    )}`,
     interaction
   );
 }
