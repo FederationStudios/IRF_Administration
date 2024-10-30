@@ -15,6 +15,10 @@
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": "<=20"
     }
   ],
   "reviewers": [
