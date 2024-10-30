@@ -1,4 +1,4 @@
-FROM node:20.17.2
+FROM node:20.18.0
 WORKDIR /usr/src/irf_administration
 
 COPY package*.json ./
