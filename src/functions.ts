@@ -20,7 +20,10 @@ enum IRFGameId {
   'Triumphal Arch of Moscow' = 2506054725,
   'Tank Training Grounds' = 2451182763,
   'Ryazan Airbase' = 4424975098,
-  'Prada Offensive' = 4683162920
+  'Prada Offensive' = 4683162920,
+  '[RAID] Port Kehl' = 15208332395,
+  '[RAID] Stryj Hills' = 15208129799,
+  '[RAID] Prada' = 18132562784
 }
 enum ResultMessage {
   DatabaseError = 'An error has occurred while communicating with the database',
