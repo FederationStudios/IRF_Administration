@@ -101,7 +101,9 @@ export async function handleBans(client: CustomClient): Promise<void> {
         // We found the user!
         if (rowifiData.ok) {
           const json = await rowifiData.json();
-          discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch(json[0].discord_id);
+          if (json[0] && json[0].discord_id) {
+            discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch(json[0].discord_id);
+          }
         }
       }
     }
@@ -109,7 +111,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
     if (!discord) {
       console.log(`[BAN] Failed to find Discord user. Dumping data at ${new Date().toLocaleTimeString()}:`);
       console.log(`[BAN] M: ${moderator.name}/${moderator.id} V: ${victim.name}/${victim.id}`);
-      console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${ban.mod}`);
+      console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${JSON.stringify(ban.mod)}`);
       continue;
     }
 
