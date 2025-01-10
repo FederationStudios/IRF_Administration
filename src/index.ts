@@ -220,7 +220,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
 client.on('messageCreate', async (message): Promise<void> => {
   if (message.guild.id != config.discord.mainServer || message.channel.isDMBased()) return;
   if (message.author.bot) return;
-  if (!message.channel.name !== '📌reports') return;
+  if (message.channel.name !== '📌reports') return;
   // Message handler
   const denied = '<:denied:1095481555431997460>';
   let refMessage: Message;
