@@ -29,7 +29,8 @@ export const data = new SlashCommandBuilder()
         { name: 'State Security', value: 'State Security' },
         { name: '98th Airborne', value: '98th Airborne' },
         { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
-        { name: '1st Shock Infantry', value: '1st Shock Infantry' }
+        { name: '1st Shock Infantry', value: '1st Shock Infantry' },
+        { name: 'Imperial Guard', value: 'Imperial Guard' }
       )
       .setRequired(true);
   })
@@ -49,8 +50,12 @@ export async function run(
     );
     return;
   }
-  if (interaction.guild.id != discord.mainServer) {
-    interactionEmbed(3, 'This command can only be used in the main server', interaction);
+  // TODO: Remove hardcoded ID
+  if (interaction.guild.id != '466432774182666240' && options.getString('division') === 'Imperial Guard') {
+    interactionEmbed(3, 'You must request Imperial Guard from their server', interaction);
+    return;
+  } else if (interaction.guild.id != discord.mainServer) {
+    interactionEmbed( 3, 'You must request this division in the Federation Network server', interaction);
     return;
   }
   const division = options.getString('division');
@@ -92,24 +97,17 @@ export async function run(
     interactionEmbed(3, 'An error occurred while checking your presence. Try again later', interaction);
     return;
   }
-  if (presenceCheck.userPresenceType !== 2) {
+  if (presenceCheck.userPresenceType !== 2 || presenceCheck.gameId === null) {
     interactionEmbed(
       3,
-      "You must be in-game in order to use this command. Try again later when you're in-game",
-      interaction
-    );
-    return;
-  }
-  if (presenceCheck.gameId === null) {
-    interactionEmbed(
-      3,
-      'You must have your profile set to public in order to use this command. Try again later when your profile is public',
+      'You must be in-game and your profile must be public in order to use this command. Please try again later',
       interaction
     );
     return;
   }
 
-  const request = await client.channels.fetch(channels.request, { cache: true });
+  const channelId = options.getString('division') === 'Imperial Guard' ? '749034267291418785' : channels.request;
+  const request = await interaction.guild.channels.fetch(channelId, { cache: true });
   if (!request || !request.isTextBased()) {
     interactionEmbed(3, ResultMessage.Unknown, interaction);
     return;
