@@ -30,7 +30,7 @@ export const data = new SlashCommandBuilder()
         { name: '98th Airborne', value: '98th Airborne' },
         { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
         { name: '1st Shock Infantry', value: '1st Shock Infantry' },
-        { name: 'Imperial Guard', value: 'Imperial Guard' }
+        { name: 'Imperial Guard', value: 'Imperial Guard Backup Ping' }
       )
       .setRequired(true);
   })
