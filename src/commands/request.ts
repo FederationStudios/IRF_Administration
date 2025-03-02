@@ -106,7 +106,7 @@ export async function run(
     return;
   }
 
-  const channelId = options.getString('division') === 'Imperial Guard' ? '749034267291418785' : channels.request;
+  const channelId = options.getString('division') === 'Imperial Guard Backup Ping' ? '749034267291418785' : channels.request;
   const request = await interaction.guild.channels.fetch(channelId, { cache: true });
   if (!request || !request.isTextBased()) {
     interactionEmbed(3, ResultMessage.Unknown, interaction);
