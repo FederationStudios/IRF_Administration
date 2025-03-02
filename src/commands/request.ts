@@ -51,10 +51,10 @@ export async function run(
     return;
   }
   // TODO: Remove hardcoded ID
-  if (interaction.guild.id != '466432774182666240' && options.getString('division') === 'Imperial Guard') {
+  if (interaction.guild.id != '466432774182666240' && options.getString('division') === 'Imperial Guard Backup Ping') {
     interactionEmbed(3, 'You must request Imperial Guard from their server', interaction);
     return;
-  } else if (interaction.guild.id != discord.mainServer && options.getString('division') != 'Imperial Guard') {
+  } else if (interaction.guild.id != discord.mainServer && options.getString('division') != 'Imperial Guard Backup Ping') {
     interactionEmbed(3, 'You must request this division in the Federation Network server', interaction);
     return;
   }
