@@ -22,14 +22,15 @@ export const data = new SlashCommandBuilder()
       .setName('division')
       .setDescription('Division you are requesting')
       .addChoices(
-        { name: 'Admissions', value: 'Admissions' },
-        { name: 'Game Administration', value: 'Game Administrator' },
+        { name: 'Ministry of Admissions', value: 'Admissions' },
+        { name: 'Game Moderation', value: 'Game Administrator' },
+        { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
         { name: 'National Defense', value: 'National Defense' },
         { name: 'Military Police', value: 'Military Police' },
-        { name: 'State Security', value: 'State Security' },
+        { name: 'Internal Affairs', value: 'Internal Affairs' },
         { name: '98th Airborne', value: '98th Airborne' },
         { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
-        { name: '1st Shock Infantry', value: '1st Shock Infantry' },
+        { name: 'Ministry of Labor', value: 'Labour' },
         { name: 'Imperial Guard', value: 'Imperial Guard Backup Ping' }
       )
       .setRequired(true);
