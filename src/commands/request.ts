@@ -51,15 +51,19 @@ export async function run(
     );
     return;
   }
+  // Used extensively in the checks below
+  const division = options.getString('division', true);
   // TODO: Remove hardcoded ID
-  if (interaction.guild.id != '466432774182666240' && options.getString('division') === 'Imperial Guard Backup Ping') {
+  if (interaction.guild.id != '466432774182666240' && division === 'Imperial Guard Backup Ping') {
     interactionEmbed(3, 'You must request Imperial Guard from their server', interaction);
     return;
-  } else if (interaction.guild.id != discord.mainServer && options.getString('division') != 'Imperial Guard Backup Ping') {
+  } else if(interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
+    interactionEmbed(3, 'You must request National Defense from their server', interaction);
+    return;
+  } else if (interaction.guild.id != discord.mainServer && !['National Defense', 'Imperial Guard Backup Ping'].includes(division)) {
     interactionEmbed(3, 'You must request this division in the Federation Network server', interaction);
     return;
   }
-  const division = options.getString('division');
   await interaction.guild.roles.fetch();
   const role = interaction.guild.roles.cache.find((r) => r.name === options.getString('division', true)).toString();
   const reason = options.getString('reason');
@@ -107,7 +111,7 @@ export async function run(
     return;
   }
 
-  const channelId = options.getString('division') === 'Imperial Guard Backup Ping' ? '749034267291418785' : channels.request;
+  const channelId = division === 'Imperial Guard Backup Ping' ? '749034267291418785' : (division === 'National Defense' ? '1292529882416287866' : channels.request);
   const request = await interaction.guild.channels.fetch(channelId, { cache: true });
   if (!request || !request.isTextBased()) {
     interactionEmbed(3, ResultMessage.Unknown, interaction);
