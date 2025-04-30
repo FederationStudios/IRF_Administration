@@ -10,7 +10,7 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuInteraction
 } from 'discord.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { RobloxGroupUserData, getRoblox, interactionEmbed, toConsole, type RobloxUserData } from '../functions.js';
 import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
 const { roblox } = config;
@@ -224,6 +224,17 @@ export async function run(
   //#endregion
   //#region Groups
   data.groups.forEach((group, index) => {
+    // Handle null owner case
+    /**
+     tavi, the error occurs in the Groups section of your code when processing group information the code is trying to access group.group.owner.username but in some cases the group.group.owner is null so this thats the error is coming I hope this little enhancement will fix
+     */
+    let ownerInfo = 'No owner information available';
+    if (group.group.owner) {
+      ownerInfo = `${group.group.owner.username || 'NO_USERNAME_WAS_RETURNED'} "${
+        group.group.owner.displayName || 'NO_DISPLAY_NAME_WAS_RETURNED'
+      }" (${group.group.owner.userId || 'NO_USERID_WAS_RETURNED'})`;
+    }
+    
     categories.groups.push(
       new EmbedBuilder({
         title: `${group.group.name} (${group.group.id})`,
@@ -238,9 +249,7 @@ export async function run(
         fields: [
           {
             name: 'Owner',
-            value: `${group.group.owner.username || 'NO_USERNAME_WAS_RETURNED'} "${
-              group.group.owner.displayName || 'NO_DISPLAY_NAME_WAS_RETURNED'
-            }" (${group.group.owner.userId || 'NO_USERID_WAS_RETURNED'})`,
+            value: ownerInfo,
             inline: true
           },
           {
