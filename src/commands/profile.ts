@@ -238,9 +238,9 @@ export async function run(
         fields: [
           {
             name: 'Owner',
-            value: `${group.group.owner.username || 'NO_USERNAME_WAS_RETURNED'} "${
-              group.group.owner.displayName || 'NO_DISPLAY_NAME_WAS_RETURNED'
-            }" (${group.group.owner.userId || 'NO_USERID_WAS_RETURNED'})`,
+            value: `${group.group.owner ? group.group.owner.username : 'NO_USERNAME_WAS_RETURNED'} "${
+              group.group.owner ? group.group.owner.displayName : 'NO_DISPLAY_NAME_WAS_RETURNED'
+            }" (${group.group.owner ? group.group.owner.userId : 'NO_USERID_WAS_RETURNED'})`,
             inline: true
           },
           {
