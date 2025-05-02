@@ -31,7 +31,7 @@ export const data = new SlashCommandBuilder()
         { name: '98th Airborne', value: '98th Airborne' },
         { name: '3rd Guard Tanks', value: '3rd Guard Tanks' },
         { name: 'Ministry of Labor', value: 'Labour' },
-        { name: 'Imperial Guard', value: 'Imperial Guard Backup Ping' }
+        { name: 'Royal Guard', value: 'Royal Guard Backup Ping' }
       )
       .setRequired(true);
   })
@@ -54,7 +54,7 @@ export async function run(
   // Used extensively in the checks below
   const division = options.getString('division', true);
   // TODO: Remove hardcoded ID
-  if (interaction.guild.id != '466432774182666240' && division === 'Imperial Guard Backup Ping') {
+  if (interaction.guild.id != '466432774182666240' && division === 'Royal Guard Backup Ping') {
     interactionEmbed(3, 'You must request Imperial Guard from their server', interaction);
     return;
   } else if(interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
