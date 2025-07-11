@@ -30,7 +30,7 @@
   "dependencies": {
     "discord.js": "14.21.0",
     "eslint-config-prettier": "^10.1.5",
-    "mysql2": "3.14.1",
+    "mysql2": "3.14.2",
     "sequelize": "6.37.7",
     "typescript": "5.8.3"
   },
