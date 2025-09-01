@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
   SlashCommandBuilder
 } from 'discord.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { getGroup, getRoblox, getRowifi, parseTime } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 const { roblox } = config;
