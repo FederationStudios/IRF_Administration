@@ -1,4 +1,4 @@
-import { Client, Collection, IntentsBitField, InteractionType, Message } from 'discord.js';
+import { Client, Collection, IntentsBitField, Message } from 'discord.js';
 import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
@@ -71,7 +71,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       .then(() => void Promise)
       .catch(() => Promise.reject()); // Hacky method to return void promise
 
-  if (interaction.type === InteractionType.ApplicationCommand) {
+  if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
     if (command) {
       // If the command is not a modal, defer reply and fetch user
@@ -100,7 +100,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         })
         .catch(() => toConsole('Failed to fetch reply', new Error().stack!, client));
     }
-  } else if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+  } else if (interaction.isAutocomplete()) {
     switch (interaction.commandName) {
       case 'ban': {
         // If command is ban, offer a list of common reasons
