@@ -5,7 +5,7 @@ import {
   Message,
   SlashCommandBuilder
 } from 'discord.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { ResultMessage, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
 const { channels, discord, roblox } = config;
