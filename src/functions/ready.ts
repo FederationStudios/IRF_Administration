@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import fs from 'node:fs';
 import { Op } from 'sequelize';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { IRFGameId, toConsole } from '../functions.js';
 import { bans } from '../models/bans.js';
 import { CommandFile, CustomClient } from '../typings/Extensions.js';
