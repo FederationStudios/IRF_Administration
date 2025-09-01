@@ -2,7 +2,7 @@ import { Client, Collection, IntentsBitField, InteractionType, Message } from 'd
 import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
-import { default as config } from './config.json' assert { type: 'json' };
+import { default as config } from './config.json' with { type: 'json' };
 import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
 import { handleBans, default as readyHandler } from './functions/ready.js';
 import type { initModels } from './models/init-models.js';

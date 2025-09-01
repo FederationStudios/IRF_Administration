@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, GuildMember, TextChannel } from 'discord.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { bans } from '../models/bans.js';
 import { CustomClient } from '../typings/Extensions.js';
 import { IRFGameId, RobloxUserData } from '../functions.js';

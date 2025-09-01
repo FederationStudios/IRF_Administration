@@ -1,7 +1,7 @@
 import { Attachment, ChatInputCommandInteraction, TextChannel } from 'discord.js';
 import { CustomClient } from '../typings/Extensions.js';
 import { interactionEmbed } from '../functions.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 const { channels, discord } = config;
 
 export async function execute(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<Attachment> {
