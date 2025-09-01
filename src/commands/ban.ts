@@ -6,7 +6,7 @@ import {
   TextChannel
 } from 'discord.js';
 import { promisify } from 'node:util';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { IRFGameId, ResultMessage, ResultType, getRoblox, getRowifi, interactionEmbed } from '../functions.js';
 import { execute as logBan } from '../functions/logBan.js';
 import { execute as parseEvidence } from '../functions/parseEvidence.js';
