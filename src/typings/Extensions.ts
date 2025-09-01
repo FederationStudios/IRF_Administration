@@ -1,6 +1,12 @@
-import { Client, CommandInteraction, ModalSubmitFields, ModalSubmitInteraction, SlashCommandBuilder } from 'discord.js';
-import type { initModels } from '../models/init-models.js';
+import {
+  ChatInputCommandInteraction,
+  Client,
+  ModalSubmitFields,
+  ModalSubmitInteraction,
+  SlashCommandBuilder
+} from 'discord.js';
 import { Sequelize } from 'sequelize';
+import type { initModels } from '../models/init-models.js';
 
 interface CustomClient extends Client {
   commands?: Map<string, CommandFile>;
@@ -18,7 +24,11 @@ interface CommandFile {
   ephemeral: boolean;
   modal?: boolean;
   data: SlashCommandBuilder;
-  run: (client: CustomClient, interaction: CommandInteraction, options: CommandInteraction['options']) => Promise<void>;
+  run: (
+    client: CustomClient,
+    interaction: ChatInputCommandInteraction,
+    options: ChatInputCommandInteraction['options']
+  ) => Promise<void>;
 }
 interface ModalFile {
   name: string;
@@ -51,4 +61,4 @@ type RobloxUserPresenceData = {
   invisibleModeExpiry: string;
 };
 
-export { CustomClient, CommandFile, ModalFile, ServerList, RobloxUserPresenceData };
+export { CommandFile, CustomClient, ModalFile, RobloxUserPresenceData, ServerList };
