@@ -10,7 +10,7 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuInteraction
 } from 'discord.js';
-import { default as config } from '../config.json' assert { type: 'json' };
+import { default as config } from '../config.json' with { type: 'json' };
 import { RobloxGroupUserData, getRoblox, interactionEmbed, toConsole, type RobloxUserData } from '../functions.js';
 import { CustomClient, RobloxUserPresenceData } from '../typings/Extensions.js';
 const { roblox } = config;
