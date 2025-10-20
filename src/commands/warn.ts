@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, GuildMemberRoleManager, SlashCommandBuilder } from 'discord.js';
-import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow, ResultMessage, ResultType } from '../functions.js';
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
+import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 
 const options = Object.entries(IRFGameId)
@@ -57,9 +57,6 @@ export async function run(
   }
   switch (options.getSubcommand()) {
     case 'add': {
-      if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
-        return interactionEmbed(ResultType.Error, ResultMessage.UserPermission, interaction);
-
       const [gameName, gameId] = [IRFGameId[options.getNumber('game', true)], options.getNumber('game', true)];
       const warnings = await client.models.warns.findAll({ where: { user: target.user.id } });
       if (warnings.length > 0) {
