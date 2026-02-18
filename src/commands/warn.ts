@@ -49,8 +49,11 @@ export const data = new SlashCommandBuilder()
         return option
           .setName('warnId')
           .setDescription('Unique ID of the warning to edit')
+          // Discord doesn't let you make the min and max the same
+          // Supposedly it's "Invalid string format"
           .setMinLength(36)
-          .setMaxLength(36)
+          .setMaxLength(37)
+          .setRequired(true)
       })
       .addStringOption((option) => {
         return option
@@ -162,9 +165,9 @@ export async function run(
         return interactionEmbed(3, 'You are not authorized to alter a warning. Contact GA Appeals if you need your record changed', interaction);
       }
 
-      const warnId = options.getString('warnId');
-      const action = options.getString('action');
-      const warn = await client.models.warns.findOne({ where: { warnId }, paranoid: false });
+      const warnId = options.getString('warnId', true);
+      const action = options.getString('action', true);
+      const warn = await client.models.warns.findOne({ where: { warnId: warnId.trim() }, paranoid: false });
       if (!warn) {
         interactionEmbed(3, 'Warning does not exist', interaction);
         return;
