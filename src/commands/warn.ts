@@ -1,8 +1,8 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
-import { getGroup, getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
-import { CustomClient } from '../typings/Extensions.js';
-const { channels, roblox } = config;
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
+import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
+import { CustomClient } from '../typings/Extensions.js';
+const { roblox } = config;
 
 const options = Object.entries(IRFGameId)
   .map(([k, v]) => {
@@ -55,7 +55,7 @@ export const data = new SlashCommandBuilder()
       .addStringOption((option) => {
         return option
           .setName('action')
-          .setDescription('The action to perform on the warning (delete, edit)')
+          .setDescription('The action to perform on the warning')
           .setRequired(true)
           .addChoices(
             // The warning remains. No edits are performed
