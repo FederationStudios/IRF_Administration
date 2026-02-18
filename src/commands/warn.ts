@@ -1,6 +1,8 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
-import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { getGroup, getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
+const { channels, roblox } = config;
+import { default as config } from '../config.json' with { type: 'json' };
 
 const options = Object.entries(IRFGameId)
   .map(([k, v]) => {
@@ -39,7 +41,35 @@ export const data = new SlashCommandBuilder()
         return option.setName('user').setDescription('The user to view the warnings of').setRequired(true);
       });
   })
-  .setDMPermission(false);
+  .addSubcommand((subcommand) => {
+    return subcommand
+      .setName('alter')
+      .setDescription('Alters the warning database')
+      .addStringOption((option) => {
+        return option
+          .setName('warnId')
+          .setDescription('Unique ID of the warning to edit')
+          .setMinLength(36)
+          .setMaxLength(36)
+      })
+      .addStringOption((option) => {
+        return option
+          .setName('action')
+          .setDescription('The action to perform on the warning (delete, edit)')
+          .setRequired(true)
+          .addChoices(
+            // The warning remains. No edits are performed
+            { name: 'Keep', value: 'Keep' },
+            // The warning text has a strike through on Discord to represent that it was removed. It will say who removed it.
+            { name: 'Remove', value: 'Remove' },
+            // The warning is restricted to NSC+. This means it won't be publicly accessible, but NSC can always see it
+            { name: 'Redact', value: 'Redact' },
+            // The warning is permanently deleted from the DB. This means it never existed and should be reserved for wrong username/userid warnings only
+            { name: 'Delete', value: 'Delete' }
+          );
+      })
+  })
+  .setContexts(InteractionContextType.Guild);
 export async function run(
   client: CustomClient,
   interaction: ChatInputCommandInteraction,
@@ -100,6 +130,16 @@ export async function run(
       const embeds = [];
       const warnings = await client.models.warns.findAll({ where: { user: target.user.id }, paranoid: false });
       for (const warn of warnings) {
+        if (warn.data.privacy && warn.data.privacy !== 'Public') {
+          warn.reason = 'Hidden. Contact a developer for more information';
+          warn.mod = {
+            discord: 'XXX',
+            roblox: -1
+          }
+          // Don't let Sequelize know what we did
+          warn.changed('reason', false);
+          warn.changed('mod', false);
+        }
         embeds.push({
           title: `Warning ${warnings.indexOf(warn) + 1}`,
           color: warn.isSoftDeleted() ? 0x00ff00 : 0xff0000,
@@ -116,6 +156,57 @@ export async function run(
       }
       paginationRow(interaction, new Array(embeds.length).fill([]), { content: '' }, embeds);
       break;
+    }
+    case 'alter': {
+      if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.id === roblox.gaAppealRole)) {
+        return interactionEmbed(3, 'You are not authorized to alter a warning. Contact GA Appeals if you need your record changed', interaction);
+      }
+
+      const warnId = options.getString('warnId');
+      const action = options.getString('action');
+      const warn = await client.models.warns.findOne({ where: { warnId }, paranoid: false });
+      if (!warn) {
+        interactionEmbed(3, 'Warning does not exist', interaction);
+        return;
+      }
+
+      switch (action) {
+        case 'Keep': {
+          interactionEmbed(1, 'No changes have been made to the warning', interaction);
+          break;
+        }
+        case 'Remove': {
+          if (warn.reason.startsWith('~~')) {
+            interactionEmbed(3, 'This warning is already removed', interaction);
+            return;
+          }
+
+          warn.reason = `~~${warn.reason}~~ (Removed on appeal)`
+          await warn.save();
+          interactionEmbed(1, 'Warning has been removed', interaction);
+          break;
+        }
+        case 'Redact': {
+          if (warn.data.privacy !== 'Public') {
+            interactionEmbed(3, 'This warning is already redacted', interaction);
+            return
+          }
+
+          warn.data.privacy = 'Restricted';
+          await warn.save();
+          interactionEmbed(1, 'Warning has been redacted', interaction);
+          break;
+        }
+        case 'Delete': {
+          await warn.destroy({ force: true });
+          interactionEmbed(1, 'Warning has been deleted', interaction);
+          break;
+        }
+        default: {
+          interaction.editReply({ content: 'Please refresh your Discord. That action does not exist' });
+          break;
+        }
+      }
     }
     default: {
       interaction.editReply({ content: 'Please refresh your Discord. That command does not exist' });
