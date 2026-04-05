@@ -12,7 +12,7 @@ export const data = new SlashCommandBuilder()
   });
 export async function run(
   _client: CustomClient,
-  interaction: ChatInputCommandInteraction,
+  interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ) {
   // Fetch Roblox ID
