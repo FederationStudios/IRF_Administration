@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
@@ -161,8 +161,7 @@ export async function run(
       break;
     }
     case 'alter': {
-      const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-      if (!member || !member.roles.cache.has(roblox.gaAppealRole)) {
+      if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.id === roblox.gaAppealRole)) {
         return interactionEmbed(3, 'You are not authorized to alter a warning. Contact GA Appeals if you need your record changed', interaction);
       }
 
