@@ -1,5 +1,6 @@
 services:
-  app:
+  irf_administration:
+    name: irf_administration
     build:
       context: ./
       secrets:
