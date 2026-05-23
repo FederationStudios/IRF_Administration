@@ -6,6 +6,11 @@ services:
       secrets:
         - configFile
     restart: on-failure
+    # Source - https://stackoverflow.com/a/24326540
+    # Posted by Thomasleveil, modified by community. See post 'Timeline' for change history
+    # Retrieved 2026-05-23, License - CC BY-SA 4.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 secrets:
   configFile:
