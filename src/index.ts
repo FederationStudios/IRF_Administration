@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
 import { default as config } from './config.json' with { type: 'json' };
-import { IRFGameId, interactionEmbed, toConsole } from './functions.js';
+import { IRFGameId, ResultMessage, interactionEmbed, toConsole } from './functions.js';
 import { handleBans, default as readyHandler } from './functions/ready.js';
 import type { initModels } from './models/init-models.js';
 import { CustomClient, ServerList } from './typings/Extensions.js';
@@ -72,6 +72,13 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       .catch(() => Promise.reject()); // Hacky method to return void promise
 
   if (interaction.isChatInputCommand()) {
+    if (!interaction.inCachedGuild()) {
+      return interaction
+        .reply({ content: ResultMessage.NoDM, ephemeral: true })
+        .then(() => void Promise)
+        .catch(() => Promise.reject());
+    }
+
     const command = client.commands.get(interaction.commandName);
     if (command) {
       // If the command is not a modal, defer reply and fetch user

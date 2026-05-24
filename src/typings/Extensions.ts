@@ -26,8 +26,8 @@ interface CommandFile {
   data: SlashCommandBuilder;
   run: (
     client: CustomClient,
-    interaction: ChatInputCommandInteraction,
-    options: ChatInputCommandInteraction['options']
+    interaction: ChatInputCommandInteraction<'cached'>,
+    options: ChatInputCommandInteraction<'cached'>['options']
   ) => Promise<void>;
 }
 interface ModalFile {

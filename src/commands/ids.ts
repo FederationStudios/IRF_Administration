@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Returns all IRF Game IDs')
   .setDMPermission(false);
-export async function run(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<void> {
+export async function run(client: CustomClient, interaction: ChatInputCommandInteraction<'cached'>): Promise<void> {
   interaction.editReply({
     embeds: [
       new EmbedBuilder({

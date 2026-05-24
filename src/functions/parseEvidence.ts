@@ -4,7 +4,7 @@ import { interactionEmbed } from '../functions.js';
 import { default as config } from '../config.json' with { type: 'json' };
 const { channels, discord } = config;
 
-export async function execute(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<Attachment> {
+export async function execute(client: CustomClient, interaction: ChatInputCommandInteraction<'cached'>): Promise<Attachment> {
   // Get the evidence attachment
   const trueEvidence: Attachment = interaction.options.getAttachment('evidence') || undefined;
   // Validate trueEvidence if it is present
