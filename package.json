@@ -28,7 +28,7 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "discord.js": "14.25.1",
+    "discord.js": "14.26.4",
     "eslint-config-prettier": "^10.1.8",
     "mysql2": "3.17.2",
     "sequelize": "6.37.7",
