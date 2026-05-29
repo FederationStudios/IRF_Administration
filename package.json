@@ -37,7 +37,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "25.2.3",
-    "eslint": "10.0.0",
+    "eslint": "10.4.1",
     "globals": "17.3.0",
     "typescript-eslint": "8.56.0"
   },
