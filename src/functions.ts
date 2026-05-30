@@ -15,7 +15,7 @@ import { CustomClient } from './typings/Extensions.js';
 //#region Enums
 enum IRFGameId {
   'Global' = 0,
-  'Papers, Please!' = 583507031,
+  'Papers, Please!' = 95198857650727,
   'Sevastopol Military Academy' = 603943201,
   'Triumphal Arch of Moscow' = 2506054725,
   'Tank Training Grounds' = 2451182763,
