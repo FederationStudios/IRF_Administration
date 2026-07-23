@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, EmbedBuilder, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { IRFGameId } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 
@@ -7,7 +7,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Returns all IRF Game IDs')
-  .setDMPermission(false);
+  .setContexts(InteractionContextType.Guild);
 export async function run(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<void> {
   interaction.editReply({
     embeds: [

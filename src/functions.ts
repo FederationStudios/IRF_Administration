@@ -106,7 +106,7 @@ async function toConsole(message: string, source: string, client: CustomClient):
   if (source.split('\n').length < 2)
     return console.error('[ERR] toConsole called but Error.stack was not used\n> Source: ' + source);
   source = /(?:[A-Za-z0-9._]+:[0-9]+:[0-9]+)/.exec(source)![0];
-  if (!channel || !channel.isTextBased())
+  if (!channel || !channel.isTextBased() || !channel.isSendable())
     return console.warn('[WARN] toConsole called but bot cannot find logging channel\n', message, '\n', source);
 
   await channel.send(`Incoming message from \`${source}\` at <t:${Math.floor(Date.now() / 1000)}:F>`);
@@ -174,7 +174,7 @@ function parseTime(time: string): number {
   if (!time.match(/[1-9]{1,3}[dhms]/g)) return NaN;
 
   for (const period of time.match(/[1-9]{1,3}[dhms]/g)!) {
-    const [amount, unit] = period.match(/^(\d+)([dhms])$/).slice(1);
+    const [amount, unit] = period.match(/^(\d+)([dhms])$/)!.slice(1);
     duration +=
       unit === 'd'
         ? Number(amount) * 24 * 60 * 60
@@ -205,7 +205,7 @@ async function getGroup(
   // If the group is not found, return an error
   if (group.errorMessage) return { success: false, error: `No group found with ID \`${groupId}\`` };
   // Find the group specified
-  const role = group.data.find((g) => g.group.id === groupId);
+  const role = group.data.find((g: { group: { id: number } }) => g.group.id === groupId);
   // If the user is not in the group, return an error
   if (!role) return { success: false, error: 'User is not in the group specified' };
   // Return the role
@@ -321,15 +321,6 @@ async function getRoblox(
   }
 }
 
-function getEnumKey(enumObj: object, value: number): string | undefined {
-  for (const key in enumObj) {
-    if (Object.prototype.hasOwnProperty.call(enumObj, key) && enumObj[key] === (value as number)) {
-      return key;
-    }
-  }
-  return undefined;
-}
-
 /**
  * @async
  * Creates a pagination row. This function should be used when you have a list
@@ -343,14 +334,14 @@ function getEnumKey(enumObj: object, value: number): string | undefined {
  * @param {ButtonBuilder[][]} buttonRows Buttons
  * @param {InteractionEditReplyOptions} args Options for the pagination row's editReply()
  * @param {EmbedBuilder[]} embeds List of embeds
- * @returns {Promise<ButtonInteraction>} Button user selected to end the collector
+ * @returns {Promise<ButtonInteraction | null>} Button user selected to end the collector
  */
 async function paginationRow(
   interaction: Exclude<Interaction, { type: InteractionType.ApplicationCommandAutocomplete }>,
   buttonRows: ButtonBuilder[][],
   args: InteractionEditReplyOptions,
   embeds: EmbedBuilder[]
-): Promise<ButtonInteraction> {
+): Promise<ButtonInteraction | null> {
   if (embeds.length !== buttonRows.length) return Promise.reject('Embeds and button rows must be the same length');
   // Create the row
   const paginationRow: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({
@@ -361,19 +352,19 @@ async function paginationRow(
     ]
   });
   // Pair the embed with the buttons. If the entry has no buttons, set it to null
-  const rows: [ActionRowBuilder<ButtonBuilder>, EmbedBuilder?][] = buttonRows.map((r, i) => {
-    const row: ActionRowBuilder<ButtonBuilder> = new ActionRowBuilder({ components: r });
-    return [r.length === 0 ? null : row, embeds[i]];
-  });
+  const rows: ActionRowBuilder<ButtonBuilder>[] = buttonRows.map(
+    (buttons) => new ActionRowBuilder({ components: buttons })
+  );
 
   // Variable declarations
   let index = 0,
-    returnedInteraction: ButtonInteraction;
-  if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
+    returnedInteraction: ButtonInteraction | null = null;
 
-  while (typeof returnedInteraction === 'undefined') {
+  args.embeds = [embeds[index]];
+
+  while (!returnedInteraction) {
     // Send the paginated response, taking in account embeds without buttons
-    const components = rows[index][0] !== null ? [rows[index][0], paginationRow] : [paginationRow];
+    const components = rows[index] !== null ? [rows[index], paginationRow] : [paginationRow];
     const coll = await interaction
       .editReply({
         content: args.content || 'Please select an option below',
@@ -413,14 +404,13 @@ async function paginationRow(
       else index--;
     }
     // Configure message
-    if (embeds && embeds.length > 0) args.embeds = [rows[index][1]];
-    else args.embeds = [];
-    args.components = [rows[index][0], paginationRow];
+    args.embeds = [embeds[index]];
+    args.components = [rows[index], paginationRow];
     // And the loop continues...
   }
   // Remove embeds and components
   await interaction.editReply({ content: args.content || 'Please select an option below', components: [] });
-  return Promise.resolve(returnedInteraction);
+  return returnedInteraction;
 }
 //#endregion
 
@@ -428,7 +418,6 @@ export {
   IRFGameId,
   ResultMessage,
   ResultType,
-  getEnumKey,
   getGroup,
   getRoblox,
   getRowifi,

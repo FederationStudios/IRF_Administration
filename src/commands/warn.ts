@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
@@ -78,6 +78,7 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  if (!interaction.guild || !interaction.member) return;
   const rowifi = await getRowifi(interaction.user.id, client);
   if (rowifi.success === false) {
     interaction.editReply({ content: rowifi.error });
@@ -143,11 +144,11 @@ export async function run(
           warn.changed('reason', false);
           warn.changed('mod', false);
         }
-        embeds.push({
+        embeds.push(new EmbedBuilder({
           title: `Warning ${warnings.indexOf(warn) + 1}`,
           color: warn.isSoftDeleted() ? 0x00ff00 : 0xff0000,
           fields: [
-            { name: 'Game', value: warn.game, inline: true },
+            { name: 'Game', value: String(warn.game), inline: true },
             { name: 'Reason', value: warn.reason, inline: true },
             { name: 'Moderator', value: `Roblox ID: ${warn.mod.roblox}\nDiscord: <@${warn.mod.discord}>`, inline: true }
           ],
@@ -155,7 +156,7 @@ export async function run(
           footer: {
             text: `ID: ${warn.warnId} - Item ${warnings.indexOf(warn) + 1} of ${warnings.length}`
           }
-        });
+        }));
       }
       paginationRow(interaction, new Array(embeds.length).fill([]), { content: '' }, embeds);
       break;

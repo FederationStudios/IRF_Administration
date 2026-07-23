@@ -34,14 +34,14 @@ if (!fs.existsSync('./models')) {
 }
 //#endregion
 //#region Discord bot
-const client: CustomClient = new Client({
+const client = new Client({
   intents: [
     IntentsBitField.Flags.Guilds,
     IntentsBitField.Flags.GuildMessages,
     IntentsBitField.Flags.GuildMembers,
     IntentsBitField.Flags.MessageContent
   ]
-});
+}) as CustomClient;
 client.sequelize = sequelize;
 client.models = sequelize.models as ReturnType<typeof initModels>;
 client.commands = new Collection();
@@ -189,20 +189,19 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         if (!servers.success) return interaction.respond([]);
         // Names need to be mapped to IDs
         const matches: { name: string; value: string }[] = [];
-        const idMap = new Map();
-        let matchedGame = 0;
-        for (const name of Object.keys(IRFGameId)) {
-          idMap.set(IRFGameId[name], name);
-          if (name.toLowerCase().includes(value.toLowerCase())) matchedGame = Number(IRFGameId[name]);
+        let game: [string, number] = ["RTT", 0];
+        for (const [name, placeId] of Object.entries(IRFGameId)) {
+          if (name.toLowerCase().includes(value.toLowerCase()))
+            game = [name, Number(placeId)];
         }
         // Push all servers with the game ID in matchedGame to matches
         for (const [placeId, jobs] of Object.entries(servers.servers)) {
-          if (Number(placeId) == matchedGame) {
+          if (Number(placeId) == game[1]) {
             for (const [jobId, [players]] of Object.entries(jobs)) {
               // If we cannot determine the game, we insert a filler value for 
               // the administrator to see. In reality, they should know the
               // JobId they need to shutdown
-              matches.push({ name: `${jobId} - ${idMap.get(placeId) || 'RTT'} (${players.length})`, value: jobId });
+              matches.push({ name: `${jobId} - ${game[0] || 'RTT'} (${players.length})`, value: jobId });
             }
           }
         }
@@ -218,6 +217,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
 
 // TODO: This needs a separate file
 client.on('messageCreate', async (message): Promise<void> => {
+  if (!message.guild) return;
   if (message.guild.id != config.discord.mainServer || message.channel.isDMBased()) return;
   if (message.author.bot) return;
   if (message.channel.name !== 'REPORTS-DONOTUSE') return;
@@ -240,7 +240,7 @@ client.on('messageCreate', async (message): Promise<void> => {
     // eslint-disable-next-line no-useless-escape
     /^Suspect: (?<username>[\w\-]+)\nSuspect Roblox ID: (?<id>[\d]+)\nReason: (?<reason>[ -~]+)(?:\nProof:\n(?<proof>[\S\n]*))?/;
   const result = msgContentRegex.exec(refMessage.content);
-  async function deny(msg) {
+  async function deny(msg: string) {
     await refMessage.reactions.removeAll();
     refMessage.react(denied);
     refMessage.reply({ embeds: [{ color: 0xff0000, description: `${denied} | **Denied**. ${msg}` }] });
@@ -281,7 +281,7 @@ client.login(config.bot.token);
 //#region Error handling
 const recentErrors: { promise: Promise<unknown>; reason: string; time: Date }[] = [];
 process.on('uncaughtException', (err, origin) => {
-  toConsole(`Uncaught exception: ${err}\n` + `Exception origin: ${origin}`, new Error().stack, client);
+  toConsole(`Uncaught exception: ${err}\n` + `Exception origin: ${origin}`, String(new Error().stack), client);
 });
 process.on('unhandledRejection', async (reason, promise) => {
   if (!ready) {

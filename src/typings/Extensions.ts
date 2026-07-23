@@ -9,10 +9,10 @@ import { Sequelize } from 'sequelize';
 import type { initModels } from '../models/init-models.js';
 
 interface CustomClient extends Client {
-  commands?: Map<string, CommandFile>;
-  modals?: Map<string, ModalFile>;
-  sequelize?: Sequelize;
-  models?: ReturnType<typeof initModels>;
+  commands: Map<string, CommandFile>;
+  modals: Map<string, ModalFile>;
+  sequelize: Sequelize;
+  models: ReturnType<typeof initModels>;
   // Manually importing types due to TS not being able to find them
   channels: Client['channels'];
   guilds: Client['guilds'];

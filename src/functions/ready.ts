@@ -1,7 +1,6 @@
 import {
   ActivityType,
   GuildMember,
-  type GuildTextBasedChannel,
   RESTPostAPIChatInputApplicationCommandsJSONBody
 } from 'discord.js';
 import fs from 'node:fs';
@@ -12,6 +11,7 @@ import { bans } from '../models/bans.js';
 import { CommandFile, CustomClient } from '../typings/Extensions.js';
 
 export default async function (client: CustomClient, ready: boolean): Promise<boolean> {
+  if (!client.user || !client.application) process.exit(1);
   console.info('[READY] Client is ready');
   console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
   toConsole(
@@ -85,11 +85,10 @@ export async function handleBans(client: CustomClient): Promise<void> {
       .catch(() => moderator);
     // Fetch Discord information
     let discord: GuildMember | { user: { username: string; id: string }; nickname: string } | undefined;
-    if (moderator.id !== 0) {
+    const mainServer = client.guilds.cache.get(config.discord.mainServer);
+    if (moderator.id !== 0 && mainServer) {
       // Attempt #1: Query via Discord
-      discord = (
-        await client.guilds.cache.get(config.discord.mainServer).members.search({ query: moderator.name, limit: 1 })
-      ).first();
+      discord = (await mainServer.members.search({ query: moderator.name, limit: 1 })).first();
       if (!discord) {
         // Attempt #2: Query via RoWifi
         const rowifiData = await fetch(
@@ -102,7 +101,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
         if (rowifiData.ok) {
           const json = await rowifiData.json();
           if (json[0] && json[0].discord_id) {
-            discord = await client.guilds.cache.get(config.discord.mainServer).members.fetch(json[0].discord_id);
+            discord = await mainServer.members.fetch(json[0].discord_id);
           }
         }
       }
@@ -121,7 +120,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
       toConsole(`[BAN] Failed to find game name for \`${ban.game}\``, new Error().stack!, client);
     // Check logging channel exists
     const banLog = client.channels.cache.get(config.channels.ban);
-    if (!banLog || !banLog.isTextBased()) break;
+    if (!banLog || !banLog.isTextBased() || !banLog.isSendable()) break;
     // Update moderator and reason data
     await ban.update({
       mod: {
@@ -131,7 +130,7 @@ export async function handleBans(client: CustomClient): Promise<void> {
       reason: ban.reason.replace('~~~irf', '')
     });
     // Send embed
-    (banLog as GuildTextBasedChannel).send({
+    banLog.send({
       embeds: [
         {
           title: `${moderator.name} banned => ${victim.name} (In Game)`,

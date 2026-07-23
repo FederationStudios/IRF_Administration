@@ -4,6 +4,7 @@ import {
   GuildMember,
   GuildMemberRoleManager,
   type GuildTextBasedChannel,
+  InteractionContextType,
   SlashCommandBuilder
 } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
@@ -22,7 +23,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Unbans a user from an IRF game')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option.setName('user_id').setDescription('Roblox username or ID').setRequired(true);
   })
@@ -41,6 +42,7 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ) {
+  if (!interaction.guild || !interaction.member) return;
   const [gameName, gameId] = [IRFGameId[options.getNumber('game_id', true)], options.getNumber('game_id', true)];
   // Check roles
   if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))
@@ -83,7 +85,7 @@ export async function run(
       .forEach((b) => {
         // Add unban reason and destroy
         b.update({
-          unbanReason: options.getString('reason')
+          unbanReason: options.getString('reason', true)
         });
         b.destroy();
       });
@@ -91,7 +93,7 @@ export async function run(
     // Error handling
     toConsole(
       `An error occurred while removing a ban for ${id.user.name} (${id.user.id})\n> ${String(e)}`,
-      new Error().stack,
+      String(new Error().stack),
       client
     );
     error = true;
@@ -122,7 +124,7 @@ export async function run(
           },
           {
             name: 'Reason',
-            value: options.getString('reason'),
+            value: options.getString('reason', true),
             inline: true
           },
           {

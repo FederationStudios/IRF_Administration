@@ -6,6 +6,7 @@ import {
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
   EmbedBuilder,
+  InteractionContextType,
   SlashCommandBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuInteraction
@@ -20,6 +21,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription("Returns a user's profile")
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option.setName('roblox').setDescription('Roblox username').setRequired(true);
   });
@@ -28,6 +30,7 @@ export async function run(
   interaction: ChatInputCommandInteraction,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  if (!client.user) return;
   const robloxData = await getRoblox(options.getString('roblox', true));
   if (robloxData.success === false) return interactionEmbed(3, robloxData.error, interaction);
 
@@ -95,7 +98,7 @@ export async function run(
       .catch(() => Promise.resolve()),
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}/username-history?limit=50`)
       .then((r) => r.json())
-      .then((r) => (data.history = r.data.map((u) => u.name)))
+      .then((r) => (data.history = r.data.map((u: { name: string }) => u.name)))
       .catch(() => Promise.resolve()),
     fetch('https://presence.roblox.com/v1/presence/users', {
       method: 'POST',
@@ -122,9 +125,6 @@ export async function run(
     new EmbedBuilder({
       title: 'Overview',
       color: 0xde2821,
-      thumbnail: {
-        url: client.user.avatarURL()!
-      },
       description:
         data.user.description + '\n\n[Visit Profile](https://www.roblox.com/users/' + robloxData.user.id + '/profile)',
       image: {
@@ -187,9 +187,6 @@ export async function run(
       new EmbedBuilder({
         title: `${robloxData.user.name}'s Friends`,
         color: 0xde2821,
-        thumbnail: {
-          url: client.user.avatarURL()!
-        },
         description: `https://roblox.com/users/${robloxData.user.id}/profile`,
         image: {
           url: avatar
@@ -228,9 +225,6 @@ export async function run(
       new EmbedBuilder({
         title: `${group.group.name} (${group.group.id})`,
         color: 0xde2821,
-        thumbnail: {
-          url: client.user.avatarURL()!
-        },
         description:
           group.group.description.length > 2048
             ? `${group.group.description.slice(0, 2045)}...`
@@ -266,9 +260,6 @@ export async function run(
       new EmbedBuilder({
         title: `${robloxData.user.name}'s Groups`,
         color: 0xde2821,
-        thumbnail: {
-          url: client.user.avatarURL()!
-        },
         description: `https://roblox.com/users/${robloxData.user.id}/profile`,
         image: {
           url: avatar
@@ -286,9 +277,6 @@ export async function run(
     new EmbedBuilder({
       title: `${robloxData.user.name}'s Activity`,
       color: 0xde2821,
-      thumbnail: {
-        url: client.user.avatarURL()!
-      },
       description: `https://roblox.com/users/${robloxData.user.id}/profile`,
       image: {
         url: avatar

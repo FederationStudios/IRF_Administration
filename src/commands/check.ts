@@ -6,6 +6,7 @@ import {
   CommandInteractionOptionResolver,
   ComponentType,
   EmbedBuilder,
+  InteractionContextType,
   MessageComponentInteraction,
   SlashCommandBuilder,
   TextChannel
@@ -20,7 +21,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Checks for bans associated with a user')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option.setName('user_id').setDescription("User's Roblox ID").setRequired(true);
   });
