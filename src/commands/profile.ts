@@ -151,17 +151,17 @@ export async function run(
         },
         {
           name: 'IRF Game Bans',
-          value: String(bans.length),
+          value: bans ? String(bans.length) : '?',
           inline: true
         },
         {
           name: 'Friends',
-          value: String(data.friends.length),
+          value: data.friends ? String(data.friends.length) : '?',
           inline: true
         },
         {
           name: 'Groups',
-          value: String(data.groups.length),
+          value: data.groups ? String(data.groups.length) : '?',
           inline: true
         },
         {
