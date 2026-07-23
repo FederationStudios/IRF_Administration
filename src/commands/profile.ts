@@ -46,9 +46,9 @@ export async function run(
   // We create the data object for later use
   const data: {
     user: RobloxUserData;
-    friends: RobloxUserData[];
-    groups: RobloxGroupUserData[];
-    history: string[];
+    friends: RobloxUserData[] | null;
+    groups: RobloxGroupUserData[] | null;
+    history: string[] | null;
     presence: RobloxUserPresenceData;
     created: string;
     createdAt: string;
@@ -90,15 +90,15 @@ export async function run(
       .catch(() => Promise.resolve()),
     fetch(`https://friends.roblox.com/v1/users/${robloxData.user.id}/friends`)
       .then((r) => r.json())
-      .then((r) => (data.friends = r.data || []))
+      .then((r) => (data.friends = r.data || null))
       .catch(() => Promise.resolve()),
     fetch(`https://groups.roblox.com/v1/users/${robloxData.user.id}/groups/roles`)
       .then((r) => r.json())
-      .then((r) => (data.groups = r.data || []))
+      .then((r) => (data.groups = r.data || null))
       .catch(() => Promise.resolve()),
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}/username-history?limit=50`)
       .then((r) => r.json())
-      .then((r) => (data.history = r.data?.map((u: { name: string }) => u.name) || []))
+      .then((r) => (data.history = r.data?.map((u: { name: string }) => u.name) || null))
       .catch(() => Promise.resolve()),
     fetch('https://presence.roblox.com/v1/presence/users', {
       method: 'POST',
@@ -175,13 +175,14 @@ export async function run(
   ];
   //#endregion
   //#region Friends
-  const friendFields = data.friends.map((friend) => {
-    return {
-      name: friend.displayName,
-      value: `Username: ${friend.name}\nID: ${friend.id}\nOnline: ${friend.isOnline ? 'Yes' : 'No'}`,
-      inline: false
-    };
-  });
+  const friendFields =
+    data.friends?.map((friend) => {
+      return {
+        name: friend.displayName,
+        value: `Username: ${friend.name}\nID: ${friend.id}\nOnline: ${friend.isOnline ? 'Yes' : 'No'}`,
+        inline: false
+      };
+    }) || [];
   if (friendFields.length === 0)
     categories.friends.push(
       new EmbedBuilder({
@@ -191,7 +192,9 @@ export async function run(
         image: {
           url: avatar
         },
-        fields: [{ name: 'No friends', value: 'This user has no friends!' }],
+        fields: [
+          { name: 'No friends', value: data.friends === null ? 'Friend list is private' : 'This user has no friends!' }
+        ],
         footer: {
           text: 'Page 1 of 1'
         },
@@ -220,7 +223,7 @@ export async function run(
   }
   //#endregion
   //#region Groups
-  data.groups.forEach((group, index) => {
+  data.groups?.forEach((group, index) => {
     categories.groups.push(
       new EmbedBuilder({
         title: `${group.group.name} (${group.group.id})`,
@@ -249,13 +252,13 @@ export async function run(
           }
         ],
         footer: {
-          text: `Group ${index + 1} of ${data.groups.length}`
+          text: `Group ${index + 1} of ${data.groups?.length || 0}`
         },
         timestamp: new Date()
       })
     );
   });
-  if (data.groups.length === 0)
+  if (data.groups?.length === 0 || !data.groups)
     categories.groups.push(
       new EmbedBuilder({
         title: `${robloxData.user.name}'s Groups`,
@@ -264,7 +267,12 @@ export async function run(
         image: {
           url: avatar
         },
-        fields: [{ name: 'No groups', value: 'This user is not in any groups!' }],
+        fields: [
+          {
+            name: 'No groups',
+            value: data.groups === null ? 'Group list is private' : 'This user is not in any groups!'
+          }
+        ],
         footer: {
           text: 'Page 1 of 1'
         },
