@@ -1,4 +1,4 @@
-import { Client, Collection, IntentsBitField, Message } from 'discord.js';
+import { Client, Collection, IntentsBitField, Message, MessageFlags } from 'discord.js';
 import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
@@ -8,7 +8,7 @@ import { handleBans, default as readyHandler } from './functions/ready.js';
 import type { initModels } from './models/init-models.js';
 import { CustomClient, ServerList } from './typings/Extensions.js';
 const wait = promisify(setTimeout);
-let ready = false;
+let clientReady = false;
 
 //#region Setup
 //#region Database
@@ -49,25 +49,25 @@ client.commands = new Collection();
 //#endregion
 
 //#region Events
-client.on('ready', async () => {
-  ready = await readyHandler(client, ready).catch((e) => {
+client.on('clientReady', async () => {
+  clientReady = await readyHandler(client, clientReady).catch((e) => {
     console.error(e);
     return false;
   });
   // Call on startup
-  if (ready && process.env.NODE_ENV === 'development') handleBans(client);
+  if (clientReady && process.env.NODE_ENV === 'development') handleBans(client);
   // Setup interval
   setInterval(() => {
-    if (!ready) return;
+    if (!clientReady) return;
     handleBans(client);
   }, 120_000);
 });
 
 // TODO: Split this into separate files, especially autocomplete
 client.on('interactionCreate', async (interaction): Promise<void> => {
-  if (!ready && interaction.isRepliable())
+  if (!clientReady && interaction.isRepliable())
     return interaction
-      .reply({ content: 'Please wait for the bot to finish loading', ephemeral: true })
+      .reply({ content: 'Please wait for the bot to finish loading', flags: MessageFlags.Ephemeral })
       .then(() => void Promise)
       .catch(() => Promise.reject()); // Hacky method to return void promise
 
@@ -76,7 +76,7 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
     if (command) {
       // If the command is not a modal, defer reply and fetch user
       if (!command.modal) {
-        await interaction.deferReply({ ephemeral: command.ephemeral });
+        await interaction.deferReply(command.ephemeral ? { flags: MessageFlags.Ephemeral } : {});
         // Can't Promise.all(...), deferReply must be first
         await interaction.user.fetch();
       }
@@ -283,7 +283,7 @@ process.on('uncaughtException', (err, origin) => {
   toConsole(`Uncaught exception: ${err}\n` + `Exception origin: ${origin}`, String(new Error().stack), client);
 });
 process.on('unhandledRejection', async (reason, promise) => {
-  if (!ready) {
+  if (!clientReady) {
     console.warn('Exiting due to a [unhandledRejection] during start up');
     console.error(reason, promise);
     return process.exit(15);
@@ -328,7 +328,7 @@ process.on('unhandledRejection', async (reason, promise) => {
   );
 });
 process.on('warning', async (warning) => {
-  if (!ready) {
+  if (!clientReady) {
     console.warn('[warning] has occurred during start up');
     console.warn(warning);
   }

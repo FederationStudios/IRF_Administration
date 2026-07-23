@@ -6,13 +6,13 @@ import { IRFGameId, toConsole } from '../functions.js';
 import { bans } from '../models/bans.js';
 import { CommandFile, CustomClient } from '../typings/Extensions.js';
 
-export default async function (client: CustomClient, ready: boolean): Promise<boolean> {
+export default async function (client: CustomClient, clientReady: boolean): Promise<boolean> {
   if (!client.user || !client.application) process.exit(1);
   console.info('[READY] Client is ready');
   console.info(`[READY] Logged in as ${client.user.tag} (${client.user.id}) at ${new Date()}`);
   toConsole(
     `[READY] Logged in as ${client.user?.tag} (${client.user.id}) at <t:${Math.floor(Date.now() / 1000)}:T> and **${
-      ready ? 'can' : 'cannot'
+      clientReady ? 'can' : 'cannot'
     }** receive commands`,
     new Error().stack!,
     client

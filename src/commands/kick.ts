@@ -2,6 +2,7 @@ import {
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
   InteractionContextType,
+  MessageFlags,
   SlashCommandBuilder
 } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
@@ -100,7 +101,7 @@ export async function run(
         description: 'List of IRF servers (DEBUGGING PURPOSES IF THIS COMMAND BACKFIRES)'
       }
     ],
-    ephemeral: true
+    flags: MessageFlags.Ephemeral
   });
   return;
 }
