@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, GuildMember, TextChannel } from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
+import { IRFGameId, RobloxUserData } from '../functions.js';
 import { bans } from '../models/bans.js';
 import { CustomClient } from '../typings/Extensions.js';
-import { IRFGameId, RobloxUserData } from '../functions.js';
 const { channels, discord } = config;
 
 export async function execute(

@@ -1,8 +1,4 @@
-import {
-  ActivityType,
-  GuildMember,
-  RESTPostAPIChatInputApplicationCommandsJSONBody
-} from 'discord.js';
+import { ActivityType, GuildMember, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
 import fs from 'node:fs';
 import { Op } from 'sequelize';
 import { default as config } from '../config.json' with { type: 'json' };

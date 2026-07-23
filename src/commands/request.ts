@@ -59,10 +59,13 @@ export async function run(
   if (interaction.guild.id != '466432774182666240' && division === 'Royal Guard Backup Ping') {
     interactionEmbed(3, 'You must request Royal Guard from their server', interaction);
     return;
-  } else if(interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
+  } else if (interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
     interactionEmbed(3, 'You must request National Defense from their server', interaction);
     return;
-  } else if (interaction.guild.id != discord.mainServer && !['National Defense', 'Royal Guard Backup Ping'].includes(division)) {
+  } else if (
+    interaction.guild.id != discord.mainServer &&
+    !['National Defense', 'Royal Guard Backup Ping'].includes(division)
+  ) {
     interactionEmbed(3, 'You must request this division in the Federation Network server', interaction);
     return;
   }
@@ -113,7 +116,12 @@ export async function run(
     return;
   }
 
-  const channelId = division === 'Royal Guard Backup Ping' ? '749034267291418785' : (division === 'National Defense' ? '1292529882416287866' : channels.request);
+  const channelId =
+    division === 'Royal Guard Backup Ping'
+      ? '749034267291418785'
+      : division === 'National Defense'
+        ? '1292529882416287866'
+        : channels.request;
   const request = await interaction.guild.channels.fetch(channelId, { cache: true });
   if (!request || !request.isTextBased()) {
     interactionEmbed(3, ResultMessage.Unknown, interaction);

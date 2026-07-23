@@ -175,13 +175,13 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         const matches = reasons.filter((r) => r.value.toLowerCase().includes(value.toLowerCase()));
         if (matches.length === 0)
           return interaction.respond([{ name: value.length > 25 ? value.slice(0, 22) + '...' : value, value: value }]);
-  
+
         return interaction.respond(matches);
       }
       case 'shutdown': {
         // If the command is shutdown, offer the list of active servers
         const { name, value = 'Papers' } = interaction.options.getFocused(true);
-        if (name !== 'target') return; 
+        if (name !== 'target') return;
         const servers: { success: boolean; servers: ServerList } = await fetch(config.urls.servers)
           .then((r: Response) => r.json())
           .catch(() => ({ success: false, servers: {} }));
@@ -189,16 +189,15 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
         if (!servers.success) return interaction.respond([]);
         // Names need to be mapped to IDs
         const matches: { name: string; value: string }[] = [];
-        let game: [string, number] = ["RTT", 0];
+        let game: [string, number] = ['RTT', 0];
         for (const [name, placeId] of Object.entries(IRFGameId)) {
-          if (name.toLowerCase().includes(value.toLowerCase()))
-            game = [name, Number(placeId)];
+          if (name.toLowerCase().includes(value.toLowerCase())) game = [name, Number(placeId)];
         }
         // Push all servers with the game ID in matchedGame to matches
         for (const [placeId, jobs] of Object.entries(servers.servers)) {
           if (Number(placeId) == game[1]) {
             for (const [jobId, [players]] of Object.entries(jobs)) {
-              // If we cannot determine the game, we insert a filler value for 
+              // If we cannot determine the game, we insert a filler value for
               // the administrator to see. In reality, they should know the
               // JobId they need to shutdown
               matches.push({ name: `${jobId} - ${game[0] || 'RTT'} (${players.length})`, value: jobId });

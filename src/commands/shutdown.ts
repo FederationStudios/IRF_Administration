@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  CommandInteractionOptionResolver,
+  InteractionContextType,
+  SlashCommandBuilder
+} from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { IRFGameId, getGroup, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, ServerList } from '../typings/Extensions.js';
