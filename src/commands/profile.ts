@@ -90,15 +90,15 @@ export async function run(
       .catch(() => Promise.resolve()),
     fetch(`https://friends.roblox.com/v1/users/${robloxData.user.id}/friends`)
       .then((r) => r.json())
-      .then((r) => (data.friends = r.data))
+      .then((r) => (data.friends = r.data || []))
       .catch(() => Promise.resolve()),
     fetch(`https://groups.roblox.com/v1/users/${robloxData.user.id}/groups/roles`)
       .then((r) => r.json())
-      .then((r) => (data.groups = r.data))
+      .then((r) => (data.groups = r.data || []))
       .catch(() => Promise.resolve()),
     fetch(`https://users.roblox.com/v1/users/${robloxData.user.id}/username-history?limit=50`)
       .then((r) => r.json())
-      .then((r) => (data.history = r.data.map((u: { name: string }) => u.name)))
+      .then((r) => (data.history = r.data?.map((u: { name: string }) => u.name) || []))
       .catch(() => Promise.resolve()),
     fetch('https://presence.roblox.com/v1/presence/users', {
       method: 'POST',

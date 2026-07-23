@@ -351,7 +351,6 @@ async function paginationRow(
       new ButtonBuilder({ customId: 'next', style: ButtonStyle.Primary, emoji: '➡️' })
     ]
   });
-  // Pair the embed with the buttons. If the entry has no buttons, set it to null
   const rows: ActionRowBuilder<ButtonBuilder>[] = buttonRows.map(
     (buttons) => new ActionRowBuilder({ components: buttons })
   );

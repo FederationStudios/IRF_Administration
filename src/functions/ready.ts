@@ -103,9 +103,9 @@ export async function handleBans(client: CustomClient): Promise<void> {
       }
     }
     // Can't find them, skip and log for later
-    if (!discord) {
+    if (!discord || !moderator || !victim) {
       console.log(`[BAN] Failed to find Discord user. Dumping data at ${new Date().toLocaleTimeString()}:`);
-      console.log(`[BAN] M: ${moderator.name}/${moderator.id} V: ${victim.name}/${victim.id}`);
+      console.log(`[BAN] M: ${moderator?.name}/${moderator?.id} V: ${victim?.name}/${victim?.id}`);
       console.log(`[BAN] Database data: ID/${ban.banId} VIC/${ban.user} MOD/${JSON.stringify(ban.mod)}`);
       continue;
     }
