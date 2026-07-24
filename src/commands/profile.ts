@@ -27,7 +27,7 @@ export const data = new SlashCommandBuilder()
   });
 export async function run(
   client: CustomClient,
-  interaction: ChatInputCommandInteraction,
+  interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
   if (!client.user) return;

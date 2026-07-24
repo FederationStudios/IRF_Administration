@@ -84,7 +84,7 @@ export const data = new SlashCommandBuilder()
   .setContexts(InteractionContextType.Guild);
 export async function run(
   client: CustomClient,
-  interaction: ChatInputCommandInteraction,
+  interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
   if (!interaction.guild || !interaction.member) return;

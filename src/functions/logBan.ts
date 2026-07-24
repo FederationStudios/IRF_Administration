@@ -9,7 +9,7 @@ export async function execute(
   client: CustomClient,
   ban: bans,
   target: RobloxUserData,
-  interaction: ChatInputCommandInteraction
+  interaction: ChatInputCommandInteraction<'cached'>
 ): Promise<void> {
   const [gameName, gameId] = [
     IRFGameId[interaction.options.getNumber('game_id', true)],

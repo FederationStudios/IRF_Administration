@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
   .setDescription('Report a member to a division or sub-division')
   .setContexts(InteractionContextType.Guild);
 export const ephemeral = true;
-export async function run(client: CustomClient, interaction: ChatInputCommandInteraction): Promise<void> {
+export async function run(client: CustomClient, interaction: ChatInputCommandInteraction<'cached'>): Promise<void> {
   // Verify Rowifi
   const rowifi = await getRowifi(interaction.user.id, client);
   if (rowifi.success === false) {
