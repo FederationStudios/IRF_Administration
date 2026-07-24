@@ -28,18 +28,18 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "discord.js": "14.25.1",
+    "discord.js": "14.26.4",
     "eslint-config-prettier": "^10.1.8",
-    "mysql2": "3.17.2",
-    "sequelize": "6.37.7",
-    "typescript": "5.9.3"
+    "mysql2": "3.22.4",
+    "sequelize": "6.37.8",
+    "typescript": "6.0.3"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "25.2.3",
-    "eslint": "10.0.0",
-    "globals": "17.3.0",
-    "typescript-eslint": "8.56.0"
+    "@types/node": "25.9.1",
+    "eslint": "10.4.1",
+    "globals": "17.6.0",
+    "typescript-eslint": "8.60.1"
   },
   "overrides": {
     "undici": "^6.22.0"

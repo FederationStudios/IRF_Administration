@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  CommandInteractionOptionResolver,
+  InteractionContextType,
+  SlashCommandBuilder
+} from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { getGroup, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, ServerList } from '../typings/Extensions.js';
@@ -9,7 +14,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Kicks a player from a server')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option.setName('target').setDescription('The user you wish to kick (Roblox ID)').setRequired(true);
   })

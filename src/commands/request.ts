@@ -2,6 +2,7 @@ import {
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
   type GuildTextBasedChannel,
+  InteractionContextType,
   Message,
   SlashCommandBuilder
 } from 'discord.js';
@@ -16,7 +17,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Requests a division to assist you (Cooldown: 15 minutes)')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option
       .setName('division')
@@ -43,6 +44,7 @@ export async function run(
   interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  if (!interaction.guild || !interaction.member) return;
   if (cooldown.has(interaction.user.id)) {
     interactionEmbed(
       3,
@@ -57,15 +59,18 @@ export async function run(
   if (interaction.guild.id != '466432774182666240' && division === 'Royal Guard Backup Ping') {
     interactionEmbed(3, 'You must request Royal Guard from their server', interaction);
     return;
-  } else if(interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
+  } else if (interaction.guild.id != '1292166020814868654' && division === 'National Defense') {
     interactionEmbed(3, 'You must request National Defense from their server', interaction);
     return;
-  } else if (interaction.guild.id != discord.mainServer && !['National Defense', 'Royal Guard Backup Ping'].includes(division)) {
+  } else if (
+    interaction.guild.id != discord.mainServer &&
+    !['National Defense', 'Royal Guard Backup Ping'].includes(division)
+  ) {
     interactionEmbed(3, 'You must request this division in the Federation Network server', interaction);
     return;
   }
   await interaction.guild.roles.fetch();
-  const role = interaction.guild.roles.cache.find((r) => r.name === options.getString('division', true)).toString();
+  const role = interaction.guild.roles.cache.find((r) => r.name === options.getString('division', true))?.toString();
   const reason = options.getString('reason');
   const rowifi = await getRowifi(interaction.user.id, client);
   if (!rowifi.success) {
@@ -111,7 +116,12 @@ export async function run(
     return;
   }
 
-  const channelId = division === 'Royal Guard Backup Ping' ? '749034267291418785' : (division === 'National Defense' ? '1292529882416287866' : channels.request);
+  const channelId =
+    division === 'Royal Guard Backup Ping'
+      ? '749034267291418785'
+      : division === 'National Defense'
+        ? '1292529882416287866'
+        : channels.request;
   const request = await interaction.guild.channels.fetch(channelId, { cache: true });
   if (!request || !request.isTextBased()) {
     interactionEmbed(3, ResultMessage.Unknown, interaction);

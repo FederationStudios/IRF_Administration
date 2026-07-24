@@ -1,4 +1,11 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, GuildMemberRoleManager, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  CommandInteractionOptionResolver,
+  EmbedBuilder,
+  GuildMemberRoleManager,
+  InteractionContextType,
+  SlashCommandBuilder
+} from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { getRoblox, getRowifi, interactionEmbed, IRFGameId, paginationRow } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
@@ -46,14 +53,16 @@ export const data = new SlashCommandBuilder()
       .setName('alter')
       .setDescription('Alters the warning database')
       .addStringOption((option) => {
-        return option
-          .setName('warnid')
-          .setDescription('Unique ID of the warning to edit')
-          // Discord doesn't let you make the min and max the same
-          // Supposedly it's "Invalid string format"
-          .setMinLength(36)
-          .setMaxLength(37)
-          .setRequired(true)
+        return (
+          option
+            .setName('warnid')
+            .setDescription('Unique ID of the warning to edit')
+            // Discord doesn't let you make the min and max the same
+            // Supposedly it's "Invalid string format"
+            .setMinLength(36)
+            .setMaxLength(37)
+            .setRequired(true)
+        );
       })
       .addStringOption((option) => {
         return option
@@ -70,7 +79,7 @@ export const data = new SlashCommandBuilder()
             // The warning is permanently deleted from the DB. This means it never existed and should be reserved for wrong username/userid warnings only
             { name: 'Delete', value: 'Delete' }
           );
-      })
+      });
   })
   .setContexts(InteractionContextType.Guild);
 export async function run(
@@ -78,6 +87,7 @@ export async function run(
   interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  if (!interaction.guild || !interaction.member) return;
   const rowifi = await getRowifi(interaction.user.id, client);
   if (rowifi.success === false) {
     interaction.editReply({ content: rowifi.error });
@@ -138,31 +148,41 @@ export async function run(
           warn.mod = {
             discord: 'XXX',
             roblox: -1
-          }
+          };
           // Don't let Sequelize know what we did
           warn.changed('reason', false);
           warn.changed('mod', false);
         }
-        embeds.push({
-          title: `Warning ${warnings.indexOf(warn) + 1}`,
-          color: warn.isSoftDeleted() ? 0x00ff00 : 0xff0000,
-          fields: [
-            { name: 'Game', value: warn.game, inline: true },
-            { name: 'Reason', value: warn.reason, inline: true },
-            { name: 'Moderator', value: `Roblox ID: ${warn.mod.roblox}\nDiscord: <@${warn.mod.discord}>`, inline: true }
-          ],
-          timestamp: warn.createdAt,
-          footer: {
-            text: `ID: ${warn.warnId} - Item ${warnings.indexOf(warn) + 1} of ${warnings.length}`
-          }
-        });
+        embeds.push(
+          new EmbedBuilder({
+            title: `Warning ${warnings.indexOf(warn) + 1}`,
+            color: warn.isSoftDeleted() ? 0x00ff00 : 0xff0000,
+            fields: [
+              { name: 'Game', value: String(warn.game), inline: true },
+              { name: 'Reason', value: warn.reason, inline: true },
+              {
+                name: 'Moderator',
+                value: `Roblox ID: ${warn.mod.roblox}\nDiscord: <@${warn.mod.discord}>`,
+                inline: true
+              }
+            ],
+            timestamp: warn.createdAt,
+            footer: {
+              text: `ID: ${warn.warnId} - Item ${warnings.indexOf(warn) + 1} of ${warnings.length}`
+            }
+          })
+        );
       }
       paginationRow(interaction, new Array(embeds.length).fill([]), { content: '' }, embeds);
       break;
     }
     case 'alter': {
       if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.id === roblox.gaAppealRole)) {
-        return interactionEmbed(3, 'You are not authorized to alter a warning. Contact GA Appeals if you need your record changed', interaction);
+        return interactionEmbed(
+          3,
+          'You are not authorized to alter a warning. Contact GA Appeals if you need your record changed',
+          interaction
+        );
       }
 
       const warnId = options.getString('warnid', true);
@@ -184,7 +204,7 @@ export async function run(
             return;
           }
 
-          warn.reason = `~~${warn.reason}~~ (Removed on appeal)`
+          warn.reason = `~~${warn.reason}~~ (Removed on appeal)`;
           await warn.save();
           interactionEmbed(1, 'Warning has been removed', interaction);
           break;
@@ -192,7 +212,7 @@ export async function run(
         case 'Redact': {
           if (warn.data.privacy !== 'Public') {
             interactionEmbed(3, 'This warning is already redacted', interaction);
-            return
+            return;
           }
 
           warn.data.privacy = 'Restricted';

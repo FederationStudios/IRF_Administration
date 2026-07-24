@@ -1,11 +1,12 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import { getRowifi } from '../functions.js';
 import { CustomClient } from '../typings/Extensions.js';
 
 export const name = 'report';
 export const data = new SlashCommandBuilder()
   .setName(name)
-  .setDescription('Report a member to a division or sub-division');
+  .setDescription('Report a member to a division or sub-division')
+  .setContexts(InteractionContextType.Guild);
 export const ephemeral = true;
 export async function run(client: CustomClient, interaction: ChatInputCommandInteraction<'cached'>): Promise<void> {
   // Verify Rowifi

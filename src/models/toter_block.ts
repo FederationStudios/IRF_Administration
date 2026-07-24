@@ -10,7 +10,7 @@ export interface toter_blockAttributes {
   end: Date;
 }
 
-export type toter_blockOptionalAttributes = 'targetDiscord' | 'reason';
+export type toter_blockOptionalAttributes = 'pId' | 'targetDiscord' | 'reason';
 export type toter_blockCreationAttributes = Optional<toter_blockAttributes, toter_blockOptionalAttributes>;
 
 export class toter_block

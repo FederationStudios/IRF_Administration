@@ -2,6 +2,7 @@ import {
   ChatInputCommandInteraction,
   CommandInteractionOptionResolver,
   GuildMemberRoleManager,
+  InteractionContextType,
   SlashCommandBuilder,
   TextChannel
 } from 'discord.js';
@@ -25,7 +26,7 @@ export const ephemeral = false;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Bans a user from an IRF game')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option.setName('user_id').setDescription('Roblox username or ID').setRequired(true);
   })
@@ -54,6 +55,7 @@ export async function run(
   interaction: ChatInputCommandInteraction<'cached'>,
   options: CommandInteractionOptionResolver
 ): Promise<void> {
+  if (!interaction.inCachedGuild()) return;
   const [gameName, gameId] = [IRFGameId[options.getNumber('game_id', true)], options.getNumber('game_id', true)];
 
   if (!(interaction.member.roles as GuildMemberRoleManager).cache.find((r) => r.name === 'Administration Access'))

@@ -1,4 +1,9 @@
-import { ChatInputCommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder } from 'discord.js';
+import {
+  ChatInputCommandInteraction,
+  CommandInteractionOptionResolver,
+  InteractionContextType,
+  SlashCommandBuilder
+} from 'discord.js';
 import { default as config } from '../config.json' with { type: 'json' };
 import { IRFGameId, getGroup, getRowifi, interactionEmbed, toConsole } from '../functions.js';
 import { CustomClient, ServerList } from '../typings/Extensions.js';
@@ -9,7 +14,7 @@ export const ephemeral = true;
 export const data = new SlashCommandBuilder()
   .setName(name)
   .setDescription('Shuts down a server')
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .addStringOption((option) => {
     return option
       .setName('target')

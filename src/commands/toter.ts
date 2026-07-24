@@ -1,6 +1,7 @@
 import {
   CommandInteraction,
   CommandInteractionOptionResolver,
+  InteractionContextType,
   PermissionFlagsBits,
   SlashCommandBuilder
 } from 'discord.js';
@@ -32,7 +33,7 @@ export const data = new SlashCommandBuilder()
       .setDescription('Unblocks a user from accessing Toter perks')
       .addIntegerOption((opt) => opt.setName('roblox').setDescription('Roblox ID of the user to unblock'));
   })
-  .setDMPermission(false)
+  .setContexts(InteractionContextType.Guild)
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles);
 export async function run(
   client: CustomClient,
@@ -81,13 +82,13 @@ export async function run(
       }
       // Create the entry
       const targetDiscord = options.getUser('discord');
-      const end = new Date(Date.now() + parseTime(options.getString('end')) * 1000);
+      const end = new Date(Date.now() + parseTime(options.getString('end', true)) * 1000);
       await client.models.toter_block.create({
         targetRoblox: target.user.id,
-        targetDiscord: targetDiscord ? targetDiscord.id : null,
+        targetDiscord: targetDiscord?.id,
         mod: interaction.user.id,
         end: end,
-        reason: options.getString('reason')
+        reason: options.getString('reason', true)
       });
       interaction.editReply({ content: 'User successfully blocked' });
       if (targetDiscord) {
