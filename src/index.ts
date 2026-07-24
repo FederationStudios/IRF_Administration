@@ -1,4 +1,4 @@
-import { Client, Collection, IntentsBitField, Message } from 'discord.js';
+import { Client, Collection, IntentsBitField, Message, MessageFlags } from 'discord.js';
 import * as fs from 'node:fs';
 import { promisify } from 'node:util';
 import { Sequelize } from 'sequelize';
@@ -49,7 +49,7 @@ client.commands = new Collection();
 //#endregion
 
 //#region Events
-client.on('ready', async () => {
+client.on('clientReady', async () => {
   ready = await readyHandler(client, ready).catch((e) => {
     console.error(e);
     return false;
@@ -67,7 +67,7 @@ client.on('ready', async () => {
 client.on('interactionCreate', async (interaction): Promise<void> => {
   if (!ready && interaction.isRepliable())
     return interaction
-      .reply({ content: 'Please wait for the bot to finish loading', ephemeral: true })
+      .reply({ content: 'Please wait for the bot to finish loading', flags: [MessageFlags.Ephemeral] })
       .then(() => void Promise)
       .catch(() => Promise.reject()); // Hacky method to return void promise
 
