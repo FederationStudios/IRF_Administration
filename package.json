@@ -39,7 +39,7 @@
     "@types/node": "25.9.1",
     "eslint": "10.4.1",
     "globals": "17.6.0",
-    "typescript-eslint": "8.60.1"
+    "typescript-eslint": "8.65.0"
   },
   "overrides": {
     "undici": "^6.22.0"
