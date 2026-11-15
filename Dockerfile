@@ -1,7 +1,7 @@
 FROM ghcr.io/pnpm/pnpm:12
 WORKDIR /usr/src/irf_administration
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
