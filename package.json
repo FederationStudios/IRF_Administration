@@ -1,6 +1,6 @@
 {
   "name": "irf_administration",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {

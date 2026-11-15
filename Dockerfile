@@ -1,12 +1,13 @@
-FROM node:20.19.5
+FROM ghcr.io/pnpm/pnpm:12
 WORKDIR /usr/src/irf_administration
 
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src ./src
 
 RUN --mount=type=secret,id=configFile,required=true,target=./src/config.json \
-  npm run build
-CMD [ "npm", "start" ]
+  pnpm run build
+
+CMD [ "pnpm", "start", "--ignore-scripts" ]

@@ -10,6 +10,11 @@ import { CustomClient, ServerList } from './typings/Extensions.js';
 const wait = promisify(setTimeout);
 let ready = false;
 
+if (!config.bot.token) {
+  console.error('No bot token found in ./config.json');
+  process.exit(1);
+}
+
 //#region Setup
 //#region Database
 const sequelize = new Sequelize(config.mysql.database, config.mysql.user, config.mysql.password, {
@@ -35,12 +40,7 @@ if (!fs.existsSync('./models')) {
 //#endregion
 //#region Discord bot
 const client = new Client({
-  intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.GuildMembers,
-    IntentsBitField.Flags.MessageContent
-  ]
+  intents: []
 }) as CustomClient;
 client.sequelize = sequelize;
 client.models = sequelize.models as ReturnType<typeof initModels>;
@@ -212,66 +212,6 @@ client.on('interactionCreate', async (interaction): Promise<void> => {
       }
     }
   }
-});
-
-// TODO: This needs a separate file
-client.on('messageCreate', async (message): Promise<void> => {
-  if (!message.guild) return;
-  if (message.guild.id != config.discord.mainServer || message.channel.isDMBased()) return;
-  if (message.author.bot) return;
-  if (message.channel.name !== 'REPORTS-DONOTUSE') return;
-  // Message handler
-  const denied = '<:denied:1095481555431997460>';
-  let refMessage: Message;
-  // If the message is a reply and the content matches a key string, check the referenced message
-  if (message.reference && message.content === 'CHECK_IA_VIOLATIONS') {
-    // Set the message to delete after 5 seconds
-    setTimeout(() => message.delete(), 5000);
-    refMessage = await message.channel.messages.fetch(message.reference.messageId!);
-    // If the refMessage is from a bot, ignore it
-    if (refMessage.author.bot) return;
-  } else {
-    refMessage = message;
-  }
-  // Test the message against the regex
-  if (refMessage.content.startsWith('<:')) return; // Ignore GA accept/denial messages
-  const msgContentRegex =
-    // eslint-disable-next-line no-useless-escape
-    /^Suspect: (?<username>[\w\-]+)\nSuspect Roblox ID: (?<id>[\d]+)\nReason: (?<reason>[ -~]+)(?:\nProof:\n(?<proof>[\S\n]*))?/;
-  const result = msgContentRegex.exec(refMessage.content);
-  async function deny(msg: string) {
-    await refMessage.reactions.removeAll();
-    refMessage.react(denied);
-    refMessage.reply({ embeds: [{ color: 0xff0000, description: `${denied} | **Denied**. ${msg}` }] });
-  }
-  if (!result || !result.groups) {
-    await deny('Your report does not follow the format. Please check the pinned messages for the correct format');
-    return;
-  }
-  const matches = result.groups;
-  // Check if proof is present
-  if (!matches.proof && refMessage.attachments.size === 0) {
-    await deny(
-      'Your report does not contain proof. In order to properly process bans, we must have clear evidence of the crime'
-    );
-    return;
-  }
-  // Test links
-  const links = matches.proof ? matches.proof.split('\n') : [];
-  if (
-    !links.every((l) =>
-      // eslint-disable-next-line no-useless-escape
-      /^https:\/\/(?:medal\.tv\/games\/roblox\/clips\/[\w]+\/[\w]+|youtube\.com\/watch\?v=[\w\-]+|youtu\.be\/[\w\-]+|gyazo\.com\/[\w]+|cdn\.discordapp\.com\/attachments\/[\d]{17,20}\/[\d]{17,20}\/[\w\-]+\.[a-z4]+)(?:\?[\w=]+)?/.test(
-        l
-      )
-    )
-  ) {
-    await deny('Your proof does not contain valid links. Please check the pinned messages for the valid sources');
-    return;
-  }
-  // Add reactions
-  refMessage.react('⚙️');
-  return;
 });
 //#endregion
 

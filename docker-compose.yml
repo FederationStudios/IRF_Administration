@@ -5,6 +5,8 @@ services:
       context: ./
       secrets:
         - configFile
+    volumes:
+      - ${configfile}:/usr/src/irf_administration/src/config.json:ro
     restart: on-failure
     # Source - https://stackoverflow.com/a/24326540
     # Posted by Thomasleveil, modified by community. See post 'Timeline' for change history
