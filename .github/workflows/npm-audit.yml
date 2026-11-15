@@ -18,11 +18,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v5
+    - name: Install pnpm and Node.js
+      uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # 3.2.0
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
-    - run: pnpm ci
+        runtime: node@${{ matrix.node-version }}
+        cache: true
     # Run an audit check, and fail if any dependencies aren't met.
     - run: pnpm audit --audit-level=moderate

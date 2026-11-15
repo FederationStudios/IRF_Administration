@@ -4,10 +4,12 @@
   "description": "Administration bot for the Immortal Robloxian Federation",
   "main": "index.js",
   "scripts": {
-    "lint": "npx prettier --write ./src",
-    "build": "npx tsc -b",
-    "prestart": "npx tsc -b",
-    "start": "cd dist && node index.js"
+    "test": "pnpm exec tsc -b && cd dist && node index.js",
+    "build": "pnpm exec tsc -b",
+    "prestart": "pnpm exec tsc -b",
+    "start": "cd dist && node index.js",
+    "lint": "pnpm exec eslint --fix ./src",
+    "clean": "rm -r dist/*"
   },
   "keywords": [
     "discord.js",
