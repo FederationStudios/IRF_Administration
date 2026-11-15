@@ -46,7 +46,7 @@
     "eslint-config-prettier": "^10.1.8",
     "mysql2": "3.24.6",
     "sequelize": "6.37.8",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
